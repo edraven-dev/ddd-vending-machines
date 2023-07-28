@@ -1,0 +1,5 @@
+{
+  "*": [
+    "nx affected --target=lint --uncommitted --fix=true"
+  ]
+}

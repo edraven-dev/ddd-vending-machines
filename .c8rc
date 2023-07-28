@@ -1,0 +1,3 @@
+{
+  "exclude": ["**/*.module.ts", "**/*.spec.ts", "**/*.test.ts", "**/*.mock.ts"]
+}

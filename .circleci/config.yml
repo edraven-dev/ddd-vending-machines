@@ -1,0 +1,47 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.0.2
+
+defaults: &defaults
+  resource_class: small
+  docker:
+    - image: cimg/node:20.5.0
+
+commands:
+  checkout_and_install:
+    steps:
+      - checkout
+      - node/install-packages 
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout_and_install
+      - run:
+          name: Build all
+          command: npm run build:all
+  test:
+    <<: *defaults
+    docker:
+      - image: cimg/node:20.5.0
+    steps:
+      - checkout_and_install
+      - run:
+          name: Test all
+          command: npm run test:all
+  lint:
+    <<: *defaults
+    steps:
+      - checkout_and_install
+      - run:
+          name: Lint all
+          command: npm run lint:all
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - test
+      - lint
