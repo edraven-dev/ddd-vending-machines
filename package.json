@@ -19,6 +19,7 @@
     "@nestjs/core": "10.1.2",
     "@nestjs/platform-express": "10.1.2",
     "axios": "1.4.0",
+    "currency.js": "2.0.4",
     "reflect-metadata": "0.1.13",
     "rxjs": "7.8.1",
     "tslib": "2.6.1"
