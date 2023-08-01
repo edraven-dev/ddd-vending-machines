@@ -1,4 +1,4 @@
-import currency from 'currency.js';
+import Currency from 'currency.js';
 import { Money } from '../../../src/app/snack-machine/money';
 
 describe('Money', () => {
@@ -59,6 +59,6 @@ describe('Money', () => {
   it('should calculate the amount correctly', () => {
     const money = new Money(1, 2, 3, 4, 5, 6);
 
-    expect(money.amount).toEqual(new currency(149.96));
+    expect(money.amount).toEqual(new Currency(149.96));
   });
 });

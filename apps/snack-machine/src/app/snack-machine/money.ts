@@ -1,5 +1,5 @@
 import { ValueObject } from '@vending-machines/shared';
-import currency from 'currency.js';
+import Currency from 'currency.js';
 
 export class Money extends ValueObject {
   static readonly None = new Money(0, 0, 0, 0, 0, 0);
@@ -17,14 +17,14 @@ export class Money extends ValueObject {
   readonly fiveDollarCount: number;
   readonly twentyDollarCount: number;
 
-  get amount(): currency {
-    return new currency(this.oneCentCount)
+  get amount(): Currency {
+    return new Currency(this.oneCentCount)
       .multiply(0.01)
-      .add(new currency(this.tenCentCount).multiply(0.1))
-      .add(new currency(this.quarterCount).multiply(0.25))
-      .add(new currency(this.oneDollarCount).multiply(1))
-      .add(new currency(this.fiveDollarCount).multiply(5))
-      .add(new currency(this.twentyDollarCount).multiply(20));
+      .add(new Currency(this.tenCentCount).multiply(0.1))
+      .add(new Currency(this.quarterCount).multiply(0.25))
+      .add(new Currency(this.oneDollarCount).multiply(1))
+      .add(new Currency(this.fiveDollarCount).multiply(5))
+      .add(new Currency(this.twentyDollarCount).multiply(20));
   }
 
   constructor(

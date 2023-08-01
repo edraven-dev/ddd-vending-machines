@@ -1,4 +1,4 @@
-import currency from 'currency.js';
+import Currency from 'currency.js';
 import { Money } from '../../../src/app/snack-machine/money';
 import { SnackMachine } from '../../../src/app/snack-machine/snack-machine';
 
@@ -9,7 +9,7 @@ describe('Snack Machine', () => {
 
     snackMachine.returnMoney();
 
-    expect(snackMachine.moneyInTransaction.amount).toEqual(new currency(0));
+    expect(snackMachine.moneyInTransaction.amount).toEqual(new Currency(0));
   });
 
   it('should add inserted money to money in transaction', () => {
@@ -18,7 +18,7 @@ describe('Snack Machine', () => {
     snackMachine.insertMoney(Money.Cent);
     snackMachine.insertMoney(Money.Dollar);
 
-    expect(snackMachine.moneyInTransaction.amount).toEqual(new currency(1.01));
+    expect(snackMachine.moneyInTransaction.amount).toEqual(new Currency(1.01));
   });
 
   it('should prevent inserting more than one coin at a time', () => {
@@ -35,7 +35,7 @@ describe('Snack Machine', () => {
 
     snackMachine.buySnack();
 
-    expect(snackMachine.moneyInside.amount).toEqual(new currency(2.0));
-    expect(snackMachine.moneyInTransaction.amount).toEqual(new currency(0));
+    expect(snackMachine.moneyInside.amount).toEqual(new Currency(2.0));
+    expect(snackMachine.moneyInTransaction.amount).toEqual(new Currency(0));
   });
 });
