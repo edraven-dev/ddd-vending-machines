@@ -1,2 +1,10 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+  import SnackMachine from '$components/snack-machine.svelte';
+  import { title } from '$lib/title';
+</script>
+
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
+
+<SnackMachine />

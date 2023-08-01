@@ -10,6 +10,10 @@ const config = {
       assets: '../../dist/apps/frontend',
       pages: '../../dist/apps/frontend',
     }),
+    alias: {
+      $components: './src/components',
+      '$components/*': './src/components/*',
+    },
   },
 };
 
