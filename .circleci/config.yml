@@ -31,6 +31,8 @@ jobs:
       - run:
           name: Test all
           command: npm run test:all
+      - store_test_results:
+          path: test-results
   lint:
     <<: *defaults
     steps:

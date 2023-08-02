@@ -1,13 +1,15 @@
+import { Injectable } from '@nestjs/common';
 import { Entity } from '@vending-machines/shared';
 import { Money } from './money';
 
+@Injectable()
 export class SnackMachine extends Entity {
   moneyInside: Money = Money.None;
   moneyInTransaction: Money = Money.None;
 
   insertMoney(money: Money): void {
     const coinAndNotes = [Money.Cent, Money.TenCent, Money.Quarter, Money.Dollar, Money.FiveDollar, Money.TwentyDollar];
-    if (!coinAndNotes.some((x) => x.equals(money))) {
+    if (!coinAndNotes.some((coinOrNote) => coinOrNote.equals(money))) {
       throw new Error('Invalid operation');
     }
 

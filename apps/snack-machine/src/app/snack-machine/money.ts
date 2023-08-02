@@ -1,5 +1,6 @@
 import { ValueObject } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import { MoneyDto } from './dto/money.dto';
 
 export class Money extends ValueObject {
   static readonly None = new Money(0, 0, 0, 0, 0, 0);
@@ -37,22 +38,15 @@ export class Money extends ValueObject {
   ) {
     super();
 
-    if (oneCentCount < 0) {
-      throw new Error('Invalid operation');
-    }
-    if (tenCentCount < 0) {
-      throw new Error('Invalid operation');
-    }
-    if (quarterCount < 0) {
-      throw new Error('Invalid operation');
-    }
-    if (oneDollarCount < 0) {
-      throw new Error('Invalid operation');
-    }
-    if (fiveDollarCount < 0) {
-      throw new Error('Invalid operation');
-    }
-    if (twentyDollarCount < 0) {
+    const coinAndNoteCounters = [
+      oneCentCount,
+      tenCentCount,
+      quarterCount,
+      oneDollarCount,
+      fiveDollarCount,
+      twentyDollarCount,
+    ];
+    if (coinAndNoteCounters.some((amount) => amount < 0)) {
       throw new Error('Invalid operation');
     }
 
@@ -62,6 +56,10 @@ export class Money extends ValueObject {
     this.oneDollarCount = oneDollarCount;
     this.fiveDollarCount = fiveDollarCount;
     this.twentyDollarCount = twentyDollarCount;
+  }
+
+  public toDto(): MoneyDto {
+    return new MoneyDto(this.amount);
   }
 
   static add(money1: Money, money2: Money): Money {
