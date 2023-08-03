@@ -7,6 +7,8 @@ defaults: &defaults
   resource_class: small
   docker:
     - image: cimg/node:20.5.0
+  environment:
+    PUBLIC_API_HOST: http://localhost
 
 commands:
   checkout_and_install:
