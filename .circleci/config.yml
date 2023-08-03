@@ -7,6 +7,8 @@ defaults: &defaults
   resource_class: small
   docker:
     - image: cimg/node:20.5.0
+  environment:
+    PUBLIC_API_HOST: http://localhost
 
 commands:
   checkout_and_install:
@@ -24,13 +26,19 @@ jobs:
           command: npm run build:all
   test:
     <<: *defaults
+    resource_class: medium
     docker:
       - image: cimg/node:20.5.0
     steps:
       - checkout_and_install
       - run:
+          name: Build frontend
+          command: npx nx build frontend
+      - run:
           name: Test all
           command: npm run test:all
+      - store_test_results:
+          path: test-results
   lint:
     <<: *defaults
     steps:
