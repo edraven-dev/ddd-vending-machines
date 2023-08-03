@@ -31,6 +31,9 @@ jobs:
     steps:
       - checkout_and_install
       - run:
+          name: Build frontend
+          command: npx nx build frontend
+      - run:
           name: Test all
           command: npm run test:all
       - store_test_results:
