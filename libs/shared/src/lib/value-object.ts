@@ -1,6 +1,6 @@
 export abstract class ValueObject {
   equals(object?: ValueObject): boolean {
-    if (object == null || object == undefined) {
+    if (object === null || object === undefined) {
       return false;
     }
 
