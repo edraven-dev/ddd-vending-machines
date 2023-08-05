@@ -3,6 +3,7 @@ export default {
   displayName: 'snack-machine',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
+  testMatch: ['**/?(*.)+(e2e-spec|spec|test).[jt]s?(x)'],
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },

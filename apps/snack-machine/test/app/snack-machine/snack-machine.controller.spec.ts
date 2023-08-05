@@ -7,20 +7,19 @@ import { Money } from '../../../src/app/snack-machine/money';
 import { GetMoneyInMachineQuery } from '../../../src/app/snack-machine/queries/impl/get-money-in-machine.query';
 import { SnackMachineController } from '../../../src/app/snack-machine/snack-machine.controller';
 
-describe('SnackMachineControllerController', () => {
+describe('SnackMachineController', () => {
   let controller: SnackMachineController;
   let commandBus: CommandBus;
   let queryBus: QueryBus;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SnackMachineController],
       providers: [
         { provide: CommandBus, useValue: { execute: jest.fn() } },
         { provide: QueryBus, useValue: { execute: jest.fn() } },
       ],
-    })
-    .compile();
+    }).compile();
 
     controller = module.get<SnackMachineController>(SnackMachineController);
     commandBus = module.get<CommandBus>(CommandBus);

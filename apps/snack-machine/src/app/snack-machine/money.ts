@@ -59,7 +59,7 @@ export class Money extends ValueObject {
   }
 
   public toDto(): MoneyDto {
-    return new MoneyDto(this.amount);
+    return new MoneyDto(this.amount.intValue < 100 ? `¢${this.amount.cents()}` : `$${this.amount}`);
   }
 
   static add(money1: Money, money2: Money): Money {

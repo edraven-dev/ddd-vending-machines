@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
@@ -21,12 +21,14 @@ export class SnackMachineController {
     return this.queryBus.execute(new GetMoneyInMachineQuery());
   }
 
+  @HttpCode(200)
   @Post('buy-snack')
   async buySnack(): Promise<MoneyInMachineDto> {
     await this.commandBus.execute(new BuySnackCommand());
     return this.queryBus.execute(new GetMoneyInMachineQuery());
   }
 
+  @HttpCode(200)
   @Post('return-money')
   async returnMoney(): Promise<MoneyInMachineDto> {
     await this.commandBus.execute(new ReturnMoneyCommand());
