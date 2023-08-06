@@ -8,21 +8,20 @@ import defaultConfig from './mikro-orm-default.config';
 
 //#region
 // to consider - build each migration as separate entry file: https://stackoverflow.com/a/61218909
-let migrationsList: MigrationObject[];
-if (process.env.NODE_ENV === 'test') {
-  migrationsList = [];
+let migrationsList: MigrationObject[] = [];
+if (process.env.NODE_ENV !== 'test') {
+  // @ts-expect-error using webpack's require#context
+  const migrationsCtx = require.context('./migrations', false, /\.ts$/);
+  migrationsList = migrationsCtx
+    .keys()
+    .reduce((acc, key) => [...acc, { name: basename(key), class: Object.values(migrationsCtx(key))[0] }], []);
 }
-// @ts-expect-error using webpack's require#context
-const migrationsCtx = require.context('./migrations', false, /\.ts$/);
-migrationsList = migrationsCtx
-  .keys()
-  .reduce((acc, key) => [...acc, { name: basename(key), class: Object.values(migrationsCtx(key))[0] }], []);
 //#endregion
 
 export default defineConfig({
   ...defaultConfig,
-  debug: process.env.NODE_ENV !== 'production',
-  discovery: { disableDynamicFileAccess: true },
+  debug: process.env.NODE_ENV === 'development',
+  discovery: { disableDynamicFileAccess: true, warnWhenNoEntities: false },
   loadStrategy: LoadStrategy.JOINED,
   highlighter: new SqlHighlighter(),
   extensions: [Migrator, SeedManager],

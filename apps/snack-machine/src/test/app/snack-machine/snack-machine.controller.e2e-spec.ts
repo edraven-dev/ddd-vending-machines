@@ -1,7 +1,28 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { MikroORM } from '@mikro-orm/core';
+import { HttpStatus, INestApplication, Module } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+
+@Module({
+  providers: [
+    {
+      provide: MikroORM,
+      useValue: { getSchemaGenerator: () => ({ updateSchema: jest.fn() }), getMigrator: () => ({ up: jest.fn() }) },
+    },
+  ],
+  exports: [MikroORM],
+})
+class MikroOrmMockModule {}
+jest.mock('@mikro-orm/nestjs', () => {
+  return {
+    MikroOrmModule: {
+      forRoot: jest.fn().mockImplementation(() => MikroOrmMockModule),
+      forFeature: jest.fn().mockImplementation(() => MikroOrmMockModule),
+    },
+  };
+});
+
 import { AppModule } from '../../../app/app.module';
 
 describe('SnackMachine - e2e', () => {
