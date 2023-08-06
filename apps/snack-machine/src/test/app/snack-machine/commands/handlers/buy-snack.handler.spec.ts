@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BuySnackHandler } from '../../../../../src/app/snack-machine/commands/handlers/buy-snack.handler';
-import { SnackMachine } from '../../../../../src/app/snack-machine/snack-machine';
+import { BuySnackHandler } from '../../../../../app/snack-machine/commands/handlers/buy-snack.handler';
+import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 
 describe('BuySnackHandler', () => {
   let handler: BuySnackHandler;

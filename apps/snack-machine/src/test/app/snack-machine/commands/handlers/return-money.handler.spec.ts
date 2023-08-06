@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ReturnMoneyHandler } from '../../../../../src/app/snack-machine/commands/handlers/return-money.handler';
-import { SnackMachine } from '../../../../../src/app/snack-machine/snack-machine';
+import { ReturnMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/return-money.handler';
+import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 
 describe('ReturnMoneyHandler', () => {
   let handler: ReturnMoneyHandler;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InsertMoneyHandler } from '../../../../../src/app/snack-machine/commands/handlers/insert-money.handler';
-import { Money } from '../../../../../src/app/snack-machine/money';
-import { SnackMachine } from '../../../../../src/app/snack-machine/snack-machine';
+import { InsertMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/insert-money.handler';
+import { Money } from '../../../../../app/snack-machine/money';
+import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 
 describe('InsertMoneyHandler', () => {
   let handler: InsertMoneyHandler;
