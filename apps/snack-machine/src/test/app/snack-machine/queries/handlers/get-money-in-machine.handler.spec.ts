@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GetMoneyInMachineHandler } from '../../../../../src/app/snack-machine/queries/handlers/get-money-in-machine.handler';
-import { SnackMachine } from '../../../../../src/app/snack-machine/snack-machine';
+import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
+import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 
 describe('GetMoneyInMachineHandler', () => {
   const amount = '¢0';

@@ -1,6 +1,6 @@
 import Currency from 'currency.js';
-import { Money } from '../../../src/app/snack-machine/money';
-import { SnackMachine } from '../../../src/app/snack-machine/snack-machine';
+import { Money } from '../../../app/snack-machine/money';
+import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 
 describe('Snack Machine', () => {
   it('should empties money in transaction when returning money', () => {

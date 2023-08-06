@@ -1,5 +1,5 @@
 import Currency from 'currency.js';
-import { Money } from '../../../src/app/snack-machine/money';
+import { Money } from '../../../app/snack-machine/money';
 
 describe('Money', () => {
   it('should produce the correct sum', () => {

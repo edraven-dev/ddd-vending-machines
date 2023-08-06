@@ -1,11 +1,11 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { BuySnackCommand } from '../../../src/app/snack-machine/commands/impl/buy-snack.command';
-import { InsertMoneyCommand } from '../../../src/app/snack-machine/commands/impl/insert-money.command';
-import { ReturnMoneyCommand } from '../../../src/app/snack-machine/commands/impl/return-money.command';
-import { Money } from '../../../src/app/snack-machine/money';
-import { GetMoneyInMachineQuery } from '../../../src/app/snack-machine/queries/impl/get-money-in-machine.query';
-import { SnackMachineController } from '../../../src/app/snack-machine/snack-machine.controller';
+import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
+import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
+import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
+import { Money } from '../../../app/snack-machine/money';
+import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
+import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 
 describe('SnackMachineController', () => {
   let controller: SnackMachineController;

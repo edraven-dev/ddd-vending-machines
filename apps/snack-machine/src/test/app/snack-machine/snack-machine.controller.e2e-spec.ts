@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../../../src/app/app.module';
+import { AppModule } from '../../../app/app.module';
 
 describe('SnackMachine - e2e', () => {
   const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }), register: jest.fn() };

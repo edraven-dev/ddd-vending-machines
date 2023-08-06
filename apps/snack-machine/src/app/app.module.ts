@@ -13,6 +13,10 @@ export class AppModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) {}
 
   async onModuleInit(): Promise<void> {
-    await this.orm.getMigrator().up();
+    if (process.env.NODE_ENV === 'test') {
+      await this.orm.getSchemaGenerator().updateSchema();
+    } else {
+      await this.orm.getMigrator().up();
+    }
   }
 }
