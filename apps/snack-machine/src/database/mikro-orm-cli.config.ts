@@ -5,6 +5,7 @@ export default defineConfig({
   ...defaultConfig,
   debug: true,
   baseDir: __dirname,
+  discovery: { warnWhenNoEntities: false },
   entities: ['.'],
   entitiesTs: ['../app/**/*.entity.ts'],
   migrations: {

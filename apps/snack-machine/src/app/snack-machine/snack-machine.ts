@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Entity } from '@vending-machines/shared';
+import { AggregateRoot } from '@vending-machines/shared';
 import { Money } from './money';
 
 @Injectable()
-export class SnackMachine extends Entity {
+export class SnackMachine extends AggregateRoot {
   moneyInside: Money = Money.None;
   moneyInTransaction: Money = Money.None;
 
