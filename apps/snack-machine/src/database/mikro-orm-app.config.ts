@@ -28,5 +28,5 @@ export default defineConfig({
   migrations: { migrationsList },
   // @ts-expect-error nestjs adapter options
   autoLoadEntities: true,
-  registerRequestContext: false,
+  allowGlobalContext: true, // FIXME: remove this line when removing snack machine injection from snack-machine.module.ts
 });
