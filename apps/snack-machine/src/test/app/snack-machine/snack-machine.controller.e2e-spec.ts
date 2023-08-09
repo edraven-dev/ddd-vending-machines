@@ -1,25 +1,17 @@
-import { MikroORM } from '@mikro-orm/core';
 import { HttpStatus, INestApplication, Module } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
 
 @Module({
-  providers: [
-    {
-      provide: MikroORM,
-      useValue: { getSchemaGenerator: () => ({ updateSchema: jest.fn() }), getMigrator: () => ({ up: jest.fn() }) },
-    },
-  ],
-  exports: [MikroORM],
+  providers: [{ provide: SnackMachineRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
+  exports: [SnackMachineRepository],
 })
-class MikroOrmMockModule {}
-jest.mock('@mikro-orm/nestjs', () => {
+class DatabaseModuleMock {}
+jest.mock('../../../app/database/database.module', () => {
   return {
-    MikroOrmModule: {
-      forRoot: jest.fn().mockImplementation(() => MikroOrmMockModule),
-      forFeature: jest.fn().mockImplementation(() => MikroOrmMockModule),
-    },
+    DatabaseModule: DatabaseModuleMock,
   };
 });
 
