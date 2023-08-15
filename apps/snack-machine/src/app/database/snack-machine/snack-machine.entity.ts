@@ -1,4 +1,15 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  BaseEntity,
+  Cascade,
+  Collection,
+  Embeddable,
+  Embedded,
+  Entity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
+import { SlotEntity } from './slot.entity';
 
 @Embeddable()
 export class MoneyEmbeddable {
@@ -22,10 +33,13 @@ export class MoneyEmbeddable {
 }
 
 @Entity({ tableName: 'snack_machine' })
-export class SnackMachineEntity {
+export class SnackMachineEntity extends BaseEntity<SnackMachineEntity, 'id'> {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Embedded(() => MoneyEmbeddable)
   money!: MoneyEmbeddable;
+
+  @OneToMany(() => SlotEntity, (slot) => slot.snackMachine, { cascade: [Cascade.ALL] })
+  slots = new Collection<SlotEntity>(this);
 }

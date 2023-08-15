@@ -12,7 +12,7 @@ export class BuySnackHandler implements ICommandHandler<BuySnackCommand, void> {
   ) {}
 
   async execute() {
-    this.snackMachine.buySnack();
+    this.snackMachine.buySnack(1);
     await this.snackMachineRepository.save(this.snackMachine);
   }
 }

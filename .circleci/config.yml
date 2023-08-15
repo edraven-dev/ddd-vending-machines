@@ -39,6 +39,8 @@ jobs:
           command: npm run test:all
       - store_test_results:
           path: test-results
+      - store_artifacts:
+          path: coverage
   lint:
     <<: *defaults
     steps:

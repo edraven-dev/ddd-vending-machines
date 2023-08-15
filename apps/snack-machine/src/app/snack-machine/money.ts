@@ -1,6 +1,5 @@
-import { ValueObject } from '@vending-machines/shared';
+import { InvalidOperationError, ValueObject } from '@vending-machines/shared';
 import Currency from 'currency.js';
-import { MoneyDto } from './dto/money.dto';
 
 export class Money extends ValueObject {
   static readonly None = new Money(0, 0, 0, 0, 0, 0);
@@ -47,7 +46,7 @@ export class Money extends ValueObject {
       twentyDollarCount,
     ];
     if (coinAndNoteCounters.some((amount) => amount < 0)) {
-      throw new Error('Invalid operation');
+      throw new InvalidOperationError('Money components cannot be negative');
     }
 
     this.oneCentCount = oneCentCount;
@@ -56,10 +55,6 @@ export class Money extends ValueObject {
     this.oneDollarCount = oneDollarCount;
     this.fiveDollarCount = fiveDollarCount;
     this.twentyDollarCount = twentyDollarCount;
-  }
-
-  public toDto(): MoneyDto {
-    return new MoneyDto(this.amount.intValue < 100 ? `¢${this.amount.cents()}` : `$${this.amount}`);
   }
 
   static add(money1: Money, money2: Money): Money {
@@ -84,6 +79,17 @@ export class Money extends ValueObject {
     );
   }
 
+  static multiply(money: Money, multiplier: number): Money {
+    return new Money(
+      money.oneCentCount * multiplier,
+      money.tenCentCount * multiplier,
+      money.quarterCount * multiplier,
+      money.oneDollarCount * multiplier,
+      money.fiveDollarCount * multiplier,
+      money.twentyDollarCount * multiplier,
+    );
+  }
+
   protected equalsCore(other: Money): boolean {
     return (
       this.oneCentCount === other.oneCentCount &&
@@ -93,5 +99,30 @@ export class Money extends ValueObject {
       this.fiveDollarCount === other.fiveDollarCount &&
       this.twentyDollarCount === other.twentyDollarCount
     );
+  }
+
+  // TODO: to cover with unit tests
+  allocate(amount: Currency): Money {
+    let amountAsCents = amount.intValue;
+
+    const twentyDollarCount = Math.min(Math.floor(amountAsCents / 2000), this.twentyDollarCount);
+    amountAsCents -= twentyDollarCount * 2000;
+
+    const fiveDollarCount = Math.min(Math.floor(amountAsCents / 500), this.fiveDollarCount);
+    amountAsCents -= fiveDollarCount * 500;
+
+    const oneDollarCount = Math.min(Math.floor(amountAsCents / 100), this.oneDollarCount);
+    amountAsCents -= oneDollarCount * 100;
+
+    const quarterCount = Math.min(Math.floor(amountAsCents / 25), this.quarterCount);
+    amountAsCents -= quarterCount * 25;
+
+    const tenCentCount = Math.min(Math.floor(amountAsCents / 10), this.tenCentCount);
+    amountAsCents -= tenCentCount * 10;
+
+    const oneCentCount = Math.min(Math.floor(amountAsCents / 1), this.oneCentCount);
+    amountAsCents -= oneCentCount * 1;
+
+    return new Money(oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount);
   }
 }

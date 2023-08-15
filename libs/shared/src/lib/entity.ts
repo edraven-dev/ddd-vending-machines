@@ -1,5 +1,5 @@
 export abstract class Entity {
-  readonly id: string = 'id';
+  readonly id: string = '00000000-0000-0000-0000-000000000000';
 
   equals(object?: Entity): boolean {
     if (object == null || object == undefined) {

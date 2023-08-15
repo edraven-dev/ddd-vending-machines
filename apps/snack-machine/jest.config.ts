@@ -9,7 +9,13 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   collectCoverage: true,
-  collectCoverageFrom: ['./src/**/*.ts', '!./src/**/*.module.ts', '!./src/main.ts', '!./src/**/index.ts'],
+  collectCoverageFrom: [
+    './src/**/*.ts',
+    '!./src/**/*.module.ts',
+    '!./src/main.ts',
+    '!./src/**/index.ts',
+    '!./src/database/**',
+  ],
   coverageDirectory: '../../coverage/apps/snack-machine',
   reporters: [
     'default',
