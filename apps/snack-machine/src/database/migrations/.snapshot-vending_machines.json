@@ -15,6 +15,43 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "snack",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "snack_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
         "money_one_cent_count": {
           "name": "money_one_cent_count",
           "type": "int",
@@ -85,6 +122,115 @@
       ],
       "checks": [],
       "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "position": {
+          "name": "position",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "snack_machine_id": {
+          "name": "snack_machine_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "snack_pile_quantity": {
+          "name": "snack_pile_quantity",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "snack_pile_price": {
+          "name": "snack_pile_price",
+          "type": "numeric(12,2)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "precision": 12,
+          "scale": 2,
+          "mappedType": "decimal"
+        },
+        "snack_pile_snack_id": {
+          "name": "snack_pile_snack_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        }
+      },
+      "name": "slot",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "snack_pile_snack_id"
+          ],
+          "composite": false,
+          "keyName": "slot_snack_pile_snack_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "slot_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "slot_snack_machine_id_foreign": {
+          "constraintName": "slot_snack_machine_id_foreign",
+          "columnNames": [
+            "snack_machine_id"
+          ],
+          "localTableName": "public.slot",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.snack_machine",
+          "updateRule": "cascade"
+        },
+        "slot_snack_pile_snack_id_foreign": {
+          "constraintName": "slot_snack_pile_snack_id_foreign",
+          "columnNames": [
+            "snack_pile_snack_id"
+          ],
+          "localTableName": "public.slot",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.snack",
+          "updateRule": "cascade"
+        }
+      }
     }
   ]
 }
