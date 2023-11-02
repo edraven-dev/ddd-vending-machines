@@ -1,1 +1,3 @@
-export class BuySnackCommand {}
+export class BuySnackCommand {
+  constructor(public readonly position: number) {}
+}

@@ -24,13 +24,13 @@ describe('BuySnackHandler', () => {
 
   describe('execute', () => {
     it('should call snackMachine.buySnack', async () => {
-      await handler.execute();
+      await handler.execute({ position: 1 });
 
       expect(snackMachine.buySnack).toHaveBeenCalled();
     });
 
     it('should call snackMachineRepository.save with proper data', async () => {
-      await handler.execute();
+      await handler.execute({ position: 1 });
 
       expect(snackMachineRepository.save).toHaveBeenCalledWith(snackMachine);
     });

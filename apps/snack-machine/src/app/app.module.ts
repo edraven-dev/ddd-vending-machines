@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ValidationProvider } from '@vending-machines/shared';
+import { InvalidOperationExceptionFilterProvider, ValidationProvider } from '@vending-machines/shared';
+import { DatabaseModule } from './database/database.module';
 import { SnackMachineModule } from './snack-machine/snack-machine.module';
 
 @Module({
-  imports: [SnackMachineModule],
-  providers: [ValidationProvider],
+  imports: [DatabaseModule, SnackMachineModule],
+  providers: [ValidationProvider, InvalidOperationExceptionFilterProvider],
 })
 export class AppModule {}

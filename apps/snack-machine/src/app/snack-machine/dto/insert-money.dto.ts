@@ -6,5 +6,5 @@ export class InsertMoneyDto {
   @IsArray()
   @ArrayMinSize(6)
   @ArrayMaxSize(6)
-  money: [number, number, number, number, number, number];
+  readonly money: [number, number, number, number, number, number];
 }

@@ -7,9 +7,7 @@
   "targets": {
     "build": {
       "executor": "@nx/vite:build",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/frontend"
@@ -57,23 +55,17 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "coverage/apps/frontend"
-      ],
+      "outputs": ["coverage/apps/frontend"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/frontend"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "executor": "@nx/eslint:eslint",
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "apps/frontend/**/*.ts"
-        ]
+        "lintFilePatterns": ["apps/frontend/**/*.ts"]
       }
     }
   }

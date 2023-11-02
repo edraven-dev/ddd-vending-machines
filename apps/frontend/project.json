@@ -35,11 +35,14 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "defaultConfiguration": "ci",
+      "defaultConfiguration": "dev",
       "options": {
         "cwd": "apps/frontend"
       },
       "configurations": {
+        "dev": {
+          "command": "vitest run"
+        },
         "ci": {
           "command": "vitest run --coverage"
         },
@@ -49,7 +52,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/frontend/**/*.ts"]

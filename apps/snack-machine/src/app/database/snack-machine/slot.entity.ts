@@ -1,6 +1,6 @@
 import { Cascade, Embeddable, Embedded, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { SnackEntity } from '../snack/snack.entity';
-import { SnackMachineEntity } from './snack-machine.entity';
+import SnackEntity from '../snack/snack.entity';
+import SnackMachineEntity from './snack-machine.entity';
 
 @Embeddable()
 export class SnackPileEmbeddable {
@@ -15,7 +15,7 @@ export class SnackPileEmbeddable {
 }
 
 @Entity({ tableName: 'slot' })
-export class SlotEntity {
+export default class SlotEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 

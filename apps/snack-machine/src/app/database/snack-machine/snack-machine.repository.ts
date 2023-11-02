@@ -3,7 +3,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
 import { SnackMachine } from '../../snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../snack-machine/snack-machine.repository.interface';
-import { SnackMachineEntity } from './snack-machine.entity';
+import SnackMachineEntity from './snack-machine.entity';
 import { SnackMachineMapper } from './snack-machine.mapper';
 
 @Injectable()
@@ -41,7 +41,8 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
     );
 
     snackMachineEntity.assign(SnackMachineMapper.toPersistence(snackMachine));
-    this.em.flush();
+
+    await this.em.flush();
   }
 }
 

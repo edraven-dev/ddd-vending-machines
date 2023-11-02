@@ -1,4 +1,4 @@
-import { InvalidOperationError, ValueObject } from '@vending-machines/shared';
+import { InvalidOperationException, ValueObject } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Snack } from '../snack/snack';
 
@@ -12,13 +12,13 @@ export class SnackPile extends ValueObject {
   constructor(snack: Snack, quantity: number, price: Currency) {
     super();
     if (quantity < 0) {
-      throw new InvalidOperationError('Snack quantity cannot be negative');
+      throw new InvalidOperationException('Snack quantity cannot be negative');
     }
     if (price.value < 0) {
-      throw new InvalidOperationError('Snack price cannot be negative');
+      throw new InvalidOperationException('Snack price cannot be negative');
     }
     if (price.intValue % 1 !== 0) {
-      throw new InvalidOperationError('Price cannot contain part of cent');
+      throw new InvalidOperationException('Price cannot contain part of cent');
     }
     this.snack = snack;
     this.quantity = quantity;

@@ -15,23 +15,24 @@ jest.mock('../../../app/database/database.module', () => {
   };
 });
 
-import { AppModule } from '../../../app/app.module';
+import { ValidationProvider } from '@vending-machines/shared';
+import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 
 describe('SnackMachine - e2e', () => {
-  const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }), register: jest.fn() };
+  const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }) };
   const testEndpoint = '/snack-machine';
 
   let app: INestApplication;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(CommandBus)
-      .useValue({ execute: jest.fn(), register: jest.fn() })
-      .overrideProvider(QueryBus)
-      .useValue(queryBusMock)
-      .compile();
+      controllers: [SnackMachineController],
+      providers: [
+        ValidationProvider,
+        { provide: QueryBus, useValue: queryBusMock },
+        { provide: CommandBus, useValue: { execute: jest.fn() } },
+      ],
+    }).compile();
 
     app = module.createNestApplication();
     await app.init();
@@ -91,6 +92,7 @@ describe('SnackMachine - e2e', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
         .post(`${testEndpoint}/buy-snack`)
+        .send({ position: 1 })
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });
