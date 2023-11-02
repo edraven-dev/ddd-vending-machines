@@ -1,4 +1,4 @@
-import { InvalidOperationError, ValueObject } from '@vending-machines/shared';
+import { InvalidOperationException, ValueObject } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
 export class Money extends ValueObject {
@@ -46,7 +46,7 @@ export class Money extends ValueObject {
       twentyDollarCount,
     ];
     if (coinAndNoteCounters.some((amount) => amount < 0)) {
-      throw new InvalidOperationError('Money components cannot be negative');
+      throw new InvalidOperationException('Money components cannot be negative');
     }
 
     this.oneCentCount = oneCentCount;
@@ -101,7 +101,6 @@ export class Money extends ValueObject {
     );
   }
 
-  // TODO: to cover with unit tests
   allocate(amount: Currency): Money {
     let amountAsCents = amount.intValue;
 

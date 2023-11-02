@@ -1,6 +1,6 @@
 import { EntityDTO } from '@mikro-orm/core';
 import { Snack } from '../../snack/snack';
-import { SnackEntity } from './snack.entity';
+import SnackEntity from './snack.entity';
 
 export class SnackMapper {
   private constructor() {}

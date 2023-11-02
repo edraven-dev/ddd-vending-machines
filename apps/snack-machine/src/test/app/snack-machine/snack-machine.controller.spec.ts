@@ -5,6 +5,7 @@ import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/ins
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
 import { Money } from '../../../app/snack-machine/money';
 import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
+import { GetSnackMachineQuery } from '../../../app/snack-machine/queries/impl/get-snack-machine.query';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 
 describe('SnackMachineController', () => {
@@ -41,26 +42,26 @@ describe('SnackMachineController', () => {
       expect(commandBus.execute).toBeCalledWith(expect.any(InsertMoneyCommand));
     });
 
-    it('should execute GetMoneyInMachineQuery', async () => {
+    it('should execute GetSnackMachineQuery', async () => {
       const money: [number, number, number, number, number, number] = [1, 0, 0, 0, 0, 0];
 
       await controller.insertMoney({ money });
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetMoneyInMachineQuery));
+      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 
   describe('#buySnack', () => {
     it('should execute BuySnackCommand', async () => {
-      await controller.buySnack();
+      await controller.buySnack({ position: 1 });
 
       expect(commandBus.execute).toBeCalledWith(expect.any(BuySnackCommand));
     });
 
-    it('should execute GetMoneyInMachineQuery', async () => {
-      await controller.buySnack();
+    it('should execute GetSnackMachineQuery', async () => {
+      await controller.buySnack({ position: 1 });
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetMoneyInMachineQuery));
+      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 
@@ -71,10 +72,10 @@ describe('SnackMachineController', () => {
       expect(commandBus.execute).toBeCalledWith(expect.any(ReturnMoneyCommand));
     });
 
-    it('should execute GetMoneyInMachineQuery', async () => {
+    it('should execute GetSnackMachineQuery', async () => {
       await controller.returnMoney();
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetMoneyInMachineQuery));
+      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 

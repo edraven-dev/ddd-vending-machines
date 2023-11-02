@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AggregateRoot, InvalidOperationError } from '@vending-machines/shared';
+import { AggregateRoot, InvalidOperationException } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Money } from './money';
 import { Slot } from './slot';
@@ -14,7 +14,7 @@ export class SnackMachine extends AggregateRoot {
   insertMoney(money: Money): void {
     const coinAndNotes = [Money.Cent, Money.TenCent, Money.Quarter, Money.Dollar, Money.FiveDollar, Money.TwentyDollar];
     if (!coinAndNotes.some((coinOrNote) => coinOrNote.equals(money))) {
-      throw new InvalidOperationError('Invalid coin or note');
+      throw new InvalidOperationException('Invalid coin or note');
     }
 
     this.moneyInTransaction = this.moneyInTransaction.add(money.amount);
@@ -30,13 +30,13 @@ export class SnackMachine extends AggregateRoot {
   buySnack(position: number): void {
     const slot = this.getSlotByPosition(position);
     if (slot.snackPile.price.intValue > this.moneyInTransaction.intValue) {
-      throw new InvalidOperationError('Not enough money inserted to buy a snack');
+      throw new InvalidOperationException('Not enough money inserted to buy a snack');
     }
     slot.snackPile = slot.snackPile.subtractOne();
 
     const change = this.moneyInside.allocate(this.moneyInTransaction.subtract(slot.snackPile.price));
     if (change.amount.intValue < this.moneyInTransaction.intValue - slot.snackPile.price.intValue) {
-      throw new InvalidOperationError('Not enough change');
+      throw new InvalidOperationException('Not enough change');
     }
 
     this.moneyInside = Money.subtract(this.moneyInside, change);
@@ -58,7 +58,7 @@ export class SnackMachine extends AggregateRoot {
   private getSlotByPosition(position: number): Slot {
     const slot = this.slots.find((slot) => slot.position === position);
     if (!slot) {
-      throw new InvalidOperationError(`Slot at position ${position} does not exist`);
+      throw new InvalidOperationException(`Slot at position ${position} does not exist`);
     }
     return slot;
   }

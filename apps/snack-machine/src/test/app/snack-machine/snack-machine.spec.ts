@@ -133,32 +133,6 @@ describe('Snack Machine', () => {
         'Slot at position 4 does not exist',
       );
     });
-
-    // it('should prevent loading snacks with negative quantity', () => {
-    //   const snackMachine = new SnackMachine();
-
-    //   expect(() => snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, -1, new Currency(1.0)))).toThrowError(
-    //     'Snack quantity cannot be negative',
-    //   );
-    // });
-
-    // it('should prevent loading snacks with negative price', () => {
-    //   const snackMachine = new SnackMachine();
-
-    //   expect(() => snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 0, new Currency(-1.0)))).toThrowError(
-    //     'Snack price cannot be negative',
-    //   );
-    // });
-
-    // it('should prevent loading snacks when price contains more than two decimal places', () => {
-    //   const snackMachine = new SnackMachine();
-
-    //   const price = new Currency(1.0);
-    //   Object.assign(price, { intValue: 100.5 });
-    //   expect(() => snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 0, price))).toThrowError(
-    //     'Price cannot contain part of cent',
-    //   );
-    // });
   });
 
   describe('loadMoney', () => {

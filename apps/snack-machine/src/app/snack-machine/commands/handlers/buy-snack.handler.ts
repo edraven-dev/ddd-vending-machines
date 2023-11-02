@@ -11,8 +11,8 @@ export class BuySnackHandler implements ICommandHandler<BuySnackCommand, void> {
     @Inject(SnackMachineRepository) private readonly snackMachineRepository: SnackMachineRepository,
   ) {}
 
-  async execute() {
-    this.snackMachine.buySnack(1);
+  async execute({ position }: BuySnackCommand) {
+    this.snackMachine.buySnack(position);
     await this.snackMachineRepository.save(this.snackMachine);
   }
 }

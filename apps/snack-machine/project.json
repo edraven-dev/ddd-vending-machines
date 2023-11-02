@@ -16,7 +16,7 @@
         "tsConfig": "apps/snack-machine/tsconfig.app.json",
         "assets": ["apps/snack-machine/src/assets"],
         "isolatedConfig": true,
-        "webpackConfig": "apps/snack-machine/webpack.config.js"
+        "webpackConfig": "apps/snack-machine/webpack.config.ts"
       },
       "configurations": {
         "development": {},
@@ -39,7 +39,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/snack-machine/**/*.ts"]

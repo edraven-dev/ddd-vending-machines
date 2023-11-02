@@ -3,12 +3,11 @@
   import { title } from '$lib/title';
 
   export let data;
-  const { moneyInMachine } = data;
-  const { moneyInTransaction, moneyInside } = moneyInMachine;
+  const { snackMachine } = data;
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
-<SnackMachine moneyInserted={moneyInTransaction.amount} moneyInside={moneyInside.amount} />
+<SnackMachine {snackMachine} />
