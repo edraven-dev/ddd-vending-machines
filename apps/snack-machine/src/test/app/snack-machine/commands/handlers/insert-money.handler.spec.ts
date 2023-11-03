@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import { InsertMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/insert-money.handler';
-import { Money } from '../../../../../app/snack-machine/money';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 
 describe('InsertMoneyHandler', () => {

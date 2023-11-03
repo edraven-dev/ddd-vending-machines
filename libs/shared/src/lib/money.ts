@@ -1,5 +1,6 @@
-import { InvalidOperationException, ValueObject } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import { InvalidOperationException } from './invalid-operation.exception';
+import { ValueObject } from './value-object';
 
 export class Money extends ValueObject {
   static readonly None = new Money(0, 0, 0, 0, 0, 0);

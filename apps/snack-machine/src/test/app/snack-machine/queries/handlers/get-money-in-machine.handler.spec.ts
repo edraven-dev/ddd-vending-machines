@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { MoneyInMachineDto } from '../../../../../app/snack-machine/dto/money-in-machine.dto';
-import { Money } from '../../../../../app/snack-machine/money';
 import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 

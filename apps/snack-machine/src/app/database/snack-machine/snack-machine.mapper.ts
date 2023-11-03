@@ -1,6 +1,6 @@
 import { EntityData } from '@mikro-orm/core';
+import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
-import { Money } from '../../snack-machine/money';
 import { Slot } from '../../snack-machine/slot';
 import { SnackMachine } from '../../snack-machine/snack-machine';
 import { SnackPile } from '../../snack-machine/snack-pile';

@@ -1,9 +1,9 @@
 import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { Test } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import SnackMachineEntity from '../../../../app/database/snack-machine/snack-machine.entity';
 import { MikroOrmSnackMachineRepository } from '../../../../app/database/snack-machine/snack-machine.repository';
-import { Money } from '../../../../app/snack-machine/money';
 import { SnackMachine } from '../../../../app/snack-machine/snack-machine';
 
 describe('MikroOrmSnackMachineRepository', () => {

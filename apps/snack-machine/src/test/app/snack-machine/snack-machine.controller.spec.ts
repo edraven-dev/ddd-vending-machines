@@ -1,9 +1,9 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
-import { Money } from '../../../app/snack-machine/money';
 import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
 import { GetSnackMachineQuery } from '../../../app/snack-machine/queries/impl/get-snack-machine.query';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';

@@ -10,6 +10,10 @@
     "transform": {
       "legacyDecorator": true,
       "decoratorMetadata": true
+    },
+    "baseUrl": ".",
+    "paths": {
+      "@vending-machines/shared": ["libs/shared/src/index.ts"]
     }
   }
 }
