@@ -16,7 +16,7 @@
         "tsConfig": "apps/atm/tsconfig.app.json",
         "assets": ["apps/atm/src/assets"],
         "isolatedConfig": true,
-        "webpackConfig": "apps/atm/webpack.config.js"
+        "webpackConfig": "apps/atm/webpack.config.ts"
       },
       "configurations": {
         "development": {},
