@@ -5,8 +5,7 @@ const defaultConfig: Options = {
   port: parseInt(process.env.DB_PORT, 10) || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  dbName:
-    process.env.NODE_ENV !== 'test' ? process.env.DB_NAME || 'vending_machines_snack' : 'vending_machines_snack_test',
+  dbName: process.env.NODE_ENV !== 'test' ? process.env.DB_NAME || 'vending_machines_atm' : 'vending_machines_atm_test',
 };
 
 export default defaultConfig;

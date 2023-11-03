@@ -1,3 +1,4 @@
+import { Embeddable, Property } from '@mikro-orm/core';
 import Currency from 'currency.js';
 import { InvalidOperationException } from './invalid-operation.exception';
 import { ValueObject } from './value-object';
@@ -125,4 +126,25 @@ export class Money extends ValueObject {
 
     return new Money(oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount);
   }
+}
+
+@Embeddable()
+export class MoneyEmbeddable {
+  @Property({ type: 'int' })
+  oneCentCount!: number;
+
+  @Property({ type: 'int' })
+  tenCentCount!: number;
+
+  @Property({ type: 'int' })
+  quarterCount!: number;
+
+  @Property({ type: 'int' })
+  oneDollarCount!: number;
+
+  @Property({ type: 'int' })
+  fiveDollarCount!: number;
+
+  @Property({ type: 'int' })
+  twentyDollarCount!: number;
 }

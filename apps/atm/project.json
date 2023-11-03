@@ -58,6 +58,39 @@
           "codeCoverage": true
         }
       }
+    },
+    "migration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/atm"
+      },
+      "defaultConfiguration": "generate",
+      "configurations": {
+        "create": {
+          "command": "npx mikro-orm migration:create -b -n"
+        },
+        "generate": {
+          "command": "npx mikro-orm migration:create -n"
+        },
+        "up": {
+          "command": "npx mikro-orm migration:up"
+        },
+        "down": {
+          "command": "npx mikro-orm migration:down"
+        },
+        "list": {
+          "command": "npx mikro-orm migration:list"
+        },
+        "check": {
+          "command": "npx mikro-orm migration:check"
+        },
+        "pending": {
+          "command": "npx mikro-orm migration:pending"
+        },
+        "fresh": {
+          "command": "npx mikro-orm migration:fresh"
+        }
+      }
     }
   },
   "tags": []
