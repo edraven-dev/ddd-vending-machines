@@ -1,5 +1,5 @@
-import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import { Money } from '../lib/money';
 
 describe('Money', () => {
   describe('getAmount', () => {
