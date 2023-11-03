@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import crypto from 'crypto';
 import Currency from 'currency.js';
 import { MoneyDto } from '../../../../../app/snack-machine/dto/money.dto';
 import { SnackMachineDto } from '../../../../../app/snack-machine/dto/snack-machine.dto';
-import { Money } from '../../../../../app/snack-machine/money';
 import { GetSnackMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-snack-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 

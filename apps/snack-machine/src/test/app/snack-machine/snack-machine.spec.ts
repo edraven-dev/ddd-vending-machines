@@ -1,5 +1,5 @@
+import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
-import { Money } from '../../../app/snack-machine/money';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackPile } from '../../../app/snack-machine/snack-pile';
 import { Snack } from '../../../app/snack/snack';

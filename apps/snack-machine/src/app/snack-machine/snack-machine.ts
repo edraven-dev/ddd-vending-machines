@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { AggregateRoot, InvalidOperationException } from '@vending-machines/shared';
+import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
-import { Money } from './money';
 import { Slot } from './slot';
 import { SnackPile } from './snack-pile';
 

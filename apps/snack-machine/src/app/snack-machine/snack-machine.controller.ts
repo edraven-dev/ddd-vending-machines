@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Money } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
 import { ReturnMoneyCommand } from './commands/impl/return-money.command';
@@ -7,7 +8,6 @@ import { BuySnackDto } from './dto/buy-snack.dto';
 import { InsertMoneyDto } from './dto/insert-money.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
 import { SnackMachineDto } from './dto/snack-machine.dto';
-import { Money } from './money';
 import { GetMoneyInMachineQuery } from './queries/impl/get-money-in-machine.query';
 import { GetSnackMachineQuery } from './queries/impl/get-snack-machine.query';
 

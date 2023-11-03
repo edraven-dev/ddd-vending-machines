@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'snack-machine',
+  displayName: 'atm',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: { '^.+\\.[tj]s$': ['@swc/jest'] },
@@ -14,9 +14,9 @@ export default {
     '!./src/**/index.ts',
     '!./src/database/**',
   ],
-  coverageDirectory: '../../coverage/apps/snack-machine',
+  coverageDirectory: '../../coverage/apps/atm',
   reporters: [
     'default',
-    ['jest-junit', { outputDirectory: './test-results/apps/snack-machine', outputName: 'test-results.xml' }],
+    ['jest-junit', { outputDirectory: './test-results/apps/atm', outputName: 'test-results.xml' }],
   ],
 };
