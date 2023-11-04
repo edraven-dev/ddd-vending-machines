@@ -14,6 +14,10 @@ export default defineConfig({
         target: 'http://localhost:3100',
         changeOrigin: true,
       },
+      '/api/management': {
+        target: 'http://localhost:3200',
+        changeOrigin: true,
+      },
       '/api/snack-machine': {
         target: 'http://localhost:3000',
         changeOrigin: true,
