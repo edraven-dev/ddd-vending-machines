@@ -3,7 +3,7 @@ import Currency from 'currency.js';
 
 export class Atm extends AggregateRoot {
   moneyInside: Money = Money.None;
-  moneyCharged: Currency;
+  moneyCharged: Currency = new Currency(0);
   private readonly commissionRate = new Currency(0.01);
 
   loadMoney(money: Money): void {
@@ -23,12 +23,12 @@ export class Atm extends AggregateRoot {
       return 'Not enough change';
     }
 
-    return '';
+    return String();
   }
 
   takeMoney(amount: Currency): void {
     const takeMoneyError = this.canTakeMoney(amount);
-    if (takeMoneyError !== '') {
+    if (takeMoneyError) {
       throw new InvalidOperationException(takeMoneyError);
     }
 
@@ -41,7 +41,7 @@ export class Atm extends AggregateRoot {
 
   private calculateAmountWithCommission(amount: Currency): Currency {
     const commission = amount.value * this.commissionRate.value;
-    const lessThanCent = commission % this.commissionRate.value;
+    const lessThanCent = ((commission * 100) % (this.commissionRate.value * 100)) / 100;
     if (lessThanCent > 0) {
       return amount.add(commission).subtract(lessThanCent).add(this.commissionRate);
     }

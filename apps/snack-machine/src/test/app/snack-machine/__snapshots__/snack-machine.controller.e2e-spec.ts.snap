@@ -1,18 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SnackMachine - e2e /PUT insert-money should return 400 BAD REQUEST when payload is an array with <6 elements 1`] = `
+exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is an array with <6 elements 1`] = `
 [
   "money must contain at least 6 elements",
 ]
 `;
 
-exports[`SnackMachine - e2e /PUT insert-money should return 400 BAD REQUEST when payload is an array with >6 elements 1`] = `
+exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is an array with >6 elements 1`] = `
 [
   "money must contain no more than 6 elements",
 ]
 `;
 
-exports[`SnackMachine - e2e /PUT insert-money should return 400 BAD REQUEST when payload is not an array 1`] = `
+exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is not an array 1`] = `
 [
   "money must contain no more than 6 elements",
   "money must contain at least 6 elements",
@@ -22,7 +22,7 @@ exports[`SnackMachine - e2e /PUT insert-money should return 400 BAD REQUEST when
 ]
 `;
 
-exports[`SnackMachine - e2e /PUT insert-money should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers 1`] = `
+exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers 1`] = `
 [
   "each value in money must be one of the following values: 0, 1",
   "each value in money must be an integer number",

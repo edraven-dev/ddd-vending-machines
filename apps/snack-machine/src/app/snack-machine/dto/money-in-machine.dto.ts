@@ -1,11 +1,11 @@
-import currency from 'currency.js';
-import { MoneyDto } from './money.dto';
+import { MoneyDto } from '@vending-machines/shared';
+import Currency from 'currency.js';
 
 export class MoneyInMachineDto {
   readonly moneyInTransaction: MoneyDto;
   readonly moneyInside: MoneyDto;
 
-  constructor(moneyInTransaction: currency, moneyInside: currency) {
+  constructor(moneyInTransaction: Currency, moneyInside: Currency) {
     this.moneyInTransaction = new MoneyDto(moneyInTransaction);
     this.moneyInside = new MoneyDto(moneyInside);
   }

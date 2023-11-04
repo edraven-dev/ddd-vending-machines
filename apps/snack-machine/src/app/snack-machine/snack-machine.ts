@@ -41,12 +41,12 @@ export class SnackMachine extends AggregateRoot {
       return 'Not enough change';
     }
 
-    return '';
+    return String();
   }
 
   buySnack(position: number): void {
     const buySnackError = this.canBuySnack(position);
-    if (buySnackError !== '') {
+    if (buySnackError) {
       throw new InvalidOperationException(buySnackError);
     }
 

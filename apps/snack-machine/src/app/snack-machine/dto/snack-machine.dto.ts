@@ -1,4 +1,4 @@
-import { MoneyDto } from './money.dto';
+import { MoneyDto } from '@vending-machines/shared';
 import { SlotDto } from './slot.dto';
 
 export class SnackMachineDto {
