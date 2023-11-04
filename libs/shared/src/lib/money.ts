@@ -103,7 +103,19 @@ export class Money extends ValueObject {
     );
   }
 
+  canAllocate(amount: Currency): boolean {
+    const money = this.allocateCore(amount);
+    return money.amount.value === amount.value;
+  }
+
   allocate(amount: Currency): Money {
+    if (!this.canAllocate(amount)) {
+      throw new InvalidOperationException('Amount cannot be allocated');
+    }
+    return this.allocateCore(amount);
+  }
+
+  private allocateCore(amount: Currency): Money {
     let amountAsCents = amount.intValue;
 
     const twentyDollarCount = Math.min(Math.floor(amountAsCents / 2000), this.twentyDollarCount);

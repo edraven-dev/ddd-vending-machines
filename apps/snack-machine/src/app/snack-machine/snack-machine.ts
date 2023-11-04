@@ -26,18 +26,34 @@ export class SnackMachine extends AggregateRoot {
     this.moneyInTransaction = new Currency(0);
   }
 
-  buySnack(position: number): void {
-    const slot = this.getSlotByPosition(position);
-    if (slot.snackPile.price.intValue > this.moneyInTransaction.intValue) {
-      throw new InvalidOperationException('Not enough money inserted to buy a snack');
+  canBuySnack(position: number): string {
+    const snackPile = this.getSnackPile(position);
+
+    if (snackPile.quantity === 0) {
+      return 'The snack pile is empty';
     }
+
+    if (this.moneyInTransaction.intValue < snackPile.price.intValue) {
+      return 'Not enough money inserted to buy a snack';
+    }
+
+    if (!this.moneyInside.canAllocate(this.moneyInTransaction.subtract(snackPile.price))) {
+      return 'Not enough change';
+    }
+
+    return '';
+  }
+
+  buySnack(position: number): void {
+    const buySnackError = this.canBuySnack(position);
+    if (buySnackError !== '') {
+      throw new InvalidOperationException(buySnackError);
+    }
+
+    const slot = this.getSlotByPosition(position);
     slot.snackPile = slot.snackPile.subtractOne();
 
     const change = this.moneyInside.allocate(this.moneyInTransaction.subtract(slot.snackPile.price));
-    if (change.amount.intValue < this.moneyInTransaction.intValue - slot.snackPile.price.intValue) {
-      throw new InvalidOperationException('Not enough change');
-    }
-
     this.moneyInside = Money.subtract(this.moneyInside, change);
     this.moneyInTransaction = new Currency(0);
   }
