@@ -9,6 +9,16 @@ export default defineConfig({
     fs: {
       allow: ['../..'],
     },
+    proxy: {
+      '/api/atm': {
+        target: 'http://localhost:3100',
+        changeOrigin: true,
+      },
+      '/api/snack-machine': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [
     sveltekit(),
