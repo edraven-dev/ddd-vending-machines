@@ -22,7 +22,7 @@ describe('Money', () => {
       ];
 
       moneyQuantsArray.forEach((moneyQuants) => {
-        expect(() => new Money(...moneyQuants)).toThrowError('Money components cannot be negative');
+        expect(() => new Money(...moneyQuants)).toThrow('Money components cannot be negative');
       });
     });
   });
@@ -52,7 +52,7 @@ describe('Money', () => {
       const money1 = new Money(1, 2, 3, 4, 5, 6);
       const money2 = new Money(1, 2, 3, 4, 5, 7);
 
-      expect(() => Money.subtract(money1, money2)).toThrowError('Money components cannot be negative');
+      expect(() => Money.subtract(money1, money2)).toThrow('Money components cannot be negative');
     });
   });
 
@@ -91,12 +91,10 @@ describe('Money', () => {
       expect(result).toEqual(new Money(0, 1, 0, 0, 0, 0));
     });
 
-    it('should allocate everything if there is not enough money', () => {
-      const money = new Money(100, 1, 0, 0, 0, 0);
+    it('should throw exception if there is not enough money to allocate', () => {
+      const money = new Money(0, 0, 0, 0, 0, 0);
 
-      const result = money.allocate(new Currency(2));
-
-      expect(result).toEqual(new Money(100, 1, 0, 0, 0, 0));
+      expect(() => money.allocate(new Currency(0.1))).toThrow('Amount cannot be allocated');
     });
   });
 });

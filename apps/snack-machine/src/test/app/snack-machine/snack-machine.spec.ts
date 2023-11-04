@@ -44,7 +44,7 @@ describe('Snack Machine', () => {
       const snackMachine = new SnackMachine();
       const twoCent = Money.add(Money.Cent, Money.Cent);
 
-      expect(() => snackMachine.insertMoney(twoCent)).toThrowError('Invalid coin or note');
+      expect(() => snackMachine.insertMoney(twoCent)).toThrow('Invalid coin or note');
     });
   });
 
@@ -66,7 +66,7 @@ describe('Snack Machine', () => {
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 0, new Currency(1.0)));
       snackMachine.insertMoney(Money.Dollar);
 
-      expect(() => snackMachine.buySnack(1)).toThrowError('Snack quantity cannot be negative');
+      expect(() => snackMachine.buySnack(1)).toThrow('The snack pile is empty');
     });
 
     it('should prevent buying when there is not enough money', () => {
@@ -74,7 +74,7 @@ describe('Snack Machine', () => {
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(5.0)));
       snackMachine.insertMoney(Money.Dollar);
 
-      expect(() => snackMachine.buySnack(1)).toThrowError('Not enough money inserted to buy a snack');
+      expect(() => snackMachine.buySnack(1)).toThrow('Not enough money inserted to buy a snack');
     });
 
     it('should return change when buying with more money than the item price', () => {
@@ -94,13 +94,13 @@ describe('Snack Machine', () => {
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(0.5)));
       snackMachine.insertMoney(Money.Dollar);
 
-      expect(() => snackMachine.buySnack(1)).toThrowError('Not enough change');
+      expect(() => snackMachine.buySnack(1)).toThrow('Not enough change');
     });
 
     it('should prevent buying when the slot at position does not exist', () => {
       const snackMachine = new SnackMachine();
 
-      expect(() => snackMachine.buySnack(4)).toThrowError('Slot at position 4 does not exist');
+      expect(() => snackMachine.buySnack(4)).toThrow('Slot at position 4 does not exist');
     });
   });
 
@@ -129,7 +129,7 @@ describe('Snack Machine', () => {
     it('should prevent loading snacks to a slot that does not exist', () => {
       const snackMachine = new SnackMachine();
 
-      expect(() => snackMachine.loadSnacks(4, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)))).toThrowError(
+      expect(() => snackMachine.loadSnacks(4, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)))).toThrow(
         'Slot at position 4 does not exist',
       );
     });
