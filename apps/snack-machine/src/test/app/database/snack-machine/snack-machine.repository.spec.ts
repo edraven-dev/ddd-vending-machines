@@ -121,7 +121,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       await repository.save(snackMachine);
 
-      expect(entityManager.flush).toBeCalled();
+      expect(entityManager.flush).toHaveBeenCalled();
     });
   });
 });

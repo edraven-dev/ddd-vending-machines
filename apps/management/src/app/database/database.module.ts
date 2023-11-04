@@ -3,12 +3,13 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Global, Module, OnModuleInit } from '@nestjs/common';
 import ormConfig from '../../database/mikro-orm-app.config';
 import HeadOfficeEntity from './management/head-office.entity';
+import { HeadOfficeRepositoryProvider } from './management/head-office.repository';
 
 @Global()
 @Module({
   imports: [MikroOrmModule.forRoot(ormConfig), MikroOrmModule.forFeature([HeadOfficeEntity])],
-  providers: [],
-  exports: [],
+  providers: [HeadOfficeRepositoryProvider],
+  exports: [HeadOfficeRepositoryProvider],
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) {}
