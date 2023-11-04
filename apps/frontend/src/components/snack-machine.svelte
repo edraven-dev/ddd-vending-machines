@@ -1,13 +1,12 @@
 <script lang="ts">
   // @ts-nocheck
-  import { PUBLIC_API_HOST } from '$env/static/public';
   import Icon from '@iconify/svelte';
   import type { HttpMethod } from '@sveltejs/kit';
   import axios from 'axios';
   import { failure, success } from '../utils/actions';
 
   axios.defaults.headers.common['Content-Type'] = 'application/json';
-  axios.defaults.baseURL = `${PUBLIC_API_HOST}/api/snack-machine`;
+  axios.defaults.baseURL = '/api/snack-machine';
 
   export let snackMachine: any;
 
