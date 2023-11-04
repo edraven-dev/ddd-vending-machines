@@ -1,7 +1,7 @@
 import { SnackMachine } from './snack-machine';
 
 export interface SnackMachineRepository {
-  findOne(): SnackMachine | Promise<SnackMachine | null> | null;
+  findOne(): SnackMachine | null | Promise<SnackMachine | null>;
   save(snackMachine: SnackMachine): void | Promise<void>;
 }
 

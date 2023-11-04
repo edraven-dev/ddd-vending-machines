@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { InvalidOperationExceptionFilterProvider, ValidationProvider } from '@vending-machines/shared';
+import { AtmModule } from './atm/atm.module';
 import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [DatabaseModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [DatabaseModule, AtmModule],
+  providers: [ValidationProvider, InvalidOperationExceptionFilterProvider],
 })
 export class AppModule {}

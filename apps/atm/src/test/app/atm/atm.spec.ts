@@ -3,6 +3,17 @@ import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
 
 describe('Atm', () => {
+  describe('loadMoney', () => {
+    it('should add money to money inside', () => {
+      const atm = new Atm();
+      atm.moneyInside = Money.Dollar;
+
+      atm.loadMoney(Money.Dollar);
+
+      expect(atm.moneyInside).toEqual(Money.add(Money.Dollar, Money.Dollar));
+    });
+  });
+
   describe('takeMoney', () => {
     it('should exchange money with commission', async () => {
       const atm = new Atm();
@@ -30,6 +41,15 @@ describe('Atm', () => {
       atm.takeMoney(new Currency(1.1));
 
       expect(atm.moneyCharged).toEqual(new Currency(1.12));
+    });
+
+    it('should correctly calculate fractions modulo', async () => {
+      const atm = new Atm();
+      atm.loadMoney(Money.TwentyDollar);
+
+      atm.takeMoney(new Currency(20));
+
+      expect(atm.moneyCharged).toEqual(new Currency(20.2));
     });
 
     it('should throw when taking negative amount', async () => {

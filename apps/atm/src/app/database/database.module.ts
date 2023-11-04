@@ -3,12 +3,13 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Global, Module, OnModuleInit } from '@nestjs/common';
 import ormConfig from '../../database/mikro-orm-app.config';
 import AtmEntity from './atm/atm.entity';
+import { AtmRepositoryProvider } from './atm/atm.repository';
 
 @Global()
 @Module({
   imports: [MikroOrmModule.forRoot(ormConfig), MikroOrmModule.forFeature([AtmEntity])],
-  providers: [],
-  exports: [],
+  providers: [AtmRepositoryProvider],
+  exports: [AtmRepositoryProvider],
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) {}

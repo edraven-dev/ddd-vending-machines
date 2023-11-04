@@ -49,7 +49,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       await repository.findOne();
 
-      expect(ormRepository.findOne).toBeCalledWith(
+      expect(ormRepository.findOne).toHaveBeenCalledWith(
         { id: { $exists: true } },
         { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'], strategy: 'select-in' }, // FIXME: https://github.com/mikro-orm/mikro-orm/issues/4546
       );
@@ -100,7 +100,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       await repository.save(snackMachine);
 
-      expect(ormRepository.findOne).toBeCalledWith({ id: 'id' }, { populate: ['slots'], strategy: 'select-in' });
+      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' }, { populate: ['slots'], strategy: 'select-in' });
     });
 
     it('should call entityManager.flush', async () => {

@@ -38,8 +38,8 @@ describe('SnackMachineController', () => {
 
       await controller.insertMoney({ money });
 
-      expect(commandBus.execute).toBeCalledWith({ money: new Money(...money) });
-      expect(commandBus.execute).toBeCalledWith(expect.any(InsertMoneyCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith({ money: new Money(...money) });
+      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(InsertMoneyCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
@@ -47,7 +47,7 @@ describe('SnackMachineController', () => {
 
       await controller.insertMoney({ money });
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 
@@ -55,13 +55,13 @@ describe('SnackMachineController', () => {
     it('should execute BuySnackCommand', async () => {
       await controller.buySnack({ position: 1 });
 
-      expect(commandBus.execute).toBeCalledWith(expect.any(BuySnackCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(BuySnackCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
       await controller.buySnack({ position: 1 });
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 
@@ -69,13 +69,13 @@ describe('SnackMachineController', () => {
     it('should execute ReturnMoneyCommand', async () => {
       await controller.returnMoney();
 
-      expect(commandBus.execute).toBeCalledWith(expect.any(ReturnMoneyCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(ReturnMoneyCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
       await controller.returnMoney();
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
   });
 
@@ -83,7 +83,7 @@ describe('SnackMachineController', () => {
     it('should execute GetMoneyInMachineQuery', async () => {
       await controller.getMoneyInMachine();
 
-      expect(queryBus.execute).toBeCalledWith(expect.any(GetMoneyInMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetMoneyInMachineQuery));
     });
   });
 });

@@ -27,8 +27,7 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
       return null;
     }
 
-    const snackMachine = SnackMachineMapper.toDomain(snackMachineEntity);
-    return snackMachine;
+    return SnackMachineMapper.toDomain(snackMachineEntity);
   }
 
   async save(snackMachine: SnackMachine): Promise<void> {
