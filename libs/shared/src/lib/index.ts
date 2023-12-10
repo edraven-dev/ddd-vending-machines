@@ -1,4 +1,5 @@
 export * from './aggregate-root';
+export * from './constants';
 export * from './entity';
 export * from './invalid-operation.exception';
 export * from './money';

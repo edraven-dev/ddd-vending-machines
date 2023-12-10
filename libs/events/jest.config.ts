@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'shared',
+  displayName: 'events',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: { '^.+\\.[tj]s$': ['@swc/jest'] },
@@ -14,9 +14,9 @@ export default {
     '!./src/**/index.ts',
     '!./src/database/**',
   ],
-  coverageDirectory: '../../coverage/libs/shared',
+  coverageDirectory: '../../coverage/libs/events',
   reporters: [
     'default',
-    ['jest-junit', { outputDirectory: './test-results/libs/shared', outputName: 'test-results.xml' }],
+    ['jest-junit', { outputDirectory: './test-results/libs/events', outputName: 'test-results.xml' }],
   ],
 };

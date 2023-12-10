@@ -6,13 +6,14 @@
       "decorators": true,
       "dynamicImport": true
     },
-    "target": "es2022",
+    "target": "es5",
     "transform": {
       "legacyDecorator": true,
       "decoratorMetadata": true
     },
     "baseUrl": ".",
     "paths": {
+      "@vending-machines/events": ["libs/events/src/index.ts"],
       "@vending-machines/shared": ["libs/shared/src/index.ts"]
     }
   }

@@ -6,7 +6,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:20.9.0
+    - image: cimg/node:20.10.0
   environment:
     PUBLIC_API_HOST: http://localhost
 
@@ -28,7 +28,7 @@ jobs:
     <<: *defaults
     resource_class: medium
     docker:
-      - image: cimg/node:20.9.0
+      - image: cimg/node:20.10.0
     steps:
       - checkout_and_install
       - run:
