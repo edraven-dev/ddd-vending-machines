@@ -7,7 +7,7 @@
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.baseURL = '/api/atm';
 
-  export let atm: any;
+  export let atm: any; // eslint-disable-line
   let amount: number;
 
   const callApi = async (method: HttpMethod, url: string, data?: Record<string, unknown>): Promise<void> => {
@@ -24,7 +24,7 @@
     try {
       await callApi('POST', 'take-money', { amount });
       success(`Money withdrawn!`);
-    } catch (err: any) {
+    } catch (err: any) /* eslint-disable-line */ {
       failure(err.response.data.message);
     }
   };

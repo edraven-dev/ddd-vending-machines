@@ -8,5 +8,5 @@
     "target": "es2021"
   },
   "exclude": ["jest.config.ts", "src/**/*.e2e-spec.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "../../libs/event-broker/src/lib/asdf.ts", "../management/src/app/management/fdsa.ts"]
 }

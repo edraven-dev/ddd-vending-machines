@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { AggregateRoot as NestAggregateRoot } from '@nestjs/cqrs';
-import { Entity } from './entity';
-import { applyMixins } from './utils';
+import { EntityMixin } from './entity';
 
-export interface AggregateRoot extends Entity, NestAggregateRoot {}
-export abstract class AggregateRoot {}
-
-applyMixins(AggregateRoot, [Entity, NestAggregateRoot]);
+export const AggregateRoot = EntityMixin(NestAggregateRoot);

@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
 import { Atm } from '../../atm';
 import { AtmRepository } from '../../atm.repository.interface';
 import { TakeMoneyCommand } from '../impl/take-money.command';
@@ -9,10 +9,13 @@ export class TakeMoneyHandler implements ICommandHandler<TakeMoneyCommand, void>
   constructor(
     private readonly atm: Atm,
     @Inject(AtmRepository) private readonly atmRepository: AtmRepository,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async execute({ amount }: TakeMoneyCommand) {
-    this.atm.takeMoney(amount);
-    await this.atmRepository.save(this.atm);
+    const atm = this.eventPublisher.mergeObjectContext(this.atm);
+    atm.takeMoney(amount);
+    await this.atmRepository.save(atm);
+    atm.commit();
   }
 }
