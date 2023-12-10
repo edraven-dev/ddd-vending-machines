@@ -1,3 +1,4 @@
+import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import Currency from 'currency.js';
 import { Atm } from '../../../../../app/atm/atm';
@@ -13,8 +14,9 @@ describe('TakeMoneyHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TakeMoneyHandler,
-        { provide: Atm, useValue: { takeMoney: jest.fn() } },
+        { provide: Atm, useValue: { takeMoney: jest.fn(), commit: jest.fn() } },
         { provide: AtmRepository, useValue: { save: jest.fn() } },
+        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } },
       ],
     }).compile();
 
