@@ -3,6 +3,7 @@ import { composePlugins, withNx } from '@nx/webpack';
 import { merge } from 'webpack-merge';
 const swcDefaultConfig = swcDefaultsFactory().swcOptions;
 swcDefaultConfig.jsc.target = 'es2022';
+// swcDefaultConfig.jsc.target = 'es5'; // TODO: check why es2022 stopped working
 
 // Nx plugins for webpack.
 export default composePlugins(withNx(), (config) => {

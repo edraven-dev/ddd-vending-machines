@@ -1,3 +1,4 @@
+import { BalanceChangedEvent } from '@vending-machines/events';
 import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
@@ -37,6 +38,8 @@ export class Atm extends AggregateRoot {
 
     const amountWithCommission = this.calculateAmountWithCommission(amount);
     this.moneyCharged = amountWithCommission;
+
+    this.apply(new BalanceChangedEvent(amountWithCommission.toString()));
   }
 
   private calculateAmountWithCommission(amount: Currency): Currency {

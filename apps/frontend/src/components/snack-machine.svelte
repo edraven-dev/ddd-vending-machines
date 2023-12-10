@@ -1,4 +1,5 @@
 <script lang="ts">
+  // eslint-disable-next-line
   // @ts-nocheck
   import Icon from '@iconify/svelte';
   import type { HttpMethod } from '@sveltejs/kit';
@@ -8,7 +9,7 @@
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.baseURL = '/api/snack-machine';
 
-  export let snackMachine: any;
+  export let snackMachine: any; // eslint-disable-line
 
   const callApi = async (method: HttpMethod, url: string, data?: Record<string, unknown>): Promise<void> => {
     const response = await axios.request({
@@ -28,7 +29,7 @@
     try {
       await callApi('POST', 'buy-snack', { position });
       success(`Snack bought!`);
-    } catch (err: any) {
+    } catch (err: any) /* eslint-disable-line */ {
       failure(err.response.data.message);
     }
   };
@@ -37,7 +38,7 @@
     try {
       await callApi('POST', 'return-money');
       success(`Money returned!`);
-    } catch (err: any) {
+    } catch (err: any) /* eslint-disable-line */ {
       failure(err.response.data.message);
     }
   };
