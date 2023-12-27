@@ -48,10 +48,10 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
     await this.channelWrapper?.addSetup((channel: Channel) => {
       const dlxExchangeName = `${exchangeName}.dlx`;
       const dlxQueueName = `${queueName}.dlx`;
-      const dlxRoutingKey = dlxQueueName.split('.').slice(2).join('.');
+      const dlxRoutingKey = dlxQueueName.split('.').slice(1).join('.');
       return Promise.all([
         channel.assertExchange(exchangeName, 'topic', { durable: true }),
-        channel.assertExchange(dlxExchangeName, 'topic', { durable: true }),
+        channel.assertExchange(dlxExchangeName, 'direct', { durable: true }),
         channel.assertQueue(queueName, {
           durable: true,
           deadLetterExchange: dlxExchangeName,
@@ -59,7 +59,7 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
             'x-queue-type': 'quorum',
             'x-delivery-limit': this.deliveryLimit,
             'x-overflow': 'reject-publish',
-            'x-dead-letter-routing-key': `event.${dlxRoutingKey}`,
+            'x-dead-letter-routing-key': dlxRoutingKey,
           },
         }),
         channel.assertQueue(dlxQueueName, {
@@ -67,7 +67,7 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
           arguments: { 'x-queue-type': 'quorum', 'x-overflow': 'drop-head' },
         }),
         channel.bindQueue(queueName, exchangeName, routingKey),
-        channel.bindQueue(dlxQueueName, dlxExchangeName, `#.${dlxRoutingKey}`),
+        channel.bindQueue(dlxQueueName, dlxExchangeName, dlxRoutingKey),
         channel.consume(queueName, async (msg) => {
           if (!msg) {
             return;

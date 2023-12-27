@@ -1,4 +1,5 @@
 import { Inject, Injectable, OnApplicationBootstrap, Type } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { IEvent, IEventHandler } from '@nestjs/cqrs';
 import { APP_NAME_TOKEN } from '@vending-machines/shared';
 import { plainToInstance } from 'class-transformer';
@@ -13,6 +14,7 @@ export class EventSubscriber implements OnApplicationBootstrap {
     @Inject(APP_NAME_TOKEN) private readonly appName: string,
     private readonly amqpService: AmqpService,
     private readonly explorerService: ExplorerService,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   onApplicationBootstrap() {
@@ -29,7 +31,7 @@ export class EventSubscriber implements OnApplicationBootstrap {
         const decodedMessage = EJSON.parse(msg.toString('utf-8'));
         if (EventType.name === decodedMessage.type) {
           const eventInstance = plainToInstance(EventType, decodedMessage.payload);
-          new EventHandler().handle(eventInstance);
+          await this.moduleRef.get(EventHandler, { strict: false }).handle(eventInstance);
         }
       },
     );
