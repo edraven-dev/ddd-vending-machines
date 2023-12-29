@@ -1,0 +1,86 @@
+{
+  "name": "event-store",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/event-store/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/event-store",
+        "main": "apps/event-store/src/main.ts",
+        "tsConfig": "apps/event-store/tsconfig.app.json",
+        "assets": ["apps/event-store/src/assets"],
+        "webpackConfig": "apps/event-store/webpack.config.ts"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "event-store:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "event-store:build:development"
+        },
+        "production": {
+          "buildTarget": "event-store:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/event-store/jest.config.ts"
+      }
+    },
+    "migration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/event-store"
+      },
+      "defaultConfiguration": "generate",
+      "configurations": {
+        "create": {
+          "command": "npx mikro-orm migration:create -b -n"
+        },
+        "generate": {
+          "command": "npx mikro-orm migration:create -n"
+        },
+        "up": {
+          "command": "npx mikro-orm migration:up"
+        },
+        "down": {
+          "command": "npx mikro-orm migration:down"
+        },
+        "list": {
+          "command": "npx mikro-orm migration:list"
+        },
+        "check": {
+          "command": "npx mikro-orm migration:check"
+        },
+        "pending": {
+          "command": "npx mikro-orm migration:pending"
+        },
+        "fresh": {
+          "command": "npx mikro-orm migration:fresh"
+        }
+      }
+    }
+  },
+  "tags": []
+}

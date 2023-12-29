@@ -39,7 +39,13 @@ export class Atm extends AggregateRoot {
     const amountWithCommission = this.calculateAmountWithCommission(amount);
     this.moneyCharged = amountWithCommission;
 
-    this.apply(new BalanceChangedEvent(amountWithCommission.toString()));
+    this.apply(
+      new BalanceChangedEvent({
+        aggregateId: this.id,
+        aggregateType: this.constructor.name,
+        payload: { amountWithCommissionValue: amountWithCommission.toString() },
+      }),
+    );
   }
 
   private calculateAmountWithCommission(amount: Currency): Currency {
