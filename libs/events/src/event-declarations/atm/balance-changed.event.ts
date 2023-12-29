@@ -1,6 +1,5 @@
-export class BalanceChangedEvent {
-  constructor(
-    public readonly amountWithCommissionValue: string,
-    public readonly occuredOn: Date = new Date(),
-  ) {}
-}
+import { EventBase } from '../../lib/event-base';
+
+type BalanceChangedEventPayload = { amountWithCommissionValue: string };
+
+export class BalanceChangedEvent extends EventBase<BalanceChangedEventPayload> {}

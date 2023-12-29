@@ -4,10 +4,8 @@ import * as EJSON from 'ejson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
 
-type EventMessage = { type: string; payload: IEvent };
-
 @Injectable()
-export class EventPublisher<EventBase extends IEvent> implements IEventPublisher<EventBase> {
+export class EventPublisher<TEvent extends IEvent> implements IEventPublisher<TEvent> {
   constructor(
     private readonly eventBus: EventBus,
     private readonly amqpService: AmqpService,
@@ -16,8 +14,7 @@ export class EventPublisher<EventBase extends IEvent> implements IEventPublisher
   }
 
   async publish<TEvent extends IEvent>(event: TEvent) {
-    const eventMessage: EventMessage = { type: event.constructor.name, payload: event };
-    await this.amqpService.publish(EXCHANGE_NAME, `event.${event.constructor.name}`, EJSON.stringify(eventMessage), {
+    await this.amqpService.publish(EXCHANGE_NAME, `event.${event.constructor.name}`, EJSON.stringify(event), {
       persistent: true,
     });
   }
