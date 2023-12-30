@@ -5,6 +5,7 @@ import { QueryHandlers } from './queries/handlers';
 import { SnackMachine } from './snack-machine';
 import { SnackMachineController } from './snack-machine.controller';
 import { SnackMachineRepository } from './snack-machine.repository.interface';
+import { SnackMachineService } from './snack-machine.service';
 
 @Module({
   imports: [CqrsModule],
@@ -12,6 +13,7 @@ import { SnackMachineRepository } from './snack-machine.repository.interface';
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    SnackMachineService,
     {
       provide: SnackMachine,
       useFactory: async (snackMachineRepository: SnackMachineRepository) => await snackMachineRepository.findOne(),

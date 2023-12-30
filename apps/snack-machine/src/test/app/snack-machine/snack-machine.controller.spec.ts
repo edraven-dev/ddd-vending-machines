@@ -7,9 +7,11 @@ import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/ret
 import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
 import { GetSnackMachineQuery } from '../../../app/snack-machine/queries/impl/get-snack-machine.query';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
+import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 describe('SnackMachineController', () => {
   let controller: SnackMachineController;
+  let service: SnackMachineService;
   let commandBus: CommandBus;
   let queryBus: QueryBus;
 
@@ -19,10 +21,12 @@ describe('SnackMachineController', () => {
       providers: [
         { provide: CommandBus, useValue: { execute: jest.fn() } },
         { provide: QueryBus, useValue: { execute: jest.fn() } },
+        { provide: SnackMachineService, useValue: { unloadMoney: jest.fn() } },
       ],
     }).compile();
 
     controller = module.get<SnackMachineController>(SnackMachineController);
+    service = module.get<SnackMachineService>(SnackMachineService);
     commandBus = module.get<CommandBus>(CommandBus);
     queryBus = module.get<QueryBus>(QueryBus);
   });
@@ -84,6 +88,14 @@ describe('SnackMachineController', () => {
       await controller.getMoneyInMachine();
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetMoneyInMachineQuery));
+    });
+  });
+
+  describe('#unloadMoney', () => {
+    it('should execute SnackMachineService.unloadMoney', async () => {
+      await controller.unloadMoney();
+
+      expect(service.unloadMoney).toHaveBeenCalled();
     });
   });
 });

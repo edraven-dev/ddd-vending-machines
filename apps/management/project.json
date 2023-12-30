@@ -14,7 +14,10 @@
         "outputPath": "dist/apps/management",
         "main": "apps/management/src/main.ts",
         "tsConfig": "apps/management/tsconfig.app.json",
-        "assets": ["apps/management/src/assets"],
+        "assets": [
+          "apps/management/src/assets",
+          { "glob": "**/*.proto", "input": "libs/proto/src/lib", "output": "./assets" }
+        ],
         "webpackConfig": "apps/management/webpack.config.ts"
       },
       "configurations": {

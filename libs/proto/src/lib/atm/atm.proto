@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package atm;
+
+service AtmProtoService {
+  rpc LoadMoney (Money) returns (Empty) {}
+}
+
+message Money {
+  repeated double money = 1;
+}
+
+message Empty {}

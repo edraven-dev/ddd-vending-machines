@@ -1,8 +1,10 @@
 import { HttpStatus, INestApplication, Module } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { ValidationProvider } from '@vending-machines/shared';
 import request from 'supertest';
 import { AtmRepository } from '../../../app/atm/atm.repository.interface';
+import { AtmService } from '../../../app/atm/atm.service';
 
 @Module({
   providers: [{ provide: AtmRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
@@ -15,7 +17,6 @@ jest.mock('../../../app/database/database.module', () => {
   };
 });
 
-import { ValidationProvider } from '@vending-machines/shared';
 import { AtmController } from '../../../app/atm/atm.controller';
 
 describe('AtmController - e2e', () => {
@@ -31,6 +32,7 @@ describe('AtmController - e2e', () => {
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
         { provide: CommandBus, useValue: { execute: jest.fn() } },
+        { provide: AtmService, useValue: { loadMoney: jest.fn() } },
       ],
     }).compile();
 
@@ -45,52 +47,6 @@ describe('AtmController - e2e', () => {
   describe('GET /', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer()).get(testEndpoint).expect(HttpStatus.OK).expect(queryBusMock.execute());
-    });
-  });
-
-  describe('PUT /load-money', () => {
-    it('should return 200 OK', () => {
-      return request(app.getHttpServer())
-        .put(`${testEndpoint}/load-money`)
-        .send({ money: [1, 0, 0, 0, 0, 0] })
-        .expect(HttpStatus.OK)
-        .expect(queryBusMock.execute());
-    });
-
-    it('should return 400 BAD REQUEST when payload is not an array', async () => {
-      const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/load-money`)
-        .send({ money: 'not an array' })
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(response.body.message).toMatchSnapshot();
-    });
-
-    it('should return 400 BAD REQUEST when payload is an array with <6 elements', async () => {
-      const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/load-money`)
-        .send({ money: [0, 0, 0, 0, 1] })
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(response.body.message).toMatchSnapshot();
-    });
-
-    it('should return 400 BAD REQUEST when payload is an array with >6 elements', async () => {
-      const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/load-money`)
-        .send({ money: [0, 0, 0, 0, 0, 0, 1] })
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(response.body.message).toMatchSnapshot();
-    });
-
-    it('should return 400 BAD REQUEST when payload is not an array of integers', async () => {
-      const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/load-money`)
-        .send({ money: [0, 0, 0, 0, 0, 0.1] })
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(response.body.message).toMatchSnapshot();
     });
   });
 

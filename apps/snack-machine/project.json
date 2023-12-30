@@ -14,7 +14,14 @@
         "outputPath": "dist/apps/snack-machine",
         "main": "apps/snack-machine/src/main.ts",
         "tsConfig": "apps/snack-machine/tsconfig.app.json",
-        "assets": ["apps/snack-machine/src/assets"],
+        "assets": [
+          "apps/snack-machine/src/assets",
+          {
+            "glob": "snack-machine.proto",
+            "input": "libs/proto/src/lib/snack-machine",
+            "output": "./assets/snack-machine"
+          }
+        ],
         "webpackConfig": "apps/snack-machine/webpack.config.ts"
       },
       "configurations": {
