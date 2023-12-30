@@ -37,5 +37,11 @@ describe('TakeMoneyHandler', () => {
 
       expect(atmRepository.save).toHaveBeenCalledWith(atm);
     });
+
+    it('should call atm.commit', async () => {
+      await handler.execute({ amount: new Currency(1) });
+
+      expect(atm.commit).toHaveBeenCalled();
+    });
   });
 });

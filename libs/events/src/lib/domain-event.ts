@@ -1,7 +1,7 @@
 import { IEvent } from '@nestjs/cqrs';
 import { randomUUID } from 'node:crypto';
 
-export interface IEventBase<T extends Record<string, unknown>> extends IEvent {
+export interface IDomainEvent<T extends Record<string, unknown>> extends IEvent {
   eventId: string;
   eventType: string;
   timestamp: Date;
@@ -10,7 +10,7 @@ export interface IEventBase<T extends Record<string, unknown>> extends IEvent {
   payload: T;
 }
 
-export abstract class EventBase<T extends Record<string, unknown>> implements IEventBase<T> {
+export abstract class DomainEvent<T extends Record<string, unknown>> implements IDomainEvent<T> {
   public readonly eventId: string = randomUUID();
   public readonly eventType: string = this.constructor.name;
   public readonly timestamp: Date = new Date();

@@ -1,5 +1,5 @@
-import { EventBase } from '../../lib/event-base';
+import { DomainEvent } from '../../lib/domain-event';
 
-type BalanceChangedEventPayload = { amountWithCommissionValue: string };
+type BalanceChangedEventPayload = { delta: string };
 
-export class BalanceChangedEvent extends EventBase<BalanceChangedEventPayload> {}
+export class BalanceChangedEvent extends DomainEvent<BalanceChangedEventPayload> {}
