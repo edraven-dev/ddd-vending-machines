@@ -82,7 +82,7 @@ describe('Atm', () => {
       const atm = new Atm();
       atm.loadMoney(Money.Dollar);
 
-      atm.takeMoney(new Currency(1));
+      atm.takeMoney(new Currency('1.00'));
 
       expect(atm.getUncommittedEvents()).toEqual([
         {
@@ -91,7 +91,7 @@ describe('Atm', () => {
           timestamp: expect.any(Date),
           aggregateId: atm.id,
           aggregateType: 'Atm',
-          payload: { delta: '1.01' },
+          payload: { delta: '0.01' },
         },
       ]);
     });
