@@ -1,18 +1,16 @@
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { MoneyDto } from '@vending-machines/shared';
 import { HeadOfficeDto } from '../../dto/head-office.dto';
-import { HeadOffice } from '../../head-office';
+import { HeadOfficeRepository } from '../../head-office.repository.interface';
 import { GetHeadOfficeQuery } from '../impl/get-head-office.query';
 
 @QueryHandler(GetHeadOfficeQuery)
 export class GetHeadOfficeHandler implements IQueryHandler<GetHeadOfficeQuery, HeadOfficeDto> {
-  constructor(private readonly headOffice: HeadOffice) {}
+  constructor(@Inject(HeadOfficeRepository) private readonly headOfficeRepository: HeadOfficeRepository) {}
 
   async execute() {
-    return new HeadOfficeDto(
-      this.headOffice.id,
-      new MoneyDto(this.headOffice.balance),
-      new MoneyDto(this.headOffice.cash.amount),
-    );
+    const headOffice = await this.headOfficeRepository.findOne();
+    return new HeadOfficeDto(headOffice.id, new MoneyDto(headOffice.balance), new MoneyDto(headOffice.cash.amount));
   }
 }

@@ -8,4 +8,14 @@ export class HeadOffice extends AggregateRoot {
   changeBalance(delta: Currency): void {
     this.balance = this.balance.add(delta);
   }
+
+  loadCash(cash: Money): void {
+    this.cash = Money.add(this.cash, cash);
+  }
+
+  unloadCash(): Money {
+    const moneyToReturn = this.cash;
+    this.cash = Money.None;
+    return moneyToReturn;
+  }
 }

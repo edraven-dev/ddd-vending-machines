@@ -70,6 +70,15 @@ export class SnackMachine extends AggregateRoot {
     this.moneyInside = Money.add(this.moneyInside, money);
   }
 
+  unloadMoney(): Money {
+    if (this.moneyInTransaction.intValue > 0) {
+      throw new InvalidOperationException('Cannot unload money during transaction');
+    }
+    const moneyToReturn = this.moneyInside;
+    this.moneyInside = Money.None;
+    return moneyToReturn;
+  }
+
   private getSlotByPosition(position: number): Slot {
     const slot = this.slots.find((slot) => slot.position === position);
     if (!slot) {

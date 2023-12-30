@@ -14,7 +14,10 @@
         "outputPath": "dist/apps/atm",
         "main": "apps/atm/src/main.ts",
         "tsConfig": "apps/atm/tsconfig.app.json",
-        "assets": ["apps/atm/src/assets"],
+        "assets": [
+          "apps/atm/src/assets",
+          { "glob": "atm.proto", "input": "libs/proto/src/lib/atm", "output": "./assets/atm" }
+        ],
         "webpackConfig": "apps/atm/webpack.config.ts"
       },
       "configurations": {

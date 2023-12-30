@@ -1,8 +1,10 @@
 import { HttpStatus, INestApplication, Module } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { ValidationProvider } from '@vending-machines/shared';
 import request from 'supertest';
 import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
+import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 @Module({
   providers: [{ provide: SnackMachineRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
@@ -15,7 +17,6 @@ jest.mock('../../../app/database/database.module', () => {
   };
 });
 
-import { ValidationProvider } from '@vending-machines/shared';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 
 describe('SnackMachineController - e2e', () => {
@@ -31,6 +32,7 @@ describe('SnackMachineController - e2e', () => {
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
         { provide: CommandBus, useValue: { execute: jest.fn() } },
+        { provide: SnackMachineService, useValue: { unloadMoney: jest.fn() } },
       ],
     }).compile();
 
