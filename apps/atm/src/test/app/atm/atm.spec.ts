@@ -77,5 +77,23 @@ describe('Atm', () => {
 
       expect(() => atm.takeMoney(new Currency(0.1))).toThrow('Not enough change');
     });
+
+    it('should apply BalanceChangedEvent', async () => {
+      const atm = new Atm();
+      atm.loadMoney(Money.Dollar);
+
+      atm.takeMoney(new Currency('1.00'));
+
+      expect(atm.getUncommittedEvents()).toEqual([
+        {
+          eventId: expect.any(String),
+          eventType: 'BalanceChangedEvent',
+          timestamp: expect.any(Date),
+          aggregateId: atm.id,
+          aggregateType: 'Atm',
+          payload: { delta: '0.01' },
+        },
+      ]);
+    });
   });
 });

@@ -43,7 +43,7 @@ export class Atm extends AggregateRoot {
       new BalanceChangedEvent({
         aggregateId: this.id,
         aggregateType: this.constructor.name,
-        payload: { amountWithCommissionValue: amountWithCommission.toString() },
+        payload: { delta: amountWithCommission.subtract(amount).toString() },
       }),
     );
   }
