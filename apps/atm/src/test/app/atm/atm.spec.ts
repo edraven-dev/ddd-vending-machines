@@ -91,7 +91,7 @@ describe('Atm', () => {
           timestamp: expect.any(Date),
           aggregateId: atm.id,
           aggregateType: 'Atm',
-          payload: { amountWithCommissionValue: '1.01' },
+          payload: { delta: '1.01' },
         },
       ]);
     });
