@@ -40,6 +40,9 @@ export default class SnackMachineEntity extends BaseEntity<SnackMachineEntity, '
   @Embedded(() => MoneyEmbeddable)
   money!: MoneyEmbeddable;
 
+  @Property({ type: 'varchar', length: 255 })
+  moneyInTransaction!: string;
+
   @OneToMany(() => SlotEntity, (slot) => slot.snackMachine, { cascade: [Cascade.ALL], orphanRemoval: true })
   slots = new Collection<SlotEntity>(this);
 }

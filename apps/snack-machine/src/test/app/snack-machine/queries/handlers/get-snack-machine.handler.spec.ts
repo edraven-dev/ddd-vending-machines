@@ -1,49 +1,59 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money, MoneyDto } from '@vending-machines/shared';
+import { Money } from '@vending-machines/shared';
 import crypto from 'crypto';
-import Currency from 'currency.js';
 import { SnackMachineDto } from '../../../../../app/snack-machine/dto/snack-machine.dto';
 import { GetSnackMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-snack-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
-
-jest.mock('../../../../../app/snack-machine/dto/snack-machine.dto', () => {
-  return {
-    SnackMachineDto: jest.fn().mockImplementation(() => {
-      return {};
-    }),
-  };
-});
+import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('GetSnackMachineHandler', () => {
   const id = crypto.randomUUID();
   const snackMachine = new SnackMachine();
   Object.assign(snackMachine, { id });
   let handler: GetSnackMachineHandler;
+  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GetSnackMachineHandler, { provide: SnackMachine, useValue: snackMachine }],
+      providers: [
+        GetSnackMachineHandler,
+        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine) } },
+      ],
     }).compile();
 
     handler = module.get<GetSnackMachineHandler>(GetSnackMachineHandler);
+    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   beforeEach(() => {
     snackMachine.returnMoney();
   });
 
-  describe('execute', () => {
-    it('should create SnackMachineDto with correct data', async () => {
+  describe('#execute', () => {
+    it('should call SnackMachineRepository.findOne with correct id', async () => {
+      const spy = jest.spyOn(repository, 'findOne');
+
+      await handler.execute({ id });
+
+      expect(spy).toHaveBeenCalledWith(id);
+    });
+
+    it('should throw NotFoundException if SnackMachine not found', async () => {
+      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+
+      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should return SnackMachineDto with correct data', async () => {
       snackMachine.insertMoney(Money.FiveDollar);
 
-      await handler.execute();
+      const result = await handler.execute({ id });
 
-      expect(SnackMachineDto).toHaveBeenCalledWith(
-        id,
-        new MoneyDto(new Currency('5.00')),
-        new MoneyDto(new Currency('5.00')),
-        expect.any(Array),
-      );
+      expect(result).toBeInstanceOf(SnackMachineDto);
+      expect(result.id).toBe(id);
+      expect(result.moneyInside.amount).toBe('$5.00');
+      expect(result.moneyInTransaction.amount).toBe('$5.00');
     });
   });
 });

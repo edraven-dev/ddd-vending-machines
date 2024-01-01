@@ -14,8 +14,8 @@ export class MikroOrmAtmRepository implements AtmRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findOne(): Promise<Atm | null> {
-    const atmEntity = await this.atmRepository.findOne({ id: { $exists: true } });
+  async findOne(id: string): Promise<Atm | null> {
+    const atmEntity = await this.atmRepository.findOne({ id });
 
     if (!atmEntity) {
       return null;

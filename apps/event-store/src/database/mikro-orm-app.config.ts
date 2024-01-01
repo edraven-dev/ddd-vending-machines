@@ -28,5 +28,4 @@ export default defineConfig({
   migrations: { migrationsList },
   // @ts-expect-error nestjs adapter options
   autoLoadEntities: true,
-  allowGlobalContext: true, // FIXME: remove this line when removing atm injection from atm.module.ts
 });

@@ -1,6 +1,7 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoadMoneyDto, Money } from '@vending-machines/shared';
+import { randomUUID } from 'crypto';
 import currency from 'currency.js';
 import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
@@ -8,6 +9,7 @@ import { TakeMoneyCommand } from '../../../app/atm/commands/impl/take-money.comm
 import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
 
 describe('AtmController', () => {
+  const id = randomUUID();
   let controller: AtmController;
   let service: AtmService;
   let commandBus: CommandBus;
@@ -36,7 +38,7 @@ describe('AtmController', () => {
 
   describe('#getAtm', () => {
     it('should execute GetAtmQuery', async () => {
-      await controller.getAtm();
+      await controller.getAtm(id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetAtmQuery));
     });
@@ -44,13 +46,13 @@ describe('AtmController', () => {
 
   describe('#takeMoney', () => {
     it('should execute ReturnMoneyCommand', async () => {
-      await controller.takeMoney({ amount: new currency(1) });
+      await controller.takeMoney({ amount: new currency(1) }, id);
 
       expect(commandBus.execute).toHaveBeenCalledWith(expect.any(TakeMoneyCommand));
     });
 
     it('should execute GetAtmQuery', async () => {
-      await controller.takeMoney({ amount: new currency(1) });
+      await controller.takeMoney({ amount: new currency(1) }, id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetAtmQuery));
     });
@@ -58,11 +60,11 @@ describe('AtmController', () => {
 
   describe('#loadMoney', () => {
     it('should execute AtmService.loadMoney', async () => {
-      const dto: LoadMoneyDto = { money: [1, 1, 1, 1, 1, 1] };
+      const dto: LoadMoneyDto = { id, money: [1, 1, 1, 1, 1, 1] };
 
       await controller.loadMoney(dto);
 
-      expect(service.loadMoney).toHaveBeenCalledWith(new Money(...dto.money));
+      expect(service.loadMoney).toHaveBeenCalledWith(id, new Money(...dto.money));
     });
   });
 });

@@ -1,45 +1,69 @@
+import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
+import { randomUUID } from 'crypto';
 import Currency from 'currency.js';
-import { Atm } from '../../../../../app/atm/atm';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
 import { TakeMoneyHandler } from '../../../../../app/atm/commands/handlers/take-money.handler';
 
 describe('TakeMoneyHandler', () => {
+  const atm = { id: randomUUID(), takeMoney: jest.fn(), commit: jest.fn() };
   let handler: TakeMoneyHandler;
-  let atm: Atm;
   let atmRepository: AtmRepository;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TakeMoneyHandler,
-        { provide: Atm, useValue: { takeMoney: jest.fn(), commit: jest.fn() } },
-        { provide: AtmRepository, useValue: { save: jest.fn() } },
+        {
+          provide: AtmRepository,
+          useValue: { findOne: jest.fn(async () => atm), save: jest.fn() },
+        },
         { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } },
       ],
     }).compile();
 
     handler = module.get<TakeMoneyHandler>(TakeMoneyHandler);
-    atm = module.get<Atm>(Atm);
     atmRepository = module.get<AtmRepository>(AtmRepository);
   });
 
-  describe('execute', () => {
+  describe('#execute', () => {
+    it('should call atmRepository.findOne with correct id', async () => {
+      const spy = jest.spyOn(atmRepository, 'findOne');
+      const amount = new Currency(1);
+
+      await handler.execute({ id: atm.id, amount });
+
+      expect(spy).toHaveBeenCalledWith(atm.id);
+    });
+
+    it('should throw NotFoundException if Atm not found', async () => {
+      (atmRepository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const amount = new Currency(1);
+
+      await expect(handler.execute({ id: atm.id, amount })).rejects.toThrow(NotFoundException);
+    });
+
     it('should call atm.takeMoney', async () => {
-      await handler.execute({ amount: new Currency(1) });
+      const amount = new Currency(1);
+
+      await handler.execute({ id: atm.id, amount });
 
       expect(atm.takeMoney).toHaveBeenCalled();
     });
 
     it('should call atmRepository.save with proper data', async () => {
-      await handler.execute({ amount: new Currency(1) });
+      const amount = new Currency(1);
+
+      await handler.execute({ id: atm.id, amount });
 
       expect(atmRepository.save).toHaveBeenCalledWith(atm);
     });
 
     it('should call atm.commit', async () => {
-      await handler.execute({ amount: new Currency(1) });
+      const amount = new Currency(1);
+
+      await handler.execute({ id: atm.id, amount });
 
       expect(atm.commit).toHaveBeenCalled();
     });

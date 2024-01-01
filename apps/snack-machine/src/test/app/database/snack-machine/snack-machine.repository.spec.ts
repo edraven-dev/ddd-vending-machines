@@ -2,6 +2,7 @@ import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { Test } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
+import { randomUUID } from 'crypto';
 import SnackMachineEntity from '../../../../app/database/snack-machine/snack-machine.entity';
 import { MikroOrmSnackMachineRepository } from '../../../../app/database/snack-machine/snack-machine.repository';
 import { SnackMachine } from '../../../../app/snack-machine/snack-machine';
@@ -36,7 +37,7 @@ describe('MikroOrmSnackMachineRepository', () => {
     jest.restoreAllMocks();
   });
 
-  describe('findOne', () => {
+  describe('#findOne', () => {
     it('should call ormRepository.findOne with any id', async () => {
       const snackMachineEntity = new SnackMachineEntity();
       snackMachineEntity.id = 'id';
@@ -47,18 +48,19 @@ describe('MikroOrmSnackMachineRepository', () => {
           () => Promise.resolve(snackMachineEntity) as unknown as Promise<Loaded<SnackMachineEntity, string>>,
         );
 
-      await repository.findOne();
+      await repository.findOne(snackMachineEntity.id);
 
       expect(ormRepository.findOne).toHaveBeenCalledWith(
-        { id: { $exists: true } },
-        { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'], strategy: 'select-in' }, // FIXME: https://github.com/mikro-orm/mikro-orm/issues/4546
+        { id: snackMachineEntity.id },
+        { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'] },
       );
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
       jest.spyOn(ormRepository, 'findOne').mockImplementation(() => Promise.resolve(null));
+      const id = randomUUID();
 
-      const result = await repository.findOne();
+      const result = await repository.findOne(id);
 
       expect(result).toBeNull();
     });
@@ -73,7 +75,7 @@ describe('MikroOrmSnackMachineRepository', () => {
           () => Promise.resolve(snackMachineEntity) as unknown as Promise<Loaded<SnackMachineEntity, string>>,
         );
 
-      const result = await repository.findOne();
+      const result = await repository.findOne(snackMachineEntity.id);
 
       expect(result).toBeInstanceOf(SnackMachine);
       expect(result.id).toBe('id');
@@ -81,7 +83,7 @@ describe('MikroOrmSnackMachineRepository', () => {
     });
   });
 
-  describe('save', () => {
+  describe('#save', () => {
     it('should call ormRepository.findOne with proper id', async () => {
       const snackMachineEntity = new SnackMachineEntity();
       snackMachineEntity.assign = jest.fn();
@@ -100,7 +102,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       await repository.save(snackMachine);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' }, { populate: ['slots'], strategy: 'select-in' });
+      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' }, { populate: ['slots'] });
     });
 
     it('should call entityManager.flush', async () => {

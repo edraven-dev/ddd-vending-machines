@@ -1,5 +1,8 @@
 import { Money } from '@vending-machines/shared';
 
 export class InsertMoneyCommand {
-  constructor(public readonly money: Money) {}
+  constructor(
+    public readonly id: string,
+    public readonly money: Money,
+  ) {}
 }

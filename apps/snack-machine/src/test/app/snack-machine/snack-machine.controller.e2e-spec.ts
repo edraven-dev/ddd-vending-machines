@@ -17,11 +17,12 @@ jest.mock('../../../app/database/database.module', () => {
   };
 });
 
+import { randomUUID } from 'crypto';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 
 describe('SnackMachineController - e2e', () => {
   const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }) };
-  const testEndpoint = '/snack-machine';
+  const testEndpoint = (id: string) => `/snack-machine/${id}`;
 
   let app: INestApplication;
 
@@ -44,10 +45,10 @@ describe('SnackMachineController - e2e', () => {
     await app.close();
   });
 
-  describe('PUT /insert-money', () => {
+  describe('PUT /:id/insert-money', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .put(`${testEndpoint}/insert-money`)
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
         .send({ money: [1, 0, 0, 0, 0, 0] })
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
@@ -55,7 +56,7 @@ describe('SnackMachineController - e2e', () => {
 
     it('should return 400 BAD REQUEST when payload is not an array', async () => {
       const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/insert-money`)
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
         .send({ money: 'not an array' })
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -64,7 +65,7 @@ describe('SnackMachineController - e2e', () => {
 
     it('should return 400 BAD REQUEST when payload is an array with <6 elements', async () => {
       const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/insert-money`)
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
         .send({ money: [0, 0, 0, 0, 1] })
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -73,7 +74,7 @@ describe('SnackMachineController - e2e', () => {
 
     it('should return 400 BAD REQUEST when payload is an array with >6 elements', async () => {
       const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/insert-money`)
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
         .send({ money: [0, 0, 0, 0, 0, 0, 1] })
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -82,45 +83,107 @@ describe('SnackMachineController - e2e', () => {
 
     it('should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers', async () => {
       const response = await request(app.getHttpServer())
-        .put(`${testEndpoint}/insert-money`)
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
         .send({ money: ['0', '0', '0', '0', '0', '1'] })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .put(`${testEndpoint('not-valid-uuid')}/insert-money`)
+        .send({ money: [1, 0, 0, 0, 0, 0] })
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
     });
   });
 
-  describe('POST /buy-snack', () => {
+  describe('POST /:id/buy-snack', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .post(`${testEndpoint}/buy-snack`)
+        .post(`${testEndpoint(randomUUID())}/buy-snack`)
         .send({ position: 1 })
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });
-  });
 
-  describe('POST /return-money', () => {
-    it('should return 200 OK', () => {
-      return request(app.getHttpServer())
-        .post(`${testEndpoint}/return-money`)
-        .expect(HttpStatus.OK)
-        .expect(queryBusMock.execute());
+    it('should return 400 BAD REQUEST when payload is not an integer', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint(randomUUID())}/buy-snack`)
+        .send({ position: 'not an integer' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when payload is not an integer between 1 and 3', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint(randomUUID())}/buy-snack`)
+        .send({ position: 4 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint('not-valid-uuid')}/buy-snack`)
+        .send({ position: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
     });
   });
 
-  describe('GET /money-in-machine', () => {
+  describe('POST /:id/return-money', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .get(`${testEndpoint}/money-in-machine`)
+        .post(`${testEndpoint(randomUUID())}/return-money`)
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint('not-valid-uuid')}/return-money`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
   });
 
-  describe('GET /', () => {
+  describe('GET /:id/money-in-machine', () => {
     it('should return 200 OK', () => {
-      return request(app.getHttpServer()).get(`${testEndpoint}`).expect(HttpStatus.OK);
+      return request(app.getHttpServer())
+        .get(`${testEndpoint(randomUUID())}/money-in-machine`)
+        .expect(HttpStatus.OK)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`${testEndpoint('not-valid-uuid')}/money-in-machine`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('GET /:id', () => {
+    it('should return 200 OK', () => {
+      return request(app.getHttpServer())
+        .get(`${testEndpoint(randomUUID())}`)
+        .expect(HttpStatus.OK);
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`${testEndpoint('not-valid-uuid')}`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
     });
   });
 });

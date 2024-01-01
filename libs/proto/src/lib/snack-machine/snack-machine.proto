@@ -3,10 +3,12 @@ syntax = "proto3";
 package snack_machine;
 
 service SnackMachineProtoService {
-  rpc UnloadMoney (Empty) returns (Money) {}
+  rpc UnloadMoney (Id) returns (Money) {}
 }
 
-message Empty {}
+message Id {
+  string id = 1;
+}
 
 message Money {
   repeated double money = 1;

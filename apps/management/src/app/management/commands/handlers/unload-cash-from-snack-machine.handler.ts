@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Money } from '@vending-machines/shared';
 import { HeadOfficeRepository } from '../../head-office.repository.interface';
@@ -8,13 +8,18 @@ import { UnloadCashFromSnackMachineCommand } from '../impl/unload-cash-from-snac
 @CommandHandler(UnloadCashFromSnackMachineCommand)
 export class UnloadCashFromSnackMachineHandler implements ICommandHandler<UnloadCashFromSnackMachineCommand, void> {
   constructor(
-    @Inject(HeadOfficeRepository) private readonly headOfficeRepository: HeadOfficeRepository,
+    private readonly headOfficeRepository: HeadOfficeRepository,
     private readonly snackMachineProtoServiceClient: SnackMachineProtoServiceClient,
   ) {}
 
-  async execute() {
-    const headOffice = await this.headOfficeRepository.findOne();
-    const cash = await this.snackMachineProtoServiceClient.unloadMoney();
+  async execute({ id }: UnloadCashFromSnackMachineCommand) {
+    const headOffice = await this.headOfficeRepository.findOne(id);
+
+    if (!headOffice) {
+      throw new NotFoundException(`Head office with id ${id} not found`);
+    }
+
+    const cash = await this.snackMachineProtoServiceClient.unloadMoney(id);
     headOffice.loadCash(new Money(...cash.money));
     await this.headOfficeRepository.save(headOffice);
   }

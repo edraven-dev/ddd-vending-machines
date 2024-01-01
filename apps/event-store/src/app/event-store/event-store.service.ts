@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import EJSON from 'ejson';
 import { AmqpService } from '../amqp/amqp.service';
 import { EXCHANGE_NAME } from '../constants';
@@ -8,7 +8,7 @@ import { EventStoreRepository } from './event-store.repository.interface';
 export class EventStoreService implements OnApplicationBootstrap {
   constructor(
     private readonly amqpService: AmqpService,
-    @Inject(EventStoreRepository) private readonly eventStoreRepository: EventStoreRepository,
+    private readonly eventStoreRepository: EventStoreRepository,
   ) {}
 
   async onApplicationBootstrap() {
@@ -16,10 +16,10 @@ export class EventStoreService implements OnApplicationBootstrap {
   }
 
   async storeEvents() {
-    const exchange = EXCHANGE_NAME;
+    const routingKey = 'event.#';
     const queue = 'q.EventStore';
 
-    await this.amqpService.addSubscriber(exchange, 'event.#', queue, async (msg) => {
+    await this.amqpService.addSubscriber(EXCHANGE_NAME, routingKey, queue, async (msg) => {
       const decodedMessage = EJSON.parse(msg.toString('utf-8'));
       await this.eventStoreRepository.save(decodedMessage);
     });

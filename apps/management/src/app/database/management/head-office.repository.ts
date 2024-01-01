@@ -14,8 +14,8 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findOne(): Promise<HeadOffice | null> {
-    const headOfficeEntity = await this.headOfficeRepository.findOne({ id: { $exists: true } });
+  async findOne(id: string): Promise<HeadOffice | null> {
+    const headOfficeEntity = await this.headOfficeRepository.findOne({ id });
 
     if (!headOfficeEntity) {
       return null;

@@ -1,3 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AtmController - e2e POST /take-money should return 400 BAD REQUEST when payload is not a valid currency 1`] = `"amount must be a valid currency"`;
+exports[`AtmController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`AtmController - e2e POST /:id/take-money should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`AtmController - e2e POST /:id/take-money should return 400 BAD REQUEST when payload is not a valid currency 1`] = `"amount must be a valid currency"`;

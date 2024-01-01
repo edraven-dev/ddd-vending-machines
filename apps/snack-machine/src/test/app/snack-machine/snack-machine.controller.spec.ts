@@ -1,6 +1,7 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
+import { randomUUID } from 'crypto';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
@@ -38,18 +39,20 @@ describe('SnackMachineController', () => {
 
   describe('#insertMoney', () => {
     it('should execute InsertMoneyCommand with proper data', async () => {
+      const id = randomUUID();
       const money: [number, number, number, number, number, number] = [1, 0, 0, 0, 0, 0];
 
-      await controller.insertMoney({ money });
+      await controller.insertMoney({ money }, id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith({ money: new Money(...money) });
+      expect(commandBus.execute).toHaveBeenCalledWith({ id, money: new Money(...money) });
       expect(commandBus.execute).toHaveBeenCalledWith(expect.any(InsertMoneyCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
+      const id = randomUUID();
       const money: [number, number, number, number, number, number] = [1, 0, 0, 0, 0, 0];
 
-      await controller.insertMoney({ money });
+      await controller.insertMoney({ money }, id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
@@ -57,13 +60,17 @@ describe('SnackMachineController', () => {
 
   describe('#buySnack', () => {
     it('should execute BuySnackCommand', async () => {
-      await controller.buySnack({ position: 1 });
+      const id = randomUUID();
+
+      await controller.buySnack({ position: 1 }, id);
 
       expect(commandBus.execute).toHaveBeenCalledWith(expect.any(BuySnackCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      await controller.buySnack({ position: 1 });
+      const id = randomUUID();
+
+      await controller.buySnack({ position: 1 }, id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
@@ -71,13 +78,17 @@ describe('SnackMachineController', () => {
 
   describe('#returnMoney', () => {
     it('should execute ReturnMoneyCommand', async () => {
-      await controller.returnMoney();
+      const id = randomUUID();
+
+      await controller.returnMoney(id);
 
       expect(commandBus.execute).toHaveBeenCalledWith(expect.any(ReturnMoneyCommand));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      await controller.returnMoney();
+      const id = randomUUID();
+
+      await controller.returnMoney(id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
     });
@@ -85,7 +96,9 @@ describe('SnackMachineController', () => {
 
   describe('#getMoneyInMachine', () => {
     it('should execute GetMoneyInMachineQuery', async () => {
-      await controller.getMoneyInMachine();
+      const id = randomUUID();
+
+      await controller.getMoneyInMachine(id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetMoneyInMachineQuery));
     });
@@ -93,7 +106,9 @@ describe('SnackMachineController', () => {
 
   describe('#unloadMoney', () => {
     it('should execute SnackMachineService.unloadMoney', async () => {
-      await controller.unloadMoney();
+      const id = randomUUID();
+
+      await controller.unloadMoney({ id });
 
       expect(service.unloadMoney).toHaveBeenCalled();
     });

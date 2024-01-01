@@ -1,3 +1,6 @@
 export class BuySnackCommand {
-  constructor(public readonly position: number) {}
+  constructor(
+    public readonly id: string,
+    public readonly position: number,
+  ) {}
 }
