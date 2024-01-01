@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsUUID } from 'class-validator';
 import Currency from 'currency.js';
 
 export class MoneyDto {
@@ -9,7 +9,7 @@ export class MoneyDto {
   }
 }
 
-export class LoadMoneyDto {
+export class UnloadMoneyDto {
   @IsInt({ each: true })
   @IsArray()
   @ArrayMinSize(6)
@@ -17,4 +17,7 @@ export class LoadMoneyDto {
   readonly money!: [number, number, number, number, number, number];
 }
 
-export class UnloadMoneyDto extends LoadMoneyDto {}
+export class LoadMoneyDto extends UnloadMoneyDto {
+  @IsUUID('4')
+  readonly id!: string;
+}

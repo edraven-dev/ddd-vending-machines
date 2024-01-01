@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, LoadStrategy } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
 import { SnackMachine } from '../../snack-machine/snack-machine';
@@ -14,13 +14,10 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findOne(): Promise<SnackMachine | null> {
+  async findOne(id: string): Promise<SnackMachine | null> {
     const snackMachineEntity = await this.snackMachineRepository.findOne(
-      { id: { $exists: true } },
-      {
-        populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'],
-        strategy: LoadStrategy.SELECT_IN, // FIXME: https://github.com/mikro-orm/mikro-orm/issues/4546
-      },
+      { id },
+      { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'] },
     );
 
     if (!snackMachineEntity) {
@@ -33,10 +30,7 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
   async save(snackMachine: SnackMachine): Promise<void> {
     const snackMachineEntity = await this.snackMachineRepository.findOne(
       { id: snackMachine.id },
-      {
-        populate: ['slots'],
-        strategy: LoadStrategy.SELECT_IN, // FIXME: https://github.com/mikro-orm/mikro-orm/issues/4546
-      },
+      { populate: ['slots'] },
     );
 
     snackMachineEntity.assign(SnackMachineMapper.toPersistence(snackMachine));

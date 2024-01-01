@@ -3,7 +3,7 @@ import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
 
 describe('Atm', () => {
-  describe('loadMoney', () => {
+  describe('#loadMoney', () => {
     it('should add money to money inside', () => {
       const atm = new Atm();
       atm.moneyInside = Money.Dollar;
@@ -14,7 +14,7 @@ describe('Atm', () => {
     });
   });
 
-  describe('takeMoney', () => {
+  describe('#takeMoney', () => {
     it('should exchange money with commission', async () => {
       const atm = new Atm();
       atm.loadMoney(Money.Dollar);

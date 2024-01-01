@@ -1,11 +1,11 @@
-import { Money } from '@vending-machines/shared';
+import { InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackPile } from '../../../app/snack-machine/snack-pile';
 import { Snack } from '../../../app/snack/snack';
 
-describe('Snack Machine', () => {
-  describe('returnMoney', () => {
+describe('SnackMachine', () => {
+  describe('#returnMoney', () => {
     it('should empties money in transaction when returning money', () => {
       const snackMachine = new SnackMachine();
       snackMachine.insertMoney(Money.Dollar);
@@ -30,7 +30,7 @@ describe('Snack Machine', () => {
     });
   });
 
-  describe('insertMoney', () => {
+  describe('#insertMoney', () => {
     it('should add inserted money to money in transaction', () => {
       const snackMachine = new SnackMachine();
 
@@ -48,7 +48,7 @@ describe('Snack Machine', () => {
     });
   });
 
-  describe('buySnack', () => {
+  describe('#buySnack', () => {
     it('should release a snack when buying', () => {
       const snackMachine = new SnackMachine();
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
@@ -104,7 +104,7 @@ describe('Snack Machine', () => {
     });
   });
 
-  describe('getSnackPile', () => {
+  describe('#getSnackPile', () => {
     it('should return snack pile at position', () => {
       const snackMachine = new SnackMachine();
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
@@ -117,7 +117,7 @@ describe('Snack Machine', () => {
     });
   });
 
-  describe('loadSnacks', () => {
+  describe('#loadSnacks', () => {
     it('should add snack to slot', () => {
       const snackMachine = new SnackMachine();
 
@@ -135,13 +135,42 @@ describe('Snack Machine', () => {
     });
   });
 
-  describe('loadMoney', () => {
+  describe('#loadMoney', () => {
     it('should add money to money inside', () => {
       const snackMachine = new SnackMachine();
 
       snackMachine.loadMoney(Money.Dollar);
 
       expect(snackMachine.moneyInside.amount).toEqual(new Currency(1.0));
+    });
+  });
+
+  describe('#unloadMoney', () => {
+    it('should throw when unloading money during transaction', async () => {
+      const snackMachine = new SnackMachine();
+      snackMachine.insertMoney(Money.Dollar);
+
+      expect(() => snackMachine.unloadMoney()).toThrow(InvalidOperationException);
+    });
+
+    it('should return money and set it to None', () => {
+      const snackMachine = new SnackMachine();
+      snackMachine.loadMoney(Money.Dollar);
+
+      const result = snackMachine.unloadMoney();
+
+      expect(result).toEqual(Money.Dollar);
+      expect(snackMachine.moneyInside).toEqual(Money.None);
+    });
+
+    it('should return None if money inside is None', () => {
+      const snackMachine = new SnackMachine();
+      snackMachine.moneyInside = Money.None;
+
+      const result = snackMachine.unloadMoney();
+
+      expect(result).toEqual(Money.None);
+      expect(snackMachine.moneyInside).toEqual(Money.None);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod } from '@nestjs/microservices';
 import { LoadMoneyDto, Money } from '@vending-machines/shared';
@@ -16,20 +16,23 @@ export class AtmController {
     private readonly atmService: AtmService,
   ) {}
 
-  @Get()
-  getAtm(): Promise<AtmDto> {
-    return this.queryBus.execute(new GetAtmQuery());
+  @Get(':id')
+  getAtm(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AtmDto> {
+    return this.queryBus.execute(new GetAtmQuery(id));
   }
 
   @HttpCode(200)
-  @Post('take-money')
-  async takeMoney(@Body() requestDto: TakeMoneyDto): Promise<AtmDto> {
-    await this.commandBus.execute(new TakeMoneyCommand(requestDto.amount));
-    return this.queryBus.execute(new GetAtmQuery());
+  @Post(':id/take-money')
+  async takeMoney(
+    @Body() requestDto: TakeMoneyDto,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<AtmDto> {
+    await this.commandBus.execute(new TakeMoneyCommand(id, requestDto.amount));
+    return this.queryBus.execute(new GetAtmQuery(id));
   }
 
   @GrpcMethod('AtmProtoService', 'LoadMoney')
-  async loadMoney(requestDto: LoadMoneyDto): Promise<void> {
-    await this.atmService.loadMoney(new Money(...requestDto.money));
+  loadMoney(requestDto: LoadMoneyDto): Promise<void> {
+    return this.atmService.loadMoney(requestDto.id, new Money(...requestDto.money));
   }
 }

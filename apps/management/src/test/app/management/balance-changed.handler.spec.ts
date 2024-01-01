@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BalanceChangedEvent } from '@vending-machines/events';
 import { randomUUID } from 'crypto';
@@ -15,10 +16,7 @@ describe('BalanceChangedHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BalanceChangedHandler,
-        {
-          provide: HeadOfficeRepository,
-          useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() },
-        },
+        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() } },
       ],
     }).compile();
 
@@ -42,6 +40,22 @@ describe('BalanceChangedHandler', () => {
       await handler.handle(event);
 
       expect(repository.findOne).toHaveBeenCalled();
+    });
+
+    it('should log and return early if HeadOffice not found', async () => {
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn());
+      jest.spyOn(headOffice, 'changeBalance');
+      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const event = new BalanceChangedEvent({
+        aggregateId: randomUUID(),
+        aggregateType: 'Atm',
+        payload: { delta: '1.01' },
+      });
+
+      await handler.handle(event);
+
+      expect(headOffice.changeBalance).not.toHaveBeenCalled();
+      expect(Logger.error).toHaveBeenCalled();
     });
 
     it('should call headOffice.changeBalance with correct value', async () => {

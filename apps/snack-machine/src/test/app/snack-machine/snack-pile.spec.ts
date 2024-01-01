@@ -3,23 +3,19 @@ import { SnackPile } from '../../../app/snack-machine/snack-pile';
 import { Snack } from '../../../app/snack/snack';
 
 describe('Snack Pile', () => {
-  describe('constructor', () => {
+  describe('#constructor', () => {
     it('should prevent creating snack pile with negative quantity', () => {
-      expect(() => new SnackPile(Snack.Chocolate, -1, new Currency(1.0))).toThrowError(
-        'Snack quantity cannot be negative',
-      );
+      expect(() => new SnackPile(Snack.Chocolate, -1, new Currency(1.0))).toThrow('Snack quantity cannot be negative');
     });
 
     it('should prevent creating snack pile with negative price', () => {
-      expect(() => new SnackPile(Snack.Chocolate, 0, new Currency(-1.0))).toThrowError(
-        'Snack price cannot be negative',
-      );
+      expect(() => new SnackPile(Snack.Chocolate, 0, new Currency(-1.0))).toThrow('Snack price cannot be negative');
     });
 
     it('should prevent creating snack pile when price contains more than two decimal places', () => {
       const price = new Currency(1.0);
       Object.assign(price, { intValue: 100.5 });
-      expect(() => new SnackPile(Snack.Chocolate, 0, price)).toThrowError('Price cannot contain part of cent');
+      expect(() => new SnackPile(Snack.Chocolate, 0, price)).toThrow('Price cannot contain part of cent');
     });
 
     it('should create snack pile with valid values', () => {
@@ -31,7 +27,7 @@ describe('Snack Pile', () => {
     });
   });
 
-  describe('subtractOne', () => {
+  describe('#subtractOne', () => {
     it('should subtract one from quantity', () => {
       const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));
 
@@ -43,7 +39,7 @@ describe('Snack Pile', () => {
     it('should throw error when subtracting from empty pile', () => {
       const snackPile = new SnackPile(Snack.Chocolate, 0, new Currency(1.0));
 
-      expect(() => snackPile.subtractOne()).toThrowError('Snack quantity cannot be negative');
+      expect(() => snackPile.subtractOne()).toThrow('Snack quantity cannot be negative');
     });
 
     it('should not change the original pile', () => {
@@ -63,7 +59,7 @@ describe('Snack Pile', () => {
     });
   });
 
-  describe('equals', () => {
+  describe('#equals', () => {
     it('should be equal to another snack pile with the same values', () => {
       const snackPile1 = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));
       const snackPile2 = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));

@@ -1,51 +1,74 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { MoneyInMachineDto } from '../../../../../app/snack-machine/dto/money-in-machine.dto';
 import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
+import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('GetMoneyInMachineHandler', () => {
   const snackMachine = new SnackMachine();
   let handler: GetMoneyInMachineHandler;
+  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GetMoneyInMachineHandler, { provide: SnackMachine, useValue: snackMachine }],
+      providers: [
+        GetMoneyInMachineHandler,
+        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine) } },
+      ],
     }).compile();
 
     handler = module.get<GetMoneyInMachineHandler>(GetMoneyInMachineHandler);
+    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   beforeEach(() => {
     snackMachine.returnMoney();
   });
 
-  it('should return the money in transaction and money inside the snack machine', async () => {
-    const result = await handler.execute();
+  describe('#execute', () => {
+    it('should call SnackMachineRepository.findOne with correct id', async () => {
+      const spy = jest.spyOn(repository, 'findOne');
 
-    const dto = new MoneyInMachineDto(new Currency('0.00'), new Currency('0.00'));
-    expect(result).toBeInstanceOf(MoneyInMachineDto);
-    expect(result).toEqual(dto);
-  });
+      await handler.execute({ id: snackMachine.id });
 
-  it('should return the cents when the amount is less than 100', async () => {
-    snackMachine.insertMoney(Money.Cent);
+      expect(spy).toHaveBeenCalledWith(snackMachine.id);
+    });
 
-    const result = await handler.execute();
+    it('should throw NotFoundException if SnackMachine not found', async () => {
+      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
 
-    const dto = new MoneyInMachineDto(new Currency('0.01'), new Currency('0.01'));
-    expect(result).toBeInstanceOf(MoneyInMachineDto);
-    expect(result).toEqual(dto);
-  });
+      await expect(handler.execute({ id: snackMachine.id })).rejects.toThrow(NotFoundException);
+    });
 
-  it('should return the dollars when the amount is greater than 100', async () => {
-    snackMachine.insertMoney(Money.Dollar);
+    it('should return the money in transaction and money inside the snack machine', async () => {
+      const result = await handler.execute({ id: snackMachine.id });
 
-    const result = await handler.execute();
+      const dto = new MoneyInMachineDto(new Currency('0.00'), new Currency('0.00'));
+      expect(result).toBeInstanceOf(MoneyInMachineDto);
+      expect(result).toEqual(dto);
+    });
 
-    const dto = new MoneyInMachineDto(new Currency('1.00'), new Currency('1.00'));
-    expect(result).toBeInstanceOf(MoneyInMachineDto);
-    expect(result).toEqual(dto);
+    it('should return the cents when the amount is less than 100', async () => {
+      snackMachine.insertMoney(Money.Cent);
+
+      const result = await handler.execute({ id: snackMachine.id });
+
+      const dto = new MoneyInMachineDto(new Currency('0.01'), new Currency('0.01'));
+      expect(result).toBeInstanceOf(MoneyInMachineDto);
+      expect(result).toEqual(dto);
+    });
+
+    it('should return the dollars when the amount is greater than 100', async () => {
+      snackMachine.insertMoney(Money.Dollar);
+
+      const result = await handler.execute({ id: snackMachine.id });
+
+      const dto = new MoneyInMachineDto(new Currency('1.00'), new Currency('1.00'));
+      expect(result).toBeInstanceOf(MoneyInMachineDto);
+      expect(result).toEqual(dto);
+    });
   });
 });

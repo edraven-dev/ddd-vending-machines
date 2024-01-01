@@ -17,11 +17,12 @@ jest.mock('../../../app/database/database.module', () => {
   };
 });
 
+import { randomUUID } from 'crypto';
 import { AtmController } from '../../../app/atm/atm.controller';
 
 describe('AtmController - e2e', () => {
-  const queryBusMock = { execute: () => ({ moneyCharged: '$1.00', moneyInside: '$1.00' }) };
-  const testEndpoint = '/atm';
+  const queryBusMock = { execute: jest.fn(async () => ({ moneyCharged: '$1.00', moneyInside: '$1.00' })) };
+  const testEndpoint = (id: string) => `/atm/${id}`;
 
   let app: INestApplication;
 
@@ -44,24 +45,44 @@ describe('AtmController - e2e', () => {
     await app.close();
   });
 
-  describe('GET /', () => {
-    it('should return 200 OK', () => {
-      return request(app.getHttpServer()).get(testEndpoint).expect(HttpStatus.OK).expect(queryBusMock.execute());
+  describe('GET /:id', () => {
+    it('should return 200 OK', async () => {
+      return request(app.getHttpServer())
+        .get(testEndpoint(randomUUID()))
+        .expect(HttpStatus.OK)
+        .expect(await queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(testEndpoint('not-valid-uuid'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
     });
   });
 
-  describe('POST /take-money', () => {
-    it('should return 200 OK', () => {
+  describe('POST /:id/take-money', () => {
+    it('should return 200 OK', async () => {
       return request(app.getHttpServer())
-        .post(`${testEndpoint}/take-money`)
+        .post(`${testEndpoint(randomUUID())}/take-money`)
         .send({ amount: '20' })
         .expect(HttpStatus.OK)
-        .expect(queryBusMock.execute());
+        .expect(await queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint('not-valid-uuid')}/take-money`)
+        .send({ amount: '20' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
     });
 
     it('should return 400 BAD REQUEST when payload is not a valid currency', async () => {
       const response = await request(app.getHttpServer())
-        .post(`${testEndpoint}/take-money`)
+        .post(`${testEndpoint(randomUUID())}/take-money`)
         .send({ amount: '20.001' })
         .expect(HttpStatus.BAD_REQUEST);
 

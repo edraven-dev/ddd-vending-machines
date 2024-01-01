@@ -22,7 +22,7 @@ export class SnackMachineMapper {
         entity.money.fiveDollarCount,
         entity.money.twentyDollarCount,
       ),
-      moneyInTransaction: new Currency(0),
+      moneyInTransaction: new Currency(entity.moneyInTransaction),
       slots: entity.slots.toArray().reduce((slots, slotEntity) => {
         const snack = SnackMapper.toDomain(slotEntity.snackPile.snack);
         const slot = new Slot(snackMachine, slotEntity.position);
@@ -39,6 +39,7 @@ export class SnackMachineMapper {
   static toPersistence(snackMachine: SnackMachine): EntityData<SnackMachineEntity> {
     return {
       money: { ...snackMachine.moneyInside },
+      moneyInTransaction: snackMachine.moneyInTransaction.format({ symbol: '' }),
       slots: snackMachine.slots
         .map((slot) => ({
           id: slot.id,

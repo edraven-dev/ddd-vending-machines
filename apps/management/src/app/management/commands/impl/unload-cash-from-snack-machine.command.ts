@@ -1,1 +1,3 @@
-export class UnloadCashFromSnackMachineCommand {}
+export class UnloadCashFromSnackMachineCommand {
+  constructor(public readonly id: string) {}
+}

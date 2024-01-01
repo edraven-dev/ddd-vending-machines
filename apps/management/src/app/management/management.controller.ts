@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { LoadCashToAtmCommand } from './commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from './commands/impl/unload-cash-from-snack-machine.command';
@@ -12,22 +12,24 @@ export class ManagementController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Get()
-  getHeadOffice(): Promise<HeadOfficeDto> {
-    return this.queryBus.execute(new GetHeadOfficeQuery());
+  @Get(':id')
+  getHeadOffice(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<HeadOfficeDto> {
+    return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 
-  @Post('load-cash-to-atm')
+  @Post(':id/load-cash-to-atm')
   @HttpCode(HttpStatus.OK)
-  async loadCashToAtm(): Promise<HeadOfficeDto> {
-    await this.commandBus.execute(new LoadCashToAtmCommand());
-    return this.queryBus.execute(new GetHeadOfficeQuery());
+  async loadCashToAtm(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<HeadOfficeDto> {
+    await this.commandBus.execute(new LoadCashToAtmCommand(id));
+    return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 
-  @Post('unload-cash-from-snack-machine')
+  @Post(':id/unload-cash-from-snack-machine')
   @HttpCode(HttpStatus.OK)
-  async unloadCashFromSnackMachine(): Promise<HeadOfficeDto> {
-    await this.commandBus.execute(new UnloadCashFromSnackMachineCommand());
-    return this.queryBus.execute(new GetHeadOfficeQuery());
+  async unloadCashFromSnackMachine(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<HeadOfficeDto> {
+    await this.commandBus.execute(new UnloadCashFromSnackMachineCommand(id));
+    return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 }

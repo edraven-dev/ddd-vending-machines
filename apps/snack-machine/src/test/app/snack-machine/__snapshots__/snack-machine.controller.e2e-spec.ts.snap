@@ -1,18 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is an array with <6 elements 1`] = `
+exports[`SnackMachineController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e GET /:id/money-in-machine should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e POST /:id/buy-snack should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e POST /:id/buy-snack should return 400 BAD REQUEST when payload is not an integer 1`] = `
+[
+  "position must not be greater than 3",
+  "position must not be less than 1",
+  "position must be an integer number",
+]
+`;
+
+exports[`SnackMachineController - e2e POST /:id/buy-snack should return 400 BAD REQUEST when payload is not an integer between 1 and 3 1`] = `
+[
+  "position must not be greater than 3",
+]
+`;
+
+exports[`SnackMachineController - e2e POST /:id/return-money should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when payload is an array with <6 elements 1`] = `
 [
   "money must contain at least 6 elements",
 ]
 `;
 
-exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is an array with >6 elements 1`] = `
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when payload is an array with >6 elements 1`] = `
 [
   "money must contain no more than 6 elements",
 ]
 `;
 
-exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is not an array 1`] = `
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when payload is not an array 1`] = `
 [
   "money must contain no more than 6 elements",
   "money must contain at least 6 elements",
@@ -22,7 +46,7 @@ exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD RE
 ]
 `;
 
-exports[`SnackMachineController - e2e PUT /insert-money should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers 1`] = `
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers 1`] = `
 [
   "each value in money must be one of the following values: 0, 1",
   "each value in money must be an integer number",

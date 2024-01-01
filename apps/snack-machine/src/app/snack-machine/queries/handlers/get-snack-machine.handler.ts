@@ -1,22 +1,29 @@
+import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { MoneyDto } from '@vending-machines/shared';
 import { SnackDto } from '../../../snack/dto/snack.dto';
 import { SlotDto } from '../../dto/slot.dto';
 import { SnackMachineDto } from '../../dto/snack-machine.dto';
 import { SnackPileDto } from '../../dto/snack-pile.dto';
-import { SnackMachine } from '../../snack-machine';
+import { SnackMachineRepository } from '../../snack-machine.repository.interface';
 import { GetSnackMachineQuery } from '../impl/get-snack-machine.query';
 
 @QueryHandler(GetSnackMachineQuery)
 export class GetSnackMachineHandler implements IQueryHandler<GetSnackMachineQuery, SnackMachineDto> {
-  constructor(private readonly snackMachine: SnackMachine) {}
+  constructor(private readonly snackMachineRepository: SnackMachineRepository) {}
 
-  async execute() {
+  async execute({ id }: GetSnackMachineQuery) {
+    const snackMachine = await this.snackMachineRepository.findOne(id);
+
+    if (!snackMachine) {
+      throw new NotFoundException(`Snack machine with id ${id} not found`);
+    }
+
     return new SnackMachineDto(
-      this.snackMachine.id,
-      new MoneyDto(this.snackMachine.moneyInside.amount),
-      new MoneyDto(this.snackMachine.moneyInTransaction),
-      this.snackMachine.slots.map(
+      snackMachine.id,
+      new MoneyDto(snackMachine.moneyInside.amount),
+      new MoneyDto(snackMachine.moneyInTransaction),
+      snackMachine.slots.map(
         (slot) =>
           new SlotDto(
             slot.id,

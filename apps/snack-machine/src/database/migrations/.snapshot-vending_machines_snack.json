@@ -105,6 +105,16 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "money_in_transaction": {
+          "name": "money_in_transaction",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
         }
       },
       "name": "snack_machine",

@@ -1,1 +1,3 @@
-export class LoadCashToAtmCommand {}
+export class LoadCashToAtmCommand {
+  constructor(public readonly id: string) {}
+}

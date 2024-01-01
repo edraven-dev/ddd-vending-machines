@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod } from '@nestjs/microservices';
 import { Money, UnloadMoneyDto } from '@vending-machines/shared';
@@ -21,38 +21,44 @@ export class SnackMachineController {
     private readonly snackMachineService: SnackMachineService,
   ) {}
 
-  @Get()
-  getSnackMachine(): Promise<SnackMachineDto> {
-    return this.queryBus.execute(new GetSnackMachineQuery());
+  @Get(':id')
+  getSnackMachine(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
+    return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
-  @Get('money-in-machine')
-  getMoneyInMachine(): Promise<MoneyInMachineDto> {
-    return this.queryBus.execute(new GetMoneyInMachineQuery());
+  @Get(':id/money-in-machine')
+  getMoneyInMachine(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MoneyInMachineDto> {
+    return this.queryBus.execute(new GetMoneyInMachineQuery(id));
   }
 
-  @Put('insert-money')
-  async insertMoney(@Body() requestDto: InsertMoneyDto): Promise<SnackMachineDto> {
-    await this.commandBus.execute(new InsertMoneyCommand(new Money(...requestDto.money)));
-    return this.queryBus.execute(new GetSnackMachineQuery());
-  }
-
-  @HttpCode(200)
-  @Post('buy-snack')
-  async buySnack(@Body() buySnackDto: BuySnackDto): Promise<SnackMachineDto> {
-    await this.commandBus.execute(new BuySnackCommand(buySnackDto.position));
-    return this.queryBus.execute(new GetSnackMachineQuery());
+  @Put(':id/insert-money')
+  async insertMoney(
+    @Body() requestDto: InsertMoneyDto,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<SnackMachineDto> {
+    await this.commandBus.execute(new InsertMoneyCommand(id, new Money(...requestDto.money)));
+    return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
   @HttpCode(200)
-  @Post('return-money')
-  async returnMoney(): Promise<SnackMachineDto> {
-    await this.commandBus.execute(new ReturnMoneyCommand());
-    return this.queryBus.execute(new GetSnackMachineQuery());
+  @Post(':id/buy-snack')
+  async buySnack(
+    @Body() buySnackDto: BuySnackDto,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<SnackMachineDto> {
+    await this.commandBus.execute(new BuySnackCommand(id, buySnackDto.position));
+    return this.queryBus.execute(new GetSnackMachineQuery(id));
+  }
+
+  @HttpCode(200)
+  @Post(':id/return-money')
+  async returnMoney(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
+    await this.commandBus.execute(new ReturnMoneyCommand(id));
+    return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
   @GrpcMethod('SnackMachineProtoService', 'UnloadMoney')
-  unloadMoney(): Promise<UnloadMoneyDto> {
-    return this.snackMachineService.unloadMoney();
+  unloadMoney({ id }: { id: string }): Promise<UnloadMoneyDto> {
+    return this.snackMachineService.unloadMoney(id);
   }
 }
