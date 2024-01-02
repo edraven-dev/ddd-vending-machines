@@ -25,6 +25,7 @@ export class AtmMapper {
 
   static toPersistence(atm: Atm): EntityData<AtmEntity> {
     return {
+      id: atm.id,
       money: { ...atm.moneyInside },
       moneyCharged: atm.moneyCharged.value,
     };

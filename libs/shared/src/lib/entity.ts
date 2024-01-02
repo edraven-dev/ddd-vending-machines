@@ -1,7 +1,11 @@
-const id = '00000000-0000-0000-0000-000000000000';
+import { DEFAULT_ID } from './constants';
 
 export abstract class Entity {
-  readonly id: string = id;
+  readonly id: string;
+
+  constructor(id?: string) {
+    this.id = id || DEFAULT_ID;
+  }
 
   equals(object?: Entity): boolean {
     if (object == null || object == undefined) {
@@ -21,10 +25,8 @@ export abstract class Entity {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
-export function EntityMixin<TBase extends abstract new (...args: any[]) => {}>(Base: TBase) {
+export function EntityMixin<TBase extends abstract new (...args: any[]) => { id: string }>(Base: TBase) {
   abstract class EntityExtendedWithBase extends Base {
-    readonly id: string = id;
-
     equals(object?: Entity): boolean {
       if (object == null || object == undefined) {
         return false;

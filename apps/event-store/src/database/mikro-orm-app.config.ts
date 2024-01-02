@@ -26,6 +26,7 @@ export default defineConfig({
   highlighter: new SqlHighlighter(),
   extensions: [Migrator, SeedManager],
   migrations: { migrationsList },
+  allowGlobalContext: true,
   // @ts-expect-error nestjs adapter options
   autoLoadEntities: true,
 });

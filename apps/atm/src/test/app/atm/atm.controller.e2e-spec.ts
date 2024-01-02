@@ -62,6 +62,25 @@ describe('AtmController - e2e', () => {
     });
   });
 
+  describe('POST /', () => {
+    it('should return 201 CREATED', async () => {
+      return request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: randomUUID() })
+        .expect(HttpStatus.CREATED)
+        .expect(await queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: 'not-valid-uuid' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
   describe('POST /:id/take-money', () => {
     it('should return 200 OK', async () => {
       return request(app.getHttpServer())
