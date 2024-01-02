@@ -1,5 +1,5 @@
 import { IEvent } from '@nestjs/cqrs';
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 
 export interface IDomainEvent<T extends Record<string, unknown>> extends IEvent {
   eventId: string;

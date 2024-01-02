@@ -7,10 +7,10 @@ export class SnackPileEmbeddable {
   @Property({ type: 'int' })
   quantity!: number;
 
-  @Property({ type: 'decimal', precision: 12, scale: 2 })
-  price!: number;
+  @Property({ type: 'varchar', length: 255 })
+  price!: string;
 
-  @OneToOne({ cascade: [Cascade.ALL] })
+  @OneToOne({ cascade: [Cascade.ALL], unique: false })
   snack!: SnackEntity;
 }
 

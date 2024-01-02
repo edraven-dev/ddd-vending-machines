@@ -3,9 +3,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod } from '@nestjs/microservices';
 import { Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
+import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
 import { ReturnMoneyCommand } from './commands/impl/return-money.command';
 import { BuySnackDto } from './dto/buy-snack.dto';
+import { CreateSnackMachineDto } from './dto/create-snack-machine.dto';
 import { InsertMoneyDto } from './dto/insert-money.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
 import { SnackMachineDto } from './dto/snack-machine.dto';
@@ -22,8 +24,14 @@ export class SnackMachineController {
   ) {}
 
   @Get(':id')
-  getSnackMachine(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
+  getById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
+  }
+
+  @Post()
+  async create(@Body() requestDto: CreateSnackMachineDto): Promise<SnackMachineDto> {
+    await this.commandBus.execute(new CreateSnackMachineCommand(requestDto.id));
+    return this.queryBus.execute(new GetSnackMachineQuery(requestDto.id));
   }
 
   @Get(':id/money-in-machine')

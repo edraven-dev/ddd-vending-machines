@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 import { CreateHeadOfficeCommand } from '../../../app/management/commands/impl/create-head-office.command';
 import { LoadCashToAtmCommand } from '../../../app/management/commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from '../../../app/management/commands/impl/unload-cash-from-snack-machine.command';

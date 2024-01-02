@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
+import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
 import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
@@ -37,6 +38,34 @@ describe('SnackMachineController', () => {
     jest.restoreAllMocks();
   });
 
+  describe('#getById', () => {
+    it('should execute GetSnackMachineQuery', async () => {
+      const id = randomUUID();
+
+      await controller.create({ id });
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
+    });
+  });
+
+  describe('#create', () => {
+    it('should execute CreateSnackMachineCommand', async () => {
+      const id = randomUUID();
+
+      await controller.create({ id });
+
+      expect(commandBus.execute).toHaveBeenCalledWith(new CreateSnackMachineCommand(id));
+    });
+
+    it('should execute GetSnackMachineQuery', async () => {
+      const id = randomUUID();
+
+      await controller.create({ id });
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
+    });
+  });
+
   describe('#insertMoney', () => {
     it('should execute InsertMoneyCommand with proper data', async () => {
       const id = randomUUID();
@@ -44,8 +73,8 @@ describe('SnackMachineController', () => {
 
       await controller.insertMoney({ money }, id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith({ id, money: new Money(...money) });
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(InsertMoneyCommand));
+      // expect(commandBus.execute).toHaveBeenCalledWith({ id, money:  });
+      expect(commandBus.execute).toHaveBeenCalledWith(new InsertMoneyCommand(id, new Money(...money)));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
@@ -54,7 +83,7 @@ describe('SnackMachineController', () => {
 
       await controller.insertMoney({ money }, id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
     });
   });
 
@@ -64,7 +93,7 @@ describe('SnackMachineController', () => {
 
       await controller.buySnack({ position: 1 }, id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(BuySnackCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(new BuySnackCommand(id, 1));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
@@ -72,7 +101,7 @@ describe('SnackMachineController', () => {
 
       await controller.buySnack({ position: 1 }, id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
     });
   });
 
@@ -82,7 +111,7 @@ describe('SnackMachineController', () => {
 
       await controller.returnMoney(id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(ReturnMoneyCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(new ReturnMoneyCommand(id));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
@@ -90,7 +119,7 @@ describe('SnackMachineController', () => {
 
       await controller.returnMoney(id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetSnackMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
     });
   });
 
@@ -100,7 +129,7 @@ describe('SnackMachineController', () => {
 
       await controller.getMoneyInMachine(id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetMoneyInMachineQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetMoneyInMachineQuery(id));
     });
   });
 

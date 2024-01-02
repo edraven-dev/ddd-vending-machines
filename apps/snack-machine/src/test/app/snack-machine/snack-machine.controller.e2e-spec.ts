@@ -45,6 +45,47 @@ describe('SnackMachineController - e2e', () => {
     await app.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  describe('GET /:id', () => {
+    it('should return 200 OK', () => {
+      return request(app.getHttpServer())
+        .get(testEndpoint(randomUUID()))
+        .expect(HttpStatus.OK)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(testEndpoint('not-valid-uuid'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('POST /', () => {
+    it('should return 201 CREATED', () => {
+      return request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: randomUUID() })
+        .expect(HttpStatus.CREATED)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: 'not-valid-uuid' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
   describe('PUT /:id/insert-money', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())

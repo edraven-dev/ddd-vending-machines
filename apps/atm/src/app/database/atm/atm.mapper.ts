@@ -27,7 +27,7 @@ export class AtmMapper {
     return {
       id: atm.id,
       money: { ...atm.moneyInside },
-      moneyCharged: atm.moneyCharged.value,
+      moneyCharged: atm.moneyCharged.format({ symbol: '' }),
     };
   }
 }

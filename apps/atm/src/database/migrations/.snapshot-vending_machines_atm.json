@@ -17,14 +17,13 @@
         },
         "money_charged": {
           "name": "money_charged",
-          "type": "numeric(18,2)",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "precision": 18,
-          "scale": 2,
-          "mappedType": "decimal"
+          "length": 255,
+          "mappedType": "string"
         },
         "money_one_cent_count": {
           "name": "money_one_cent_count",

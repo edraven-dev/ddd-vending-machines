@@ -38,14 +38,18 @@ export class SnackMachineMapper {
 
   static toPersistence(snackMachine: SnackMachine): EntityData<SnackMachineEntity> {
     return {
+      id: snackMachine.id,
       money: { ...snackMachine.moneyInside },
       moneyInTransaction: snackMachine.moneyInTransaction.format({ symbol: '' }),
       slots: snackMachine.slots
         .map((slot) => ({
           id: slot.id,
           position: slot.position,
+          snackMachine: snackMachine.id as unknown as SnackMachineEntity,
           snackPile: {
             quantity: slot.snackPile.quantity,
+            price: slot.snackPile.price.format({ symbol: '' }),
+            snack: slot.snackPile.snack.id,
           },
         }))
         .sort((a, b) => a.position - b.position),
