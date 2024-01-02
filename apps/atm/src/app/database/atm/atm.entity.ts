@@ -6,8 +6,8 @@ export default class AtmEntity extends BaseEntity<AtmEntity, 'id'> {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @Property({ type: 'decimal', precision: 18, scale: 2 })
-  moneyCharged!: number;
+  @Property({ type: 'varchar', length: 255 })
+  moneyCharged!: string;
 
   @Embedded(() => MoneyEmbeddable)
   money!: MoneyEmbeddable;

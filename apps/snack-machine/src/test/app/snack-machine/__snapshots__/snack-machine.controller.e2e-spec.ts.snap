@@ -2,7 +2,15 @@
 
 exports[`SnackMachineController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 
+exports[`SnackMachineController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 2`] = `"Validation failed (uuid v 4 is expected)"`;
+
 exports[`SnackMachineController - e2e GET /:id/money-in-machine should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e POST / should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "id must be a UUID",
+]
+`;
 
 exports[`SnackMachineController - e2e POST /:id/buy-snack should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 

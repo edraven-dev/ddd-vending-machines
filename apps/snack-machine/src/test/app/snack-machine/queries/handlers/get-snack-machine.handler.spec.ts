@@ -9,8 +9,7 @@ import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-m
 
 describe('GetSnackMachineHandler', () => {
   const id = crypto.randomUUID();
-  const snackMachine = new SnackMachine();
-  Object.assign(snackMachine, { id });
+  const snackMachine = new SnackMachine(id);
   let handler: GetSnackMachineHandler;
   let repository: SnackMachineRepository;
 

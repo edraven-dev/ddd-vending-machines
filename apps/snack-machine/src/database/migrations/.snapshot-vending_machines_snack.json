@@ -173,14 +173,13 @@
         },
         "snack_pile_price": {
           "name": "snack_pile_price",
-          "type": "numeric(12,2)",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "precision": 12,
-          "scale": 2,
-          "mappedType": "decimal"
+          "length": 255,
+          "mappedType": "string"
         },
         "snack_pile_snack_id": {
           "name": "snack_pile_snack_id",
@@ -195,15 +194,6 @@
       "name": "slot",
       "schema": "public",
       "indexes": [
-        {
-          "columnNames": [
-            "snack_pile_snack_id"
-          ],
-          "composite": false,
-          "keyName": "slot_snack_pile_snack_id_unique",
-          "primary": false,
-          "unique": true
-        },
         {
           "keyName": "slot_pkey",
           "columnNames": [
