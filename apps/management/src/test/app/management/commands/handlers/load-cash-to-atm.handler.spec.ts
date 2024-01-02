@@ -8,8 +8,7 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { AtmProtoServiceClient } from '../../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('LoadCashToAtmHandler', () => {
-  const headOffice = new HeadOffice();
-  Object.assign(headOffice, { id: randomUUID() });
+  const headOffice = new HeadOffice(randomUUID());
   let handler: LoadCashToAtmHandler;
   let repository: HeadOfficeRepository;
   let protoClient: AtmProtoServiceClient;
@@ -18,7 +17,7 @@ describe('LoadCashToAtmHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoadCashToAtmHandler,
-        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() } },
+        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(), save: jest.fn() } },
         { provide: AtmProtoServiceClient, useValue: { loadMoney: jest.fn() } },
       ],
     }).compile();
@@ -28,8 +27,13 @@ describe('LoadCashToAtmHandler', () => {
     protoClient = module.get<AtmProtoServiceClient>(AtmProtoServiceClient);
   });
 
+  beforeEach(() => {
+    jest.spyOn(repository, 'findOne').mockImplementation(async () => headOffice);
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
@@ -64,6 +68,14 @@ describe('LoadCashToAtmHandler', () => {
       await handler.execute({ id: headOffice.id });
 
       expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: headOffice.id, money: [1, 1, 1, 1, 1, 1] });
+    });
+
+    it('should call headOfficeRepository.save', async () => {
+      jest.spyOn(repository, 'save');
+
+      await handler.execute({ id: headOffice.id });
+
+      expect(repository.save).toHaveBeenCalledWith(headOffice);
     });
   });
 });

@@ -1,3 +1,4 @@
+import { MikroORM } from '@mikro-orm/core';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BalanceChangedEvent } from '@vending-machines/events';
@@ -13,10 +14,13 @@ describe('BalanceChangedHandler', () => {
   let repository: HeadOfficeRepository;
 
   beforeAll(async () => {
+    const orm = Object.create(MikroORM.prototype);
+    Object.assign(orm, { em: { name: 'default', fork: jest.fn() } });
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BalanceChangedHandler,
         { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() } },
+        { provide: MikroORM, useValue: orm },
       ],
     }).compile();
 
