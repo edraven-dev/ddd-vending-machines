@@ -8,8 +8,7 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { SnackMachineProtoServiceClient } from '../../../../../app/management/proto-clients/snack-machine-proto-service.client';
 
 describe('UnloadCashFromSnackMachineHandler', () => {
-  const headOffice = new HeadOffice();
-  Object.assign(headOffice, { id: randomUUID() });
+  const headOffice = new HeadOffice(randomUUID());
   let handler: UnloadCashFromSnackMachineHandler;
   let repository: HeadOfficeRepository;
   let protoClient: SnackMachineProtoServiceClient;
@@ -65,6 +64,14 @@ describe('UnloadCashFromSnackMachineHandler', () => {
       await handler.execute({ id: headOffice.id });
 
       expect(headOffice.loadCash).toHaveBeenCalledWith(new Money(1, 1, 1, 1, 1, 1));
+    });
+
+    it('should call headOfficeRepository.save', async () => {
+      jest.spyOn(repository, 'save');
+
+      await handler.execute({ id: headOffice.id });
+
+      expect(repository.save).toHaveBeenCalledWith(headOffice);
     });
   });
 });

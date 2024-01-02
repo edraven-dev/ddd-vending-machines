@@ -1,6 +1,7 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
+import { CreateHeadOfficeCommand } from '../../../app/management/commands/impl/create-head-office.command';
 import { LoadCashToAtmCommand } from '../../../app/management/commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from '../../../app/management/commands/impl/unload-cash-from-snack-machine.command';
 import { ManagementController } from '../../../app/management/management.controller';
@@ -30,13 +31,31 @@ describe('ManagementController', () => {
     jest.restoreAllMocks();
   });
 
-  describe('#getHeadOffice', () => {
+  describe('#getById', () => {
     it('should execute GetHeadOfficeQuery', async () => {
       const id = randomUUID();
 
-      await controller.getHeadOffice(id);
+      await controller.getById(id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetHeadOfficeQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
+    });
+  });
+
+  describe('#create', () => {
+    it('should execute CreateHeadOfficeCommand', async () => {
+      const id = randomUUID();
+
+      await controller.create({ id });
+
+      expect(commandBus.execute).toHaveBeenCalledWith(new CreateHeadOfficeCommand(id));
+    });
+
+    it('should execute GetHeadOfficeQuery', async () => {
+      const id = randomUUID();
+
+      await controller.create({ id });
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
     });
   });
 
@@ -46,7 +65,7 @@ describe('ManagementController', () => {
 
       await controller.loadCashToAtm(id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(LoadCashToAtmCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(new LoadCashToAtmCommand(id));
     });
 
     it('should execute GetHeadOfficeQuery', async () => {
@@ -54,7 +73,7 @@ describe('ManagementController', () => {
 
       await controller.loadCashToAtm(id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetHeadOfficeQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
     });
   });
 
@@ -64,7 +83,7 @@ describe('ManagementController', () => {
 
       await controller.unloadCashFromSnackMachine(id);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UnloadCashFromSnackMachineCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(new UnloadCashFromSnackMachineCommand(id));
     });
 
     it('should execute GetHeadOfficeQuery', async () => {
@@ -72,7 +91,7 @@ describe('ManagementController', () => {
 
       await controller.unloadCashFromSnackMachine(id);
 
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(GetHeadOfficeQuery));
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
     });
   });
 });

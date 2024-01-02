@@ -28,6 +28,14 @@ describe('CreateAtmHandler', () => {
   });
 
   describe('#execute', () => {
+    it('should call atm.apply', async () => {
+      jest.spyOn(Atm.prototype, 'apply');
+
+      await handler.execute(new CreateAtmCommand(atm.id));
+
+      expect(atm.apply).toHaveBeenCalled();
+    });
+
     it('should call atmRepository.save with proper data', async () => {
       await handler.execute(new CreateAtmCommand(atm.id));
 

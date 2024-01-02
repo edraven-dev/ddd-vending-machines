@@ -25,9 +25,13 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
   }
 
   async save(headOffice: HeadOffice): Promise<void> {
-    const headOfficeEntity = await this.headOfficeRepository.findOne({ id: headOffice.id });
+    let headOfficeEntity = await this.headOfficeRepository.findOne({ id: headOffice.id });
 
-    headOfficeEntity.assign(HeadOfficeMapper.toPersistence(headOffice));
+    if (headOfficeEntity) {
+      headOfficeEntity.assign(HeadOfficeMapper.toPersistence(headOffice));
+    } else {
+      headOfficeEntity = this.headOfficeRepository.create(HeadOfficeMapper.toPersistence(headOffice));
+    }
 
     await this.em.flush();
   }

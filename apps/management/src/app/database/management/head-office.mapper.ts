@@ -25,6 +25,7 @@ export class HeadOfficeMapper {
 
   static toPersistence(headOffice: HeadOffice): EntityData<HeadOfficeEntity> {
     return {
+      id: headOffice.id,
       balance: headOffice.balance.value,
       cash: { ...headOffice.cash },
     };

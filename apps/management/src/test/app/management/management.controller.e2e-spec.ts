@@ -59,4 +59,57 @@ describe('ManagementController - e2e', () => {
       expect(response.body.message).toMatchSnapshot();
     });
   });
+
+  describe('POST /', () => {
+    it('should return 201 CREATED', () => {
+      return request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: randomUUID() })
+        .expect(HttpStatus.CREATED)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(testEndpoint(''))
+        .send({ id: 'not-valid-uuid' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('POST /:id/load-cash-to-atm', () => {
+    it('should return 200 OK', () => {
+      return request(app.getHttpServer())
+        .post(testEndpoint(`${randomUUID()}/load-cash-to-atm`))
+        .expect(HttpStatus.OK)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(testEndpoint('not-valid-uuid/load-cash-to-atm'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('POST /:id/unload-cash-from-snack-machine', () => {
+    it('should return 200 OK', () => {
+      return request(app.getHttpServer())
+        .post(testEndpoint(`${randomUUID()}/unload-cash-from-snack-machine`))
+        .expect(HttpStatus.OK)
+        .expect(queryBusMock.execute());
+    });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(testEndpoint('not-valid-uuid/unload-cash-from-snack-machine'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+  });
 });
