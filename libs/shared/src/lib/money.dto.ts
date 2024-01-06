@@ -1,12 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsUUID } from 'class-validator';
 import Currency from 'currency.js';
 import { CoinsAndNotes } from './money';
 
 export class MoneyDto {
-  readonly amount: string;
+  @ApiProperty({ type: String, default: '$1.00' })
+  readonly amount!: string;
 
   constructor(amount: Currency) {
-    this.amount = amount.intValue < 100 ? `¢${amount.cents()}` : amount.format();
+    this.amount = amount.intValue < 100 ? `¢${amount.cents()}` : amount.format({ symbol: '$' });
   }
 }
 

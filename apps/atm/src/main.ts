@@ -4,12 +4,18 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'node:path';
 
 import { AppModule } from './app/app.module';
+import { createSwaggerConfig } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   app.enableShutdownHooks();
+
+  if (process.env.NODE_ENV === 'development') {
+    createSwaggerConfig(app);
+  }
+
   app.connectMicroservice<MicroserviceOptions>(
     {
       transport: Transport.GRPC,
