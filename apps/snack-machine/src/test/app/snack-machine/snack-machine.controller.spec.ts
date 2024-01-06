@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
+import { CoinsAndNotes, Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
@@ -69,17 +69,16 @@ describe('SnackMachineController', () => {
   describe('#insertMoney', () => {
     it('should execute InsertMoneyCommand with proper data', async () => {
       const id = randomUUID();
-      const money: [number, number, number, number, number, number] = [1, 0, 0, 0, 0, 0];
+      const money: CoinsAndNotes = [1, 0, 0, 0, 0, 0];
 
       await controller.insertMoney({ money }, id);
 
-      // expect(commandBus.execute).toHaveBeenCalledWith({ id, money:  });
       expect(commandBus.execute).toHaveBeenCalledWith(new InsertMoneyCommand(id, new Money(...money)));
     });
 
     it('should execute GetSnackMachineQuery', async () => {
       const id = randomUUID();
-      const money: [number, number, number, number, number, number] = [1, 0, 0, 0, 0, 0];
+      const money: CoinsAndNotes = [1, 0, 0, 0, 0, 0];
 
       await controller.insertMoney({ money }, id);
 

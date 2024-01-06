@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoadMoneyDto } from '@vending-machines/shared';
+import { CoinsAndNotes, LoadMoneyDto } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { of } from 'rxjs';
 import { AtmProtoServiceClient } from '../../../../app/management/proto-clients/atm-proto-service.client';
@@ -24,7 +24,7 @@ describe('AtmProtoServiceClient', () => {
   describe('#loadMoney', () => {
     it('should call grpc client with correct data', async () => {
       const id = randomUUID();
-      const money: [number, number, number, number, number, number] = [1, 1, 1, 1, 1, 1];
+      const money: CoinsAndNotes = [1, 1, 1, 1, 1, 1];
       const dto: LoadMoneyDto = { id, money };
 
       await protoClient.loadMoney(dto);

@@ -1,3 +1,4 @@
+import { MoneyLoadedEvent } from '@vending-machines/events';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
@@ -11,6 +12,23 @@ describe('Atm', () => {
       atm.loadMoney(Money.Dollar);
 
       expect(atm.moneyInside).toEqual(Money.add(Money.Dollar, Money.Dollar));
+    });
+
+    it('should apply MoneyLoadedEvent', () => {
+      const atm = new Atm();
+      atm.moneyInside = Money.Dollar;
+      const spy = jest.spyOn(atm, 'apply');
+
+      atm.loadMoney(Money.Dollar);
+
+      expect(spy).toHaveBeenCalledWith(expect.any(MoneyLoadedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: atm.id,
+          aggregateType: atm.constructor.name,
+          payload: { loadedMoney: Money.add(Money.Dollar, Money.Dollar).toCoinsAndNotes() },
+        }),
+      );
     });
   });
 
@@ -81,6 +99,7 @@ describe('Atm', () => {
     it('should apply BalanceChangedEvent', async () => {
       const atm = new Atm();
       atm.loadMoney(Money.Dollar);
+      atm.commit();
 
       atm.takeMoney(new Currency('1.00'));
 

@@ -1,26 +1,27 @@
-import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { SnackMachineCreatedEvent } from '@vending-machines/events';
 import { randomUUID } from 'crypto';
 import { CreateSnackMachineHandler } from '../../../../../app/snack-machine/commands/handlers/create-snack-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
+import { SnackMachineFactory } from '../../../../../app/snack-machine/snack-machine.factory';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('CreateSnackMachineHandler', () => {
   const snackMachine = new SnackMachine(randomUUID());
   let handler: CreateSnackMachineHandler;
+  let factory: SnackMachineFactory;
   let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateSnackMachineHandler,
+        { provide: SnackMachineFactory, useValue: { create: jest.fn(() => snackMachine) } },
         { provide: SnackMachineRepository, useValue: { save: jest.fn() } },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((snackMachine) => snackMachine) } },
       ],
     }).compile();
 
     handler = module.get<CreateSnackMachineHandler>(CreateSnackMachineHandler);
+    factory = module.get<SnackMachineFactory>(SnackMachineFactory);
     repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
@@ -30,24 +31,29 @@ describe('CreateSnackMachineHandler', () => {
   });
 
   describe('#execute', () => {
-    // it('should call eventPublisher.mergeObjectContext with proper data', async () => {
-    //   await handler.execute({ id: snackMachine.id });
+    it('should call snackMachineFactory.create', async () => {
+      jest.spyOn(factory, 'create');
+      const id = snackMachine.id;
 
-    //   expect(EventPublisher.prototype.mergeObjectContext).toHaveBeenCalledWith(snackMachine);
-    // });
+      await handler.execute({ id });
 
-    it('should call snackMachine.apply', async () => {
-      jest.spyOn(SnackMachine.prototype, 'apply');
+      expect(factory.create).toHaveBeenCalledWith(id);
+    });
 
-      await handler.execute({ id: snackMachine.id });
+    it('should call snackMachine.loadSnacks 3 times', async () => {
+      jest.spyOn(SnackMachine.prototype, 'loadSnacks');
+      const id = snackMachine.id;
 
-      expect(snackMachine.apply).toHaveBeenCalledWith(expect.any(SnackMachineCreatedEvent));
+      await handler.execute({ id });
+
+      expect(snackMachine.loadSnacks).toHaveBeenCalledTimes(3);
     });
 
     it('should call snackMachineRepository.save with proper data', async () => {
       jest.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(() => {});
+      const id = snackMachine.id;
 
-      await handler.execute({ id: snackMachine.id });
+      await handler.execute({ id });
 
       expect(repository.save).toHaveBeenCalledTimes(1);
       expect(repository.save).toHaveBeenCalledWith({ ...snackMachine, slots: expect.any(Array) });
@@ -55,8 +61,9 @@ describe('CreateSnackMachineHandler', () => {
 
     it('should call snackMachine.commit', async () => {
       jest.spyOn(SnackMachine.prototype, 'commit');
+      const id = snackMachine.id;
 
-      await handler.execute({ id: snackMachine.id });
+      await handler.execute({ id });
 
       expect(snackMachine.commit).toHaveBeenCalled();
     });

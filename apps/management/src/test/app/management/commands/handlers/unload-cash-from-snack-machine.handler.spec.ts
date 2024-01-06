@@ -38,38 +38,43 @@ describe('UnloadCashFromSnackMachineHandler', () => {
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       jest.spyOn(repository, 'findOne');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(repository.findOne).toHaveBeenCalledWith(headOffice.id);
+      expect(repository.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
       (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const id = headOffice.id;
 
-      await expect(handler.execute({ id: headOffice.id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should call protoClient.unloadMoney with correct data', async () => {
       jest.spyOn(protoClient, 'unloadMoney');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(protoClient.unloadMoney).toHaveBeenCalledWith(headOffice.id);
+      expect(protoClient.unloadMoney).toHaveBeenCalledWith(id);
     });
 
     it('should call headOffice.loadCash with correct data', async () => {
       jest.spyOn(headOffice, 'loadCash');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
       expect(headOffice.loadCash).toHaveBeenCalledWith(new Money(1, 1, 1, 1, 1, 1));
     });
 
     it('should call headOfficeRepository.save', async () => {
       jest.spyOn(repository, 'save');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
       expect(repository.save).toHaveBeenCalledWith(headOffice);
     });

@@ -3,6 +3,8 @@ import Currency from 'currency.js';
 import { InvalidOperationException } from './invalid-operation.exception';
 import { ValueObject } from './value-object';
 
+export type CoinsAndNotes = [number, number, number, number, number, number];
+
 export class Money extends ValueObject {
   static readonly None = new Money(0, 0, 0, 0, 0, 0);
   static readonly Cent = new Money(1, 0, 0, 0, 0, 0);
@@ -137,6 +139,17 @@ export class Money extends ValueObject {
     amountAsCents -= oneCentCount * 1;
 
     return new Money(oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount);
+  }
+
+  toCoinsAndNotes(): CoinsAndNotes {
+    return [
+      this.oneCentCount,
+      this.tenCentCount,
+      this.quarterCount,
+      this.oneDollarCount,
+      this.fiveDollarCount,
+      this.twentyDollarCount,
+    ];
   }
 }
 

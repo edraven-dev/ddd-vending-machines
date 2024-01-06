@@ -60,3 +60,10 @@ exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BA
   "each value in money must be an integer number",
 ]
 `;
+
+exports[`SnackMachineController - e2e PUT /:id/insert-money should return 400 BAD REQUEST when payload is not an array of integers 1`] = `
+[
+  "each value in money must be one of the following values: 0, 1",
+  "each value in money must be an integer number",
+]
+`;

@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
+import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
@@ -7,7 +8,7 @@ import { AtmRepository } from '../../../app/atm/atm.repository.interface';
 import { AtmService } from '../../../app/atm/atm.service';
 
 describe('AtmService', () => {
-  const atm = { id: randomUUID(), loadMoney: jest.fn() };
+  const atm = { id: randomUUID(), loadMoney: jest.fn(), commit: jest.fn() };
   let service: AtmService;
   let repository: AtmRepository;
 
@@ -22,6 +23,7 @@ describe('AtmService', () => {
           provide: AtmRepository,
           useValue: { findOne: jest.fn(async () => atm), save: jest.fn() },
         },
+        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } },
       ],
     }).compile();
 

@@ -31,20 +31,24 @@ describe('GetMoneyInMachineHandler', () => {
   describe('#execute', () => {
     it('should call SnackMachineRepository.findOne with correct id', async () => {
       const spy = jest.spyOn(repository, 'findOne');
+      const id = snackMachine.id;
 
-      await handler.execute({ id: snackMachine.id });
+      await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(snackMachine.id);
+      expect(spy).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
       (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const id = snackMachine.id;
 
-      await expect(handler.execute({ id: snackMachine.id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should return the money in transaction and money inside the snack machine', async () => {
-      const result = await handler.execute({ id: snackMachine.id });
+      const id = snackMachine.id;
+
+      const result = await handler.execute({ id });
 
       const dto = new MoneyInMachineDto(new Currency('0.00'), new Currency('0.00'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);
@@ -52,9 +56,10 @@ describe('GetMoneyInMachineHandler', () => {
     });
 
     it('should return the cents when the amount is less than 100', async () => {
+      const id = snackMachine.id;
       snackMachine.insertMoney(Money.Cent);
 
-      const result = await handler.execute({ id: snackMachine.id });
+      const result = await handler.execute({ id });
 
       const dto = new MoneyInMachineDto(new Currency('0.01'), new Currency('0.01'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);
@@ -62,9 +67,10 @@ describe('GetMoneyInMachineHandler', () => {
     });
 
     it('should return the dollars when the amount is greater than 100', async () => {
+      const id = snackMachine.id;
       snackMachine.insertMoney(Money.Dollar);
 
-      const result = await handler.execute({ id: snackMachine.id });
+      const result = await handler.execute({ id });
 
       const dto = new MoneyInMachineDto(new Currency('1.00'), new Currency('1.00'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);

@@ -40,22 +40,25 @@ describe('LoadCashToAtmHandler', () => {
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       jest.spyOn(repository, 'findOne');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(repository.findOne).toHaveBeenCalledWith(headOffice.id);
+      expect(repository.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
       (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const id = headOffice.id;
 
-      await expect(handler.execute({ id: headOffice.id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should call headOffice.unloadCash', async () => {
       jest.spyOn(headOffice, 'unloadCash');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
       expect(headOffice.unloadCash).toHaveBeenCalledWith();
     });
@@ -64,16 +67,18 @@ describe('LoadCashToAtmHandler', () => {
       const headOffice = new HeadOffice();
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
       jest.spyOn(repository, 'findOne').mockImplementation(async () => headOffice);
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: headOffice.id, money: [1, 1, 1, 1, 1, 1] });
+      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id, money: [1, 1, 1, 1, 1, 1] });
     });
 
     it('should call headOfficeRepository.save', async () => {
       jest.spyOn(repository, 'save');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
       expect(repository.save).toHaveBeenCalledWith(headOffice);
     });
