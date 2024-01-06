@@ -1,6 +1,14 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod } from '@nestjs/microservices';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
@@ -15,6 +23,7 @@ import { GetMoneyInMachineQuery } from './queries/impl/get-money-in-machine.quer
 import { GetSnackMachineQuery } from './queries/impl/get-snack-machine.query';
 import { SnackMachineService } from './snack-machine.service';
 
+@ApiTags('Snack Machine')
 @Controller('snack-machine')
 export class SnackMachineController {
   constructor(
@@ -24,22 +33,37 @@ export class SnackMachineController {
   ) {}
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get snack machine by id', description: 'Returns snack machine by id' })
+  @ApiOkResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
   getById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create snack machine', description: 'Creates snack machine' })
+  @ApiCreatedResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
   async create(@Body() requestDto: CreateSnackMachineDto): Promise<SnackMachineDto> {
     await this.commandBus.execute(new CreateSnackMachineCommand(requestDto.id));
     return this.queryBus.execute(new GetSnackMachineQuery(requestDto.id));
   }
 
   @Get(':id/money-in-machine')
+  @ApiOperation({ summary: 'Get money in snack machine', description: 'Returns money in snack machine' })
+  @ApiOkResponse({ type: MoneyInMachineDto })
+  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
   getMoneyInMachine(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MoneyInMachineDto> {
     return this.queryBus.execute(new GetMoneyInMachineQuery(id));
   }
 
   @Put(':id/insert-money')
+  @ApiOperation({ summary: 'Insert money into snack machine', description: 'Inserts money into snack machine' })
+  @ApiOkResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async insertMoney(
     @Body() requestDto: InsertMoneyDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -48,8 +72,12 @@ export class SnackMachineController {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
-  @HttpCode(200)
   @Post(':id/buy-snack')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Buy snack from snack machine', description: 'Buys snack from snack machine' })
+  @ApiOkResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async buySnack(
     @Body() buySnackDto: BuySnackDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -58,8 +86,12 @@ export class SnackMachineController {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
-  @HttpCode(200)
   @Post(':id/return-money')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Return money from snack machine', description: 'Returns all money from snack machine' })
+  @ApiOkResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async returnMoney(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
     await this.commandBus.execute(new ReturnMoneyCommand(id));
     return this.queryBus.execute(new GetSnackMachineQuery(id));
