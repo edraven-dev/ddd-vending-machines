@@ -1,5 +1,5 @@
 import Currency from 'currency.js';
-import { Money } from '../lib/money';
+import { CoinsAndNotes, Money } from '../lib/money';
 
 describe('Money', () => {
   describe('getAmount', () => {
@@ -12,7 +12,7 @@ describe('Money', () => {
 
   describe('constructor', () => {
     it('should prevent create the money object with negative values', () => {
-      const moneyQuantsArray: [number, number, number, number, number, number][] = [
+      const moneyQuantsArray: CoinsAndNotes[] = [
         [-1, 2, 3, 4, 5, 6],
         [1, -2, 3, 4, 5, 6],
         [1, 2, -3, 4, 5, 6],

@@ -122,6 +122,15 @@ describe('SnackMachineController - e2e', () => {
       expect(response.body.message).toMatchSnapshot();
     });
 
+    it('should return 400 BAD REQUEST when payload is not an array of integers', async () => {
+      const response = await request(app.getHttpServer())
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
+        .send({ money: ['abc', 'abc', 'abc', 'abc', 'abc', '1'] })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
     it('should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers', async () => {
       const response = await request(app.getHttpServer())
         .put(`${testEndpoint(randomUUID())}/insert-money`)

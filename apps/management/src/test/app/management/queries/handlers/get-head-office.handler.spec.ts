@@ -29,26 +29,29 @@ describe('GetHeadOfficeHandler', () => {
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       jest.spyOn(repository, 'findOne');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(repository.findOne).toHaveBeenCalledWith(headOffice.id);
+      expect(repository.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
       (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const id = headOffice.id;
 
-      await expect(handler.execute({ id: headOffice.id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should return HeadOfficeDto with correct data', async () => {
       headOffice.cash = Money.FiveDollar;
       headOffice.changeBalance(new Currency('5.00'));
+      const id = headOffice.id;
 
-      const result = await handler.execute({ id: headOffice.id });
+      const result = await handler.execute({ id });
 
       expect(result).toBeInstanceOf(HeadOfficeDto);
-      expect(result.id).toBe(headOffice.id);
+      expect(result.id).toBe(id);
       expect(result.cash.amount).toBe('$5.00');
       expect(result.balance.amount).toBe('$5.00');
     });

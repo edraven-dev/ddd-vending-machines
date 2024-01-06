@@ -1,3 +1,4 @@
+import { CoinsAndNotes } from '@vending-machines/shared';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt } from 'class-validator';
 
 export class InsertMoneyDto {
@@ -6,5 +7,5 @@ export class InsertMoneyDto {
   @IsArray()
   @ArrayMinSize(6)
   @ArrayMaxSize(6)
-  readonly money!: [number, number, number, number, number, number];
+  readonly money!: CoinsAndNotes;
 }

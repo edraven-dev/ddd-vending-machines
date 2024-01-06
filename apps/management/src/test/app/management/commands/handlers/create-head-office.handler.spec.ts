@@ -1,13 +1,14 @@
-import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { CreateHeadOfficeHandler } from '../../../../../app/management/commands/handlers/create-head-office.handler';
 import { HeadOffice } from '../../../../../app/management/head-office';
+import { HeadOfficeFactory } from '../../../../../app/management/head-office.factory';
 import { HeadOfficeRepository } from '../../../../../app/management/head-office.repository.interface';
 
 describe('CreateHeadOfficeHandler', () => {
   const headOffice = new HeadOffice(randomUUID());
   let handler: CreateHeadOfficeHandler;
+  let factory: HeadOfficeFactory;
   let repository: HeadOfficeRepository;
 
   beforeAll(async () => {
@@ -15,11 +16,12 @@ describe('CreateHeadOfficeHandler', () => {
       providers: [
         CreateHeadOfficeHandler,
         { provide: HeadOfficeRepository, useValue: { save: jest.fn() } },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((headOffice) => headOffice) } },
+        { provide: HeadOfficeFactory, useValue: { create: jest.fn(() => headOffice) } },
       ],
     }).compile();
 
     handler = module.get<CreateHeadOfficeHandler>(CreateHeadOfficeHandler);
+    factory = module.get<HeadOfficeFactory>(HeadOfficeFactory);
     repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
   });
 
@@ -29,24 +31,28 @@ describe('CreateHeadOfficeHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call headOffice.apply', async () => {
-      jest.spyOn(HeadOffice.prototype, 'apply');
+    it('should call headOfficeFactory.create', async () => {
+      jest.spyOn(factory, 'create');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
-      expect(headOffice.apply).toHaveBeenCalled();
+      expect(factory.create).toHaveBeenCalledWith(id);
     });
 
     it('should call HeadOfficeRepository.save with proper data', async () => {
-      await handler.execute({ id: headOffice.id });
+      const id = headOffice.id;
+
+      await handler.execute({ id });
 
       expect(repository.save).toHaveBeenCalledWith(headOffice);
     });
 
     it('should call headOffice.commit', async () => {
       jest.spyOn(HeadOffice.prototype, 'commit');
+      const id = headOffice.id;
 
-      await handler.execute({ id: headOffice.id });
+      await handler.execute({ id });
 
       expect(headOffice.commit).toHaveBeenCalled();
     });

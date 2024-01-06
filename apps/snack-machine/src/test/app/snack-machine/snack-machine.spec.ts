@@ -1,3 +1,10 @@
+import {
+  MoneyInsertedEvent,
+  MoneyLoadedEvent,
+  MoneyUnloadedEvent,
+  SnackBoughtEvent,
+  SnacksLoadedEvent,
+} from '@vending-machines/events';
 import { InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
@@ -45,6 +52,22 @@ describe('SnackMachine', () => {
       const twoCent = Money.add(Money.Cent, Money.Cent);
 
       expect(() => snackMachine.insertMoney(twoCent)).toThrow('Invalid coin or note');
+    });
+
+    it('should apply MoneyInsertedEvent when inserting money', () => {
+      const snackMachine = new SnackMachine();
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.insertMoney(Money.Dollar);
+
+      expect(spy).toHaveBeenCalledWith(expect.any(MoneyInsertedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
+          payload: { insertedMoney: Money.Dollar.toCoinsAndNotes() },
+        }),
+      );
     });
   });
 
@@ -102,6 +125,24 @@ describe('SnackMachine', () => {
 
       expect(() => snackMachine.buySnack(4)).toThrow('Slot at position 4 does not exist');
     });
+
+    it('should apply SnackBoughtEvent when buying', () => {
+      const snackMachine = new SnackMachine();
+      snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
+      snackMachine.insertMoney(Money.Dollar);
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.buySnack(1);
+
+      expect(spy).toHaveBeenCalledWith(expect.any(SnackBoughtEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
+          payload: expect.objectContaining({ slotPosition: 1 }),
+        }),
+      );
+    });
   });
 
   describe('#getSnackPile', () => {
@@ -133,6 +174,27 @@ describe('SnackMachine', () => {
         'Slot at position 4 does not exist',
       );
     });
+
+    it('should apply SnacksLoadedEvent when loading snacks', () => {
+      const snackMachine = new SnackMachine();
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
+
+      expect(spy).toHaveBeenCalledWith(expect.any(SnacksLoadedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
+          payload: {
+            slotPosition: 1,
+            snackId: Snack.Chocolate.id,
+            snackPileQuantity: 10,
+            snackPrice: new Currency(1.0).format({ symbol: '' }),
+          },
+        }),
+      );
+    });
   });
 
   describe('#loadMoney', () => {
@@ -142,6 +204,22 @@ describe('SnackMachine', () => {
       snackMachine.loadMoney(Money.Dollar);
 
       expect(snackMachine.moneyInside.amount).toEqual(new Currency(1.0));
+    });
+
+    it('should apply MoneyLoadedEvent when loading money', () => {
+      const snackMachine = new SnackMachine();
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.loadMoney(Money.Dollar);
+
+      expect(spy).toHaveBeenCalledWith(expect.any(MoneyLoadedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
+          payload: { loadedMoney: Money.Dollar.toCoinsAndNotes() },
+        }),
+      );
     });
   });
 
@@ -171,6 +249,23 @@ describe('SnackMachine', () => {
 
       expect(result).toEqual(Money.None);
       expect(snackMachine.moneyInside).toEqual(Money.None);
+    });
+
+    it('should apply MoneyUnloadedEvent when unloading money', () => {
+      const snackMachine = new SnackMachine();
+      snackMachine.loadMoney(Money.Dollar);
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.unloadMoney();
+
+      expect(spy).toHaveBeenCalledWith(expect.any(MoneyUnloadedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
+          payload: { unloadedMoney: Money.Dollar.toCoinsAndNotes() },
+        }),
+      );
     });
   });
 });

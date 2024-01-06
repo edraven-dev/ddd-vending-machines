@@ -5,6 +5,7 @@ import { AtmProtoService, SnackMachineProtoService } from '@vending-machines/pro
 import { join } from 'node:path';
 import { BalanceChangedHandler } from './balance-changed.handler';
 import { CommandHandlers } from './commands/handlers';
+import { HeadOfficeFactory } from './head-office.factory';
 import { ManagementController } from './management.controller';
 import { AtmProtoServiceClient } from './proto-clients/atm-proto-service.client';
 import { SnackMachineProtoServiceClient } from './proto-clients/snack-machine-proto-service.client';
@@ -17,6 +18,7 @@ import { QueryHandlers } from './queries/handlers';
     ...CommandHandlers,
     ...QueryHandlers,
     BalanceChangedHandler,
+    HeadOfficeFactory,
     {
       provide: AtmProtoServiceClient,
       useValue: new AtmProtoServiceClient(

@@ -1,5 +1,6 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsUUID } from 'class-validator';
 import Currency from 'currency.js';
+import { CoinsAndNotes } from './money';
 
 export class MoneyDto {
   readonly amount: string;
@@ -14,7 +15,7 @@ export class UnloadMoneyDto {
   @IsArray()
   @ArrayMinSize(6)
   @ArrayMaxSize(6)
-  readonly money!: [number, number, number, number, number, number];
+  readonly money!: CoinsAndNotes;
 }
 
 export class LoadMoneyDto extends UnloadMoneyDto {

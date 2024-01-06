@@ -1,4 +1,4 @@
-import { BalanceChangedEvent } from '@vending-machines/events';
+import { BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
 import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
@@ -9,6 +9,13 @@ export class Atm extends AggregateRoot {
 
   loadMoney(money: Money): void {
     this.moneyInside = Money.add(this.moneyInside, money);
+    this.apply(
+      new MoneyLoadedEvent({
+        aggregateId: this.id,
+        aggregateType: this.constructor.name,
+        payload: { loadedMoney: this.moneyInside.toCoinsAndNotes() },
+      }),
+    );
   }
 
   canTakeMoney(amount: Currency): string {
