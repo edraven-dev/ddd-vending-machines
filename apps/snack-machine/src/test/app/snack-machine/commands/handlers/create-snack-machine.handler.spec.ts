@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { CreateSnackMachineHandler } from '../../../../../app/snack-machine/commands/handlers/create-snack-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
@@ -31,7 +32,7 @@ describe('CreateSnackMachineHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call snackMachineFactory.create', async () => {
+    it('should create Snack Machine entity', async () => {
       jest.spyOn(factory, 'create');
       const id = snackMachine.id;
 
@@ -40,7 +41,16 @@ describe('CreateSnackMachineHandler', () => {
       expect(factory.create).toHaveBeenCalledWith(id);
     });
 
-    it('should call snackMachine.loadSnacks 3 times', async () => {
+    it('should load money into Snack Machine', async () => {
+      jest.spyOn(SnackMachine.prototype, 'loadMoney');
+      const id = snackMachine.id;
+
+      await handler.execute({ id });
+
+      expect(snackMachine.loadMoney).toHaveBeenCalledWith(new Money(10, 10, 10, 10, 10, 10));
+    });
+
+    it('should load snacks into snack machine 3 times', async () => {
       jest.spyOn(SnackMachine.prototype, 'loadSnacks');
       const id = snackMachine.id;
 
@@ -49,7 +59,7 @@ describe('CreateSnackMachineHandler', () => {
       expect(snackMachine.loadSnacks).toHaveBeenCalledTimes(3);
     });
 
-    it('should call snackMachineRepository.save with proper data', async () => {
+    it('should save Snack Machine with repository', async () => {
       jest.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(() => {});
       const id = snackMachine.id;
 
@@ -59,7 +69,7 @@ describe('CreateSnackMachineHandler', () => {
       expect(repository.save).toHaveBeenCalledWith({ ...snackMachine, slots: expect.any(Array) });
     });
 
-    it('should call snackMachine.commit', async () => {
+    it('should commit events', async () => {
       jest.spyOn(SnackMachine.prototype, 'commit');
       const id = snackMachine.id;
 

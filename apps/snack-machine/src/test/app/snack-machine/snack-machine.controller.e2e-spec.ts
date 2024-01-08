@@ -53,14 +53,14 @@ describe('SnackMachineController - e2e', () => {
   describe('GET /:id', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .get(testEndpoint(randomUUID()))
+        .get(`${testEndpoint(randomUUID())}`)
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });
 
     it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
       const response = await request(app.getHttpServer())
-        .get(testEndpoint('not-valid-uuid'))
+        .get(`${testEndpoint('not-valid-uuid')}`)
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
@@ -221,16 +221,82 @@ describe('SnackMachineController - e2e', () => {
     });
   });
 
-  describe('GET /:id', () => {
+  describe('PATCH /:id/load-snacks', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .get(`${testEndpoint(randomUUID())}`)
-        .expect(HttpStatus.OK);
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1, quantity: 1 })
+        .expect(HttpStatus.OK)
+        .expect(queryBusMock.execute());
     });
 
-    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+    it('should return 400 BAD REQUEST when position is not a integer', async () => {
       const response = await request(app.getHttpServer())
-        .get(`${testEndpoint('not-valid-uuid')}`)
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 'not an integer', quantity: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when position is a non-integer number', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1.1, quantity: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when position is below 1', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 0, quantity: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when position is above 3', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 4, quantity: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when quantity is not a integer', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1, quantity: 'not an integer' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when quantity is a non-integer number', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1, quantity: 1.1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when quantity is below 1', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1, quantity: 0 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when quantity is above 20', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint(randomUUID())}/load-snacks`)
+        .send({ position: 1, quantity: 21 })
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();

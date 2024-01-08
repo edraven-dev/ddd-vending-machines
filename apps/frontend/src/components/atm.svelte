@@ -4,8 +4,9 @@
   import currency from 'currency.js';
   import { failure, success } from '../utils/actions';
 
+  const id = localStorage.getItem('id');
   axios.defaults.headers.common['Content-Type'] = 'application/json';
-  axios.defaults.baseURL = '/api/atm';
+  axios.defaults.baseURL = `/api/atm/${id}`;
 
   export let atm: any; // eslint-disable-line
   let amount: number;
@@ -30,24 +31,38 @@
   };
 </script>
 
-<div class="bg-gray-700 shadow shadow-slate-500 rounded-md m-5 p-6 text-white">
-  <div class="my-3 text-center">
-    <span class="mr-5">
-      <span>Money inside:</span> <strong>{atm.moneyInside.amount}</strong>
-    </span>
-    <span class="ml-3">
-      <span>Money charged:</span> <strong>{atm.moneyCharged.amount}</strong>
-    </span>
+<main>
+  <div class="card bg-gray-800 p-4 rounded-lg">
+    <div class="flex flex-col items-center">
+      <div class="mb-10">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-700 p-2 rounded-md">
+            <p class="text-white text-center">Money Inside</p>
+            <p class="text-white text-xl font-bold text-center">{atm.moneyInside.amount}</p>
+          </div>
+          <div class="bg-gray-700 p-2 rounded-md">
+            <p class="text-white text-center">Money Charged</p>
+            <p class="text-white text-xl font-bold text-center">{atm.moneyCharged.amount}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label for="amount" class="block text-sm font-medium text-white">Enter Amount</label>
+        <input
+          id="amount"
+          class="take-money-input"
+          placeholder="Enter amount here..."
+          type="number"
+          name="amount"
+          bind:value={amount}
+        />
+      </div>
+      <button
+        class="primary-btn w-full"
+        on:click={async () => await takeMoney(new currency(amount).format({ symbol: '' }))}
+      >
+        Take Money
+      </button>
+    </div>
   </div>
-  <div>
-    <input
-      bind:value={amount}
-      type="number"
-      class="rounded-md p-2 w-full text-right text-neutral-600"
-      placeholder="0.01"
-    />
-  </div>
-  <div class="my-3">
-    <button class="btn btn-blue w-full" on:click={() => takeMoney(new currency(amount).toString())}>Take money</button>
-  </div>
-</div>
+</main>

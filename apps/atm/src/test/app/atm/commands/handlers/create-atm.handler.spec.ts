@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { Atm } from '../../../../../app/atm/atm';
 import { AtmFactory } from '../../../../../app/atm/atm.factory';
@@ -27,7 +28,7 @@ describe('CreateAtmHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call atmFactory.create with correct id', async () => {
+    it('should create ATM entity', async () => {
       jest.spyOn(factory, 'create');
       const id = atm.id;
 
@@ -36,7 +37,16 @@ describe('CreateAtmHandler', () => {
       expect(factory.create).toHaveBeenCalledWith(id);
     });
 
-    it('should call atmRepository.save with proper data', async () => {
+    it('should load money into ATM', async () => {
+      jest.spyOn(Atm.prototype, 'loadMoney');
+      const id = atm.id;
+
+      await handler.execute(new CreateAtmCommand(id));
+
+      expect(atm.loadMoney).toHaveBeenCalledWith(new Money(100, 100, 100, 100, 100, 100));
+    });
+
+    it('should save ATM with repository', async () => {
       const id = atm.id;
 
       await handler.execute(new CreateAtmCommand(id));
@@ -44,7 +54,7 @@ describe('CreateAtmHandler', () => {
       expect(atmRepository.save).toHaveBeenCalledWith(atm);
     });
 
-    it('should call atm.commit', async () => {
+    it('should commit events', async () => {
       jest.spyOn(Atm.prototype, 'commit');
       const id = atm.id;
 

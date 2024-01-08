@@ -1,24 +1,18 @@
 <script>
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import '../app.css';
-  import Header from './header.svelte';
-  import Nav from './nav.svelte';
+  import Header from '../components/header.svelte';
 
   const options = { pausable: true, reversed: true, intro: { y: 192 } };
 </script>
 
-<div class="min-h-full">
-  <Nav />
+<div class="dark min-h-screen bg-black text-gray-200 p-10">
   <Header />
-  <main>
-    <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-      <slot />
-    </div>
-  </main>
+  <slot />
 </div>
 <SvelteToast {options} />
 
-<style>
+<style lang="postcss">
   :root {
     --toastContainerTop: auto;
     --toastContainerRight: auto;

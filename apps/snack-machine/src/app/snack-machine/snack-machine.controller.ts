@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
@@ -13,10 +13,12 @@ import { Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
+import { LoadSnacksCommand } from './commands/impl/load-snacks.command';
 import { ReturnMoneyCommand } from './commands/impl/return-money.command';
 import { BuySnackDto } from './dto/buy-snack.dto';
 import { CreateSnackMachineDto } from './dto/create-snack-machine.dto';
 import { InsertMoneyDto } from './dto/insert-money.dto';
+import { LoadSnacksDto } from './dto/load-snacks.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
 import { SnackMachineDto } from './dto/snack-machine.dto';
 import { GetMoneyInMachineQuery } from './queries/impl/get-money-in-machine.query';
@@ -94,6 +96,20 @@ export class SnackMachineController {
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async returnMoney(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
     await this.commandBus.execute(new ReturnMoneyCommand(id));
+    return this.queryBus.execute(new GetSnackMachineQuery(id));
+  }
+
+  @Patch(':id/load-snacks')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Load snacks into snack machine', description: 'Loads snacks into snack machine' })
+  @ApiOkResponse({ type: SnackMachineDto })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  @ApiNotFoundResponse({ description: 'Snack machine not found' })
+  async loadSnacks(
+    @Body() requestDto: LoadSnacksDto,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<SnackMachineDto> {
+    await this.commandBus.execute(new LoadSnacksCommand(id, requestDto.position, requestDto.quantity));
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 

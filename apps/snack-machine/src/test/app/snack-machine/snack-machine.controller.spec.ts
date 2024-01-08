@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
+import { LoadSnacksCommand } from '../../../app/snack-machine/commands/impl/load-snacks.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
 import { GetMoneyInMachineQuery } from '../../../app/snack-machine/queries/impl/get-money-in-machine.query';
 import { GetSnackMachineQuery } from '../../../app/snack-machine/queries/impl/get-snack-machine.query';
@@ -129,6 +130,28 @@ describe('SnackMachineController', () => {
       await controller.getMoneyInMachine(id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(new GetMoneyInMachineQuery(id));
+    });
+  });
+
+  describe('#loadSnacks', () => {
+    it('should execute LoadSnacksCommand', async () => {
+      const id = randomUUID();
+      const position = 1;
+      const quantity = 10;
+
+      await controller.loadSnacks({ position, quantity }, id);
+
+      expect(commandBus.execute).toHaveBeenCalledWith(new LoadSnacksCommand(id, position, quantity));
+    });
+
+    it('should execute GetSnackMachineQuery', async () => {
+      const id = randomUUID();
+      const position = 1;
+      const quantity = 10;
+
+      await controller.loadSnacks({ position, quantity }, id);
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
     });
   });
 
