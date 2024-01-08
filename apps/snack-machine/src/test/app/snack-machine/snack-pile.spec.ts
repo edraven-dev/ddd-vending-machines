@@ -59,6 +59,32 @@ describe('Snack Pile', () => {
     });
   });
 
+  describe('#addQuantity', () => {
+    it('should add quantity', () => {
+      const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));
+
+      const result = snackPile.addQuantity(5);
+
+      expect(result.quantity).toEqual(15);
+    });
+
+    it('should not change the original pile', () => {
+      const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));
+
+      snackPile.addQuantity(5);
+
+      expect(snackPile.quantity).toEqual(10);
+    });
+
+    it('should return a new pile', () => {
+      const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));
+
+      const result = snackPile.addQuantity(5);
+
+      expect(result).not.toBe(snackPile);
+    });
+  });
+
   describe('#equals', () => {
     it('should be equal to another snack pile with the same values', () => {
       const snackPile1 = new SnackPile(Snack.Chocolate, 10, new Currency(1.0));

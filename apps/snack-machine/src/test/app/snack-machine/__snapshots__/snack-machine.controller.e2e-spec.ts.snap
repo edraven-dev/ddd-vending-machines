@@ -2,9 +2,59 @@
 
 exports[`SnackMachineController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 
-exports[`SnackMachineController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 2`] = `"Validation failed (uuid v 4 is expected)"`;
-
 exports[`SnackMachineController - e2e GET /:id/money-in-machine should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when position is a non-integer number 1`] = `
+[
+  "position must be an integer number",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when position is above 3 1`] = `
+[
+  "position must not be greater than 3",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when position is below 1 1`] = `
+[
+  "position must not be less than 1",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when position is not a integer 1`] = `
+[
+  "position must not be greater than 3",
+  "position must not be less than 1",
+  "position must be an integer number",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when quantity is a non-integer number 1`] = `
+[
+  "quantity must be an integer number",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when quantity is above 20 1`] = `
+[
+  "quantity must not be greater than 20",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when quantity is below 1 1`] = `
+[
+  "quantity must not be less than 1",
+]
+`;
+
+exports[`SnackMachineController - e2e PATCH /:id/load-snacks should return 400 BAD REQUEST when quantity is not a integer 1`] = `
+[
+  "quantity must not be greater than 20",
+  "quantity must not be less than 1",
+  "quantity must be an integer number",
+]
+`;
 
 exports[`SnackMachineController - e2e POST / should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
 [
