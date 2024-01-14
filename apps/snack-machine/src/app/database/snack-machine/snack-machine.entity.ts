@@ -33,7 +33,7 @@ export class MoneyEmbeddable {
 }
 
 @Entity({ tableName: 'snack_machine' })
-export default class SnackMachineEntity extends BaseEntity<SnackMachineEntity, 'id'> {
+export default class SnackMachineEntity extends BaseEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 

@@ -25,12 +25,12 @@ export class MikroOrmAtmRepository implements AtmRepository {
   }
 
   async save(atm: Atm): Promise<void> {
-    let atmEntity = await this.atmRepository.findOne({ id: atm.id });
+    const existingEntity = await this.atmRepository.findOne({ id: atm.id });
 
-    if (atmEntity) {
-      atmEntity.assign(AtmMapper.toPersistence(atm));
+    if (existingEntity) {
+      existingEntity.assign(AtmMapper.toPersistence(atm));
     } else {
-      atmEntity = this.atmRepository.create(AtmMapper.toPersistence(atm));
+      this.atmRepository.create(AtmMapper.toPersistence(atm));
     }
 
     await this.em.flush();

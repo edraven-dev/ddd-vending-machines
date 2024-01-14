@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
 import { SnackMachine } from '../../snack-machine/snack-machine';
@@ -28,13 +28,12 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
   }
 
   async save(snackMachine: SnackMachine): Promise<void> {
-    let snackMachineEntity: SnackMachineEntity | Loaded<SnackMachineEntity, 'slots'> =
-      await this.snackMachineRepository.findOne({ id: snackMachine.id }, { populate: ['slots'] });
+    const existingEntity = await this.snackMachineRepository.findOne({ id: snackMachine.id }, { populate: ['slots'] });
 
-    if (snackMachineEntity) {
-      snackMachineEntity.assign(SnackMachineMapper.toPersistence(snackMachine));
+    if (existingEntity) {
+      existingEntity.assign(SnackMachineMapper.toPersistence(snackMachine));
     } else {
-      snackMachineEntity = this.snackMachineRepository.create(SnackMachineMapper.toPersistence(snackMachine));
+      this.snackMachineRepository.create(SnackMachineMapper.toPersistence(snackMachine));
     }
 
     await this.em.flush();

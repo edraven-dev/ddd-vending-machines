@@ -2,7 +2,7 @@ import { BaseEntity, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/c
 import { MoneyEmbeddable } from '@vending-machines/shared';
 
 @Entity({ tableName: 'atm' })
-export default class AtmEntity extends BaseEntity<AtmEntity, 'id'> {
+export default class AtmEntity extends BaseEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
