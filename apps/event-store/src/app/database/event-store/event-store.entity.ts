@@ -1,7 +1,7 @@
 import { BaseEntity, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'event_store' })
-export default class EventStoreEntity extends BaseEntity<EventStoreEntity, 'event_id'> {
+export default class EventStoreEntity extends BaseEntity {
   @PrimaryKey({ type: 'uuid' })
   event_id!: string;
 

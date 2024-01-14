@@ -1,5 +1,4 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager } from '@mikro-orm/core';
 import { Injectable, Provider } from '@nestjs/common';
 import { DomainEvent } from '@vending-machines/events';
 import { EventStoreRepository } from '../../event-store/event-store.repository.interface';
@@ -7,11 +6,7 @@ import EventStoreEntity from './event-store.entity';
 
 @Injectable()
 export class MikroOrmEventStoreRepository implements EventStoreRepository {
-  constructor(
-    @InjectRepository(EventStoreEntity)
-    private readonly eventStoreRepository: EntityRepository<EventStoreEntity>,
-    private readonly em: EntityManager,
-  ) {}
+  constructor(private readonly em: EntityManager) {}
 
   async save<T extends Record<string, unknown>>(event: DomainEvent<T>): Promise<void> {
     const eventEntity = new EventStoreEntity();
