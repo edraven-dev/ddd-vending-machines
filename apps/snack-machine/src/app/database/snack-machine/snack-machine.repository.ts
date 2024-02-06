@@ -38,6 +38,11 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
 
     await this.em.flush();
   }
+
+  async delete(id: string): Promise<void> {
+    const snackMachineRef = this.em.getReference(SnackMachineEntity, id);
+    await this.em.remove(snackMachineRef).flush();
+  }
 }
 
 export const SnackMachineRepositoryProvider: Provider = {

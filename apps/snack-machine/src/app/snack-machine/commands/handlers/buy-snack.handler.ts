@@ -11,12 +11,12 @@ export class BuySnackHandler implements ICommandHandler<BuySnackCommand, void> {
   ) {}
 
   async execute({ id, position }: BuySnackCommand) {
-    const snackMachine = this.eventPublisher.mergeObjectContext(await this.snackMachineRepository.findOne(id));
-
-    if (!snackMachine) {
+    const existingSnackMachine = await this.snackMachineRepository.findOne(id);
+    if (!existingSnackMachine) {
       throw new NotFoundException(`Snack machine with id ${id} not found`);
     }
 
+    const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     snackMachine.buySnack(position);
     await this.snackMachineRepository.save(snackMachine);
     snackMachine.commit();

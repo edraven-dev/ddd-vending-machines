@@ -10,7 +10,11 @@ export class HeadOfficeFactory {
   create(id?: string): HeadOffice {
     const headOffice = this.eventPublisher.mergeObjectContext(new HeadOffice(id));
     headOffice.apply(
-      new HeadOfficeCreatedEvent({ aggregateId: id, aggregateType: headOffice.constructor.name, payload: {} }),
+      new HeadOfficeCreatedEvent({
+        aggregateId: headOffice.id,
+        aggregateType: headOffice.constructor.name,
+        payload: {},
+      }),
     );
     return headOffice;
   }

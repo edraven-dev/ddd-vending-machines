@@ -9,7 +9,7 @@ export class AtmFactory {
 
   create(id?: string): Atm {
     const atm = this.eventPublisher.mergeObjectContext(new Atm(id));
-    atm.apply(new AtmCreatedEvent({ aggregateId: id, aggregateType: atm.constructor.name, payload: {} }));
+    atm.apply(new AtmCreatedEvent({ aggregateId: atm.id, aggregateType: atm.constructor.name, payload: {} }));
     return atm;
   }
 }

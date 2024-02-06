@@ -10,7 +10,11 @@ export class SnackMachineFactory {
   create(id?: string): SnackMachine {
     const snackMachine = this.eventPublisher.mergeObjectContext(new SnackMachine(id));
     snackMachine.apply(
-      new SnackMachineCreatedEvent({ aggregateId: id, aggregateType: snackMachine.constructor.name, payload: {} }),
+      new SnackMachineCreatedEvent({
+        aggregateId: snackMachine.id,
+        aggregateType: snackMachine.constructor.name,
+        payload: {},
+      }),
     );
     return snackMachine;
   }

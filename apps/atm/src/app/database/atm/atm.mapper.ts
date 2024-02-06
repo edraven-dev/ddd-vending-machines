@@ -1,4 +1,4 @@
-import { EntityData } from '@mikro-orm/core';
+import { RequiredEntityData } from '@mikro-orm/core';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../atm/atm';
@@ -23,7 +23,7 @@ export class AtmMapper {
     });
   }
 
-  static toPersistence(atm: Atm): EntityData<AtmEntity> {
+  static toPersistence(atm: Atm): RequiredEntityData<AtmEntity> {
     return {
       id: atm.id,
       money: { ...atm.moneyInside },

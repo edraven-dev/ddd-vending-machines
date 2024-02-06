@@ -1,4 +1,4 @@
-import { MoneyLoadedEvent } from '@vending-machines/events';
+import { AtmDeletedEvent, MoneyLoadedEvent } from '@vending-machines/events';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
@@ -113,6 +113,23 @@ describe('Atm', () => {
           payload: { delta: '0.01' },
         },
       ]);
+    });
+  });
+
+  describe('#markAsDeleted', () => {
+    it('should apply AtmDeletedEvent', () => {
+      const atm = new Atm();
+      const spy = jest.spyOn(atm, 'apply');
+
+      atm.markAsDeleted();
+
+      expect(spy).toHaveBeenCalledWith(expect.any(AtmDeletedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: atm.id,
+          aggregateType: atm.constructor.name,
+        }),
+      );
     });
   });
 });

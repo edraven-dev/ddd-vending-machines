@@ -1,10 +1,10 @@
-import { BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
+import { AtmDeletedEvent, BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
 import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
 export class Atm extends AggregateRoot {
-  moneyInside: Money = Money.None;
-  moneyCharged: Currency = new Currency(0);
+  moneyInside = Money.None;
+  moneyCharged = new Currency(0);
   private readonly commissionRate = new Currency(0.01);
 
   loadMoney(money: Money): void {
@@ -62,5 +62,9 @@ export class Atm extends AggregateRoot {
       return amount.add(commission).subtract(lessThanCent).add(this.commissionRate);
     }
     return amount.add(commission);
+  }
+
+  markAsDeleted(): void {
+    this.apply(new AtmDeletedEvent({ aggregateId: this.id, aggregateType: this.constructor.name, payload: {} }));
   }
 }
