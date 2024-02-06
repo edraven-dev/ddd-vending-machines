@@ -37,6 +37,7 @@
       "executor": "nx:run-commands",
       "defaultConfiguration": "dev",
       "options": {
+        "command": "vitest run",
         "cwd": "apps/frontend"
       },
       "configurations": {
