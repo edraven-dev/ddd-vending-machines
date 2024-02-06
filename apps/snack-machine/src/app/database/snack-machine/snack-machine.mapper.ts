@@ -8,6 +8,7 @@ import { SnackMapper } from '../snack/snack.mapper';
 import SnackMachineEntity from './snack-machine.entity';
 
 export class SnackMachineMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: SnackMachineEntity): SnackMachine {

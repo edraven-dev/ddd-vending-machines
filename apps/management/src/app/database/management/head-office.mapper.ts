@@ -5,6 +5,7 @@ import { HeadOffice } from '../../management/head-office';
 import HeadOfficeEntity from './head-office.entity';
 
 export class HeadOfficeMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: HeadOfficeEntity): HeadOffice {

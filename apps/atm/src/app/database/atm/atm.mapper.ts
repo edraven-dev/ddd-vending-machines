@@ -5,6 +5,7 @@ import { Atm } from '../../atm/atm';
 import AtmEntity from './atm.entity';
 
 export class AtmMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: AtmEntity): Atm {

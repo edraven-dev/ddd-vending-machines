@@ -60,7 +60,7 @@ describe('CreateSnackMachineHandler', () => {
     });
 
     it('should save Snack Machine with repository', async () => {
-      jest.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(() => {});
+      jest.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(jest.fn());
       const id = snackMachine.id;
 
       await handler.execute({ id });
