@@ -3,6 +3,7 @@ import {
   MoneyLoadedEvent,
   MoneyUnloadedEvent,
   SnackBoughtEvent,
+  SnackMachineDeletedEvent,
   SnacksLoadedEvent,
 } from '@vending-machines/events';
 import { InvalidOperationException, Money } from '@vending-machines/shared';
@@ -264,6 +265,23 @@ describe('SnackMachine', () => {
           aggregateId: snackMachine.id,
           aggregateType: snackMachine.constructor.name,
           payload: { unloadedMoney: Money.Dollar.toCoinsAndNotes() },
+        }),
+      );
+    });
+  });
+
+  describe('#markAsDeleted', () => {
+    it('should apply HeadOfficeDeletedEvent when marking as deleted', () => {
+      const snackMachine = new SnackMachine();
+      const spy = jest.spyOn(snackMachine, 'apply');
+
+      snackMachine.markAsDeleted();
+
+      expect(spy).toHaveBeenCalledWith(expect.any(SnackMachineDeletedEvent));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aggregateId: snackMachine.id,
+          aggregateType: snackMachine.constructor.name,
         }),
       );
     });

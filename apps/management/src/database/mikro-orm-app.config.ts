@@ -14,7 +14,13 @@ if (process.env.NODE_ENV !== 'test') {
   const migrationsCtx = require.context('./migrations', false, /\.ts$/);
   migrationsList = migrationsCtx
     .keys()
-    .reduce((acc, key) => [...acc, { name: basename(key), class: Object.values(migrationsCtx(key))[0] }], []);
+    .reduce(
+      (acc: Record<string, unknown>[], key: string) => [
+        ...acc,
+        { name: basename(key), class: Object.values(migrationsCtx(key))[0] },
+      ],
+      [],
+    );
 }
 //#endregion
 

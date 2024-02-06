@@ -14,12 +14,12 @@ export class SnackMachineService {
 
   @CreateRequestContext()
   async unloadMoney(id: string): Promise<UnloadMoneyDto> {
-    const snackMachine = this.eventPublisher.mergeObjectContext(await this.snackMachineRepository.findOne(id));
-
-    if (!snackMachine) {
+    const existingSnackMachine = await this.snackMachineRepository.findOne(id);
+    if (!existingSnackMachine) {
       throw new NotFoundException(`Snack machine with id ${id} not found`);
     }
 
+    const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     const money = snackMachine.unloadMoney();
     await this.snackMachineRepository.save(snackMachine);
     snackMachine.commit();

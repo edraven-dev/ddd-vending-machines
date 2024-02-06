@@ -11,12 +11,12 @@ export class LoadSnacksHandler implements ICommandHandler<LoadSnacksCommand, voi
   ) {}
 
   async execute({ id, position, quantity }: LoadSnacksCommand) {
-    const snackMachine = this.eventPublisher.mergeObjectContext(await this.snackMachineRepository.findOne(id));
-
-    if (!snackMachine) {
+    const existingSnackMachine = await this.snackMachineRepository.findOne(id);
+    if (!existingSnackMachine) {
       throw new NotFoundException(`Snack machine with id ${id} not found`);
     }
 
+    const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     const snackPile = snackMachine.getSnackPile(position);
     snackMachine.loadSnacks(position, snackPile.addQuantity(quantity));
     await this.snackMachineRepository.save(snackMachine);

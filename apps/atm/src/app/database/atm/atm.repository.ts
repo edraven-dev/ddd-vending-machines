@@ -35,6 +35,11 @@ export class MikroOrmAtmRepository implements AtmRepository {
 
     await this.em.flush();
   }
+
+  async delete(id: string): Promise<void> {
+    const atmRef = this.em.getReference(AtmEntity, id);
+    await this.em.remove(atmRef).flush();
+  }
 }
 
 export const AtmRepositoryProvider: Provider = {

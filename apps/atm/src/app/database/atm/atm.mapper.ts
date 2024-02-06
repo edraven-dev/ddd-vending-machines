@@ -1,10 +1,11 @@
-import { EntityData } from '@mikro-orm/core';
+import { RequiredEntityData } from '@mikro-orm/core';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../atm/atm';
 import AtmEntity from './atm.entity';
 
 export class AtmMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: AtmEntity): Atm {
@@ -23,7 +24,7 @@ export class AtmMapper {
     });
   }
 
-  static toPersistence(atm: Atm): EntityData<AtmEntity> {
+  static toPersistence(atm: Atm): RequiredEntityData<AtmEntity> {
     return {
       id: atm.id,
       money: { ...atm.moneyInside },

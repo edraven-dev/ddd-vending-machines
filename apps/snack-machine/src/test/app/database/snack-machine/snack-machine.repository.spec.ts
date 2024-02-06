@@ -69,9 +69,10 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       const result = await repository.findOne(snackMachineEntity.id);
 
-      expect(result).toBeInstanceOf(SnackMachine);
-      expect(result.id).toBe('id');
-      expect(result.moneyInside.oneDollarCount).toBe(1);
+      expect(result).toBeDefined();
+      expect(result!).toBeInstanceOf(SnackMachine);
+      expect(result!.id).toBe('id');
+      expect(result!.moneyInside.oneDollarCount).toBe(1);
     });
   });
 

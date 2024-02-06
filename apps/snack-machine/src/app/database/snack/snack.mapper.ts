@@ -3,6 +3,7 @@ import { Snack } from '../../snack/snack';
 import SnackEntity from './snack.entity';
 
 export class SnackMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: EntityDTO<SnackEntity>): Snack {

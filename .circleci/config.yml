@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.1.1
+  node: circleci/node@5.2.0
 
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:20.10.0
+    - image: cimg/node:20.11.0
   environment:
     PUBLIC_API_HOST: http://localhost
 
@@ -27,8 +27,6 @@ jobs:
   test:
     <<: *defaults
     resource_class: medium
-    docker:
-      - image: cimg/node:20.10.0
     steps:
       - checkout_and_install
       - run:

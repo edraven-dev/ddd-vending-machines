@@ -14,6 +14,12 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     private readonly em: EntityManager,
   ) {}
 
+  async findAll(): Promise<HeadOffice[]> {
+    const headOfficeEntities = await this.headOfficeRepository.findAll();
+
+    return headOfficeEntities.map((headOfficeEntity) => HeadOfficeMapper.toDomain(headOfficeEntity));
+  }
+
   async findOne(id: string): Promise<HeadOffice | null> {
     const headOfficeEntity = await this.headOfficeRepository.findOne({ id });
 
@@ -34,6 +40,11 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     }
 
     await this.em.flush();
+  }
+
+  async delete(id: string): Promise<void> {
+    const headOfficeRef = this.em.getReference(HeadOfficeEntity, id);
+    await this.em.remove(headOfficeRef).flush();
   }
 }
 

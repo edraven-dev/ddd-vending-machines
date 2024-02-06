@@ -11,12 +11,12 @@ export class TakeMoneyHandler implements ICommandHandler<TakeMoneyCommand, void>
   ) {}
 
   async execute({ id, amount }: TakeMoneyCommand) {
-    const atm = this.eventPublisher.mergeObjectContext(await this.atmRepository.findOne(id));
-
-    if (!atm) {
+    const existingAtm = await this.atmRepository.findOne(id);
+    if (!existingAtm) {
       throw new NotFoundException(`Atm with id ${id} not found`);
     }
 
+    const atm = this.eventPublisher.mergeObjectContext(existingAtm);
     atm.takeMoney(amount);
     await this.atmRepository.save(atm);
     atm.commit();

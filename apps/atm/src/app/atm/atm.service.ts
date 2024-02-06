@@ -14,12 +14,12 @@ export class AtmService {
 
   @CreateRequestContext()
   async loadMoney(id: string, money: Money): Promise<void> {
-    const atm = this.eventPublisher.mergeObjectContext(await this.atmRepository.findOne(id));
-
-    if (!atm) {
+    const existingAtm = await this.atmRepository.findOne(id);
+    if (!existingAtm) {
       throw new NotFoundException(`Atm with id ${id} not found`);
     }
 
+    const atm = this.eventPublisher.mergeObjectContext(existingAtm);
     atm.loadMoney(money);
     await this.atmRepository.save(atm);
     atm.commit();

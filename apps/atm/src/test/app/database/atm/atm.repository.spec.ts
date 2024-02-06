@@ -22,7 +22,7 @@ describe('MikroOrmAtmRepository', () => {
         },
         {
           provide: EntityManager,
-          useValue: { flush: jest.fn() },
+          useValue: { flush: jest.fn(), getReference: jest.fn(), remove: jest.fn(() => ({ flush: jest.fn() })) },
         },
       ],
     }).compile();
@@ -66,9 +66,10 @@ describe('MikroOrmAtmRepository', () => {
 
       const result = await repository.findOne(atmEntity.id);
 
-      expect(result).toBeInstanceOf(Atm);
-      expect(result.id).toBe('id');
-      expect(result.moneyInside.oneDollarCount).toBe(1);
+      expect(result).toBeDefined();
+      expect(result!).toBeInstanceOf(Atm);
+      expect(result!.id).toBe('id');
+      expect(result!.moneyInside.oneDollarCount).toBe(1);
     });
   });
 
@@ -108,6 +109,42 @@ describe('MikroOrmAtmRepository', () => {
       Object.assign(atm, { id: 'id', money: Money.Dollar });
 
       await repository.save(atm);
+
+      expect(entityManager.flush).toHaveBeenCalled();
+    });
+  });
+
+  describe('#delete', () => {
+    it('should call entityManager.getReference with proper id', async () => {
+      const atmEntity = new AtmEntity();
+      atmEntity.id = 'id';
+      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
+
+      await repository.delete(atmEntity.id);
+
+      expect(entityManager.getReference).toHaveBeenCalledWith(AtmEntity, 'id');
+    });
+
+    it('should call entityManager.remove with reference returned by entityManager.getReference', async () => {
+      const atmEntity = new AtmEntity();
+      atmEntity.id = 'id';
+      const atmRef = new AtmEntity();
+      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmRef);
+      jest.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
+
+      await repository.delete(atmEntity.id);
+
+      expect(entityManager.remove).toHaveBeenCalledWith(atmRef);
+    });
+
+    it('should call entityManager.flush', async () => {
+      const atmEntity = new AtmEntity();
+      atmEntity.id = 'id';
+      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
+      jest.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
+      jest.spyOn(entityManager, 'flush').mockImplementation(() => Promise.resolve());
+
+      await repository.delete(atmEntity.id);
 
       expect(entityManager.flush).toHaveBeenCalled();
     });

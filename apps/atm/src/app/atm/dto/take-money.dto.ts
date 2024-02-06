@@ -13,5 +13,5 @@ export class TakeMoneyDto {
     }
     return new Currency(value);
   })
-  amount: Currency;
+  amount!: Currency;
 }

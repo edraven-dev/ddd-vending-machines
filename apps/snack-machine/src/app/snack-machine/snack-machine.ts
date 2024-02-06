@@ -5,6 +5,7 @@ import {
   MoneyReturnedEvent,
   MoneyUnloadedEvent,
   SnackBoughtEvent,
+  SnackMachineDeletedEvent,
   SnacksLoadedEvent,
 } from '@vending-machines/events';
 import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
@@ -145,5 +146,11 @@ export class SnackMachine extends AggregateRoot {
       throw new InvalidOperationException(`Slot at position ${position} does not exist`);
     }
     return slot;
+  }
+
+  markAsDeleted(): void {
+    this.apply(
+      new SnackMachineDeletedEvent({ aggregateId: this.id, aggregateType: this.constructor.name, payload: {} }),
+    );
   }
 }

@@ -22,7 +22,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vite dev",
+        "command": "vite",
         "cwd": "apps/frontend"
       }
     },
@@ -37,6 +37,7 @@
       "executor": "nx:run-commands",
       "defaultConfiguration": "dev",
       "options": {
+        "command": "vitest run",
         "cwd": "apps/frontend"
       },
       "configurations": {

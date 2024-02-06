@@ -1,4 +1,4 @@
-import { EntityData } from '@mikro-orm/core';
+import { RequiredEntityData } from '@mikro-orm/core';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Slot } from '../../snack-machine/slot';
@@ -8,6 +8,7 @@ import { SnackMapper } from '../snack/snack.mapper';
 import SnackMachineEntity from './snack-machine.entity';
 
 export class SnackMachineMapper {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static toDomain(entity: SnackMachineEntity): SnackMachine {
@@ -23,7 +24,7 @@ export class SnackMachineMapper {
         entity.money.twentyDollarCount,
       ),
       moneyInTransaction: new Currency(entity.moneyInTransaction),
-      slots: entity.slots.toArray().reduce((slots, slotEntity) => {
+      slots: entity.slots.toArray().reduce<Slot[]>((slots, slotEntity) => {
         const snack = SnackMapper.toDomain(slotEntity.snackPile.snack);
         const slot = new Slot(snackMachine, slotEntity.position);
         Object.assign(slot, {
@@ -36,7 +37,7 @@ export class SnackMachineMapper {
     });
   }
 
-  static toPersistence(snackMachine: SnackMachine): EntityData<SnackMachineEntity> {
+  static toPersistence(snackMachine: SnackMachine): RequiredEntityData<SnackMachineEntity> {
     return {
       id: snackMachine.id,
       money: { ...snackMachine.moneyInside },
