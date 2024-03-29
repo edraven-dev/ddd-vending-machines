@@ -15,6 +15,12 @@ commands:
       - node/install-packages
 
 jobs:
+  <% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>noop:
+    <<: *defaults
+    steps:
+      - run:
+          name: No changes
+          command: echo "No changes"<% } %>
   <% for (let i = 0; i < buildable_projects.length; i++) { %>
   build-<%= buildable_projects[i] %>:
     <<: *defaults
@@ -58,4 +64,4 @@ workflows:
       <% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i] %>
       <% } %>
       <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
-      <% } %>
+      <% } %><% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>- noop<% } %>

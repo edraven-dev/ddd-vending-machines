@@ -38,7 +38,11 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/.eslintrc.json"
     ],
-    "sharedGlobals": ["{workspaceRoot}/.circleci/config.yml"]
+    "sharedGlobals": [
+      "{workspaceRoot}/.circleci/config.yml",
+      "{workspaceRoot}/.circleci/generate-config.sh",
+      "{workspaceRoot}/.circleci/generated-config-template.ejs"
+    ]
   },
   "generators": {
     "@nx/web:application": {
