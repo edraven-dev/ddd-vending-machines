@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   MoneyInsertedEvent,
   MoneyLoadedEvent,
@@ -13,7 +12,6 @@ import Currency from 'currency.js';
 import { Slot } from './slot';
 import { SnackPile } from './snack-pile';
 
-@Injectable()
 export class SnackMachine extends AggregateRoot {
   moneyInside: Money = Money.None;
   moneyInTransaction: Currency = new Currency(0);

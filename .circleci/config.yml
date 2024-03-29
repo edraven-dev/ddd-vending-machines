@@ -1,55 +1,31 @@
 version: 2.1
 
+setup: true
+
 orbs:
+  continuation: circleci/continuation@1.0.0
   node: circleci/node@5.2.0
-
-defaults: &defaults
-  resource_class: small
-  docker:
-    - image: cimg/node:20.11.0
-  environment:
-    PUBLIC_API_HOST: http://localhost
-
-commands:
-  checkout_and_install:
-    steps:
-      - checkout
-      - node/install-packages 
+  nx: nrwl/nx@1.6.2
 
 jobs:
-  build:
-    <<: *defaults
+  generate-config:
+    executor: continuation/default
+    resource_class: small
     steps:
-      - checkout_and_install
+      - checkout
+      - nx/set-shas
+      - node/install:
+          node-version: 20.11.1
+      - node/install-packages:
+          override-ci-command: npm ci && npx -y clean-modules -y
       - run:
-          name: Build all
-          command: npm run build:all
-  test:
-    <<: *defaults
-    resource_class: medium
-    steps:
-      - checkout_and_install
-      - run:
-          name: Build frontend
-          command: npx nx build frontend
-      - run:
-          name: Test all
-          command: npm run test:all
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: coverage
-  lint:
-    <<: *defaults
-    steps:
-      - checkout_and_install
-      - run:
-          name: Lint all
-          command: npm run lint:all
+          name: Generate config
+          command: |
+            bash ./.circleci/generate-config.sh
+      - continuation/continue:
+          configuration_path: .circleci/generated-config.yml
 
 workflows:
-  build_and_test:
+  setup:
     jobs:
-      - build
-      - test
-      - lint
+      - generate-config
