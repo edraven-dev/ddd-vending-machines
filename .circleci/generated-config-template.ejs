@@ -1,0 +1,61 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+
+defaults: &defaults
+  resource_class: small
+  docker:
+    - image: cimg/node:20.11.1
+
+commands:
+  checkout_and_install:
+    steps:
+      - checkout
+      - node/install-packages
+
+jobs:
+  <% for (let i = 0; i < buildable_projects.length; i++) { %>
+  build-<%= buildable_projects[i] %>:
+    <<: *defaults
+    <% Object.entries(parameters[buildable_projects[i]]?.build || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% }) %>
+    steps:
+      - checkout_and_install
+      - run:
+          name: Build <%= buildable_projects[i] %>
+          command: npm run build <%= buildable_projects[i] %>
+  <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>
+  lint-<%= lintable_projects[i] %>:
+    <<: *defaults
+    <% Object.entries(parameters[lintable_projects[i]]?.lint || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% }) %>
+    steps:
+      - checkout_and_install
+      - run:
+          name: Lint <%= lintable_projects[i] %>
+          command: npm run lint <%= lintable_projects[i] %>
+  <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>
+  test-<%= testable_projects[i] %>:
+    <<: *defaults
+    <% Object.entries(parameters[testable_projects[i]]?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% }) %>
+    steps:
+      - checkout_and_install
+      - run:
+          name: Test <%= testable_projects[i] %>
+          command: npm run test <%= testable_projects[i] %>
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: coverage
+  <% } %>
+workflows:
+  build_lint_test:
+    jobs:
+      <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i] %>
+      <% } %>
+      <% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i] %>
+      <% } %>
+      <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
+      <% } %>
