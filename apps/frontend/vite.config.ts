@@ -28,6 +28,7 @@ export default defineConfig({
     sveltekit(),
     viteTsConfigPaths({
       root: '../../',
+      parseNative: true,
     }),
   ],
   // Uncomment this if you are using workers.
