@@ -17,9 +17,21 @@ jobs:
           node-version: 20.11.1
       - node/install-packages:
           override-ci-command: npm ci && npx -y clean-modules -y
-      - nx/set-shas:
-          main-branch-name: master
-          workflow-name: build_lint_test
+      - when:
+          condition:
+              equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - nx/set-shas:
+                main-branch-name: master
+                workflow-name: build_lint_test
+      - when:
+          condition:
+              not:
+                  equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - nx/set-shas:
+                main-branch-name: develop
+                workflow-name: build_lint_test
       - run:
           name: Generate config
           command: |
