@@ -41,9 +41,6 @@ export default defineConfig({
   // },
   test: {
     globals: true,
-    cache: {
-      dir: '../../node_modules/.vitest',
-    },
     coverage: {
       provider: 'istanbul',
       reportsDirectory: '../../coverage/apps/frontend',

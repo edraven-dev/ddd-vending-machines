@@ -40,6 +40,7 @@
         "command": "vitest run",
         "cwd": "apps/frontend"
       },
+      "dependsOn": ["build"],
       "configurations": {
         "dev": {
           "command": "vitest run"
