@@ -8,6 +8,11 @@
         "resource_class": "medium"
       }
     },
+    "frontend": {
+      "test": {
+        "resource_class": "medium"
+      }
+    },
     "management": {
       "build": {
         "resource_class": "medium"

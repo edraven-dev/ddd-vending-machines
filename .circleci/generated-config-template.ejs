@@ -50,7 +50,7 @@ jobs:
       - checkout_and_install
       - run:
           name: Test <%= testable_projects[i] %>
-          command: npm run test <%= testable_projects[i] %>
+          command: npm run test <%= testable_projects[i] %> -- --configuration ci
       - store_test_results:
           path: test-results
       - store_artifacts:
