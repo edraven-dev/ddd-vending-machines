@@ -22,7 +22,7 @@ async function bootstrap() {
       options: {
         package: 'snack_machine',
         protoPath: join(__dirname, 'assets/snack-machine/snack-machine.proto'),
-        url: 'localhost:50052',
+        url: process.env.GRPC_URL || 'localhost:50052',
       },
     },
     { inheritAppConfig: true },

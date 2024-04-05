@@ -19,12 +19,16 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>(
     {
       transport: Transport.GRPC,
-      options: { package: 'atm', protoPath: join(__dirname, 'assets/atm/atm.proto'), url: 'localhost:50051' },
+      options: {
+        package: 'atm',
+        protoPath: join(__dirname, 'assets/atm/atm.proto'),
+        url: process.env.GRPC_URL || 'localhost:50051',
+      },
     },
     { inheritAppConfig: true },
   );
   await app.startAllMicroservices();
-  const port = process.env.PORT || 3100;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
