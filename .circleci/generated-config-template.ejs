@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.2.0
+  node: circleci/node@5.2.0<% if ((branch === 'master' || branch === 'develop') && buildable_projects.includes('frontend')) { %>
+  aws-cli: circleci/aws-cli@4.1.3<% } %>
 
 defaults: &defaults
   resource_class: small
@@ -25,7 +26,7 @@ jobs:
   build-<%= buildable_projects[i] %>:
     <<: *defaults
     <% Object.entries(parameters[buildable_projects[i]]?.build || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
-    <% }) %>
+    <% }); %>
     steps:
       - checkout_and_install
       - run:
@@ -35,7 +36,7 @@ jobs:
   lint-<%= lintable_projects[i] %>:
     <<: *defaults
     <% Object.entries(parameters[lintable_projects[i]]?.lint || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
-    <% }) %>
+    <% }); %>
     steps:
       - checkout_and_install
       - run:
@@ -45,7 +46,7 @@ jobs:
   test-<%= testable_projects[i] %>:
     <<: *defaults
     <% Object.entries(parameters[testable_projects[i]]?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
-    <% }) %>
+    <% }); %>
     steps:
       - checkout_and_install
       - run:
@@ -55,9 +56,52 @@ jobs:
           path: test-results
       - store_artifacts:
           path: coverage
+  <% } %><% if (branch === 'develop' || branch === 'master') {  for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>
+  build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'develop' ? '-dev': '' %>:
+    docker:
+      - image: cimg/base:current
+    resource_class: medium+
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker image for <%= buildable_projects[i] %> and push to GHCR
+          command: |
+            export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
+            echo $GH_TOKEN | docker login ghcr.io --username $GH_USERNAME --password-stdin
+            docker build -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" .
+            docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1
+            docker tag ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %>
+            docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === 'master' ? 'latest' : 'dev' %>
+  <% } else { %>build-and-upload-frontend-files:
+    <<: *defaults
+    <% Object.entries(parameters['frontend']?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% }); %>executor: aws-cli/default
+    steps:
+      - checkout_and_install
+      - aws-cli/setup
+      - run:
+          name: Build frontend and upload
+          command: |
+            npm run build frontend
+            aws s3 rm s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
+            aws s3 cp ./dist/apps/frontend s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
+    <% }}} if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>
+  push-git-tag:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Push git tag
+          command: |
+            git config user.email $GH_EMAIL
+            git config user.name $GH_USERNAME
+            git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
+            git push origin release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
   <% } %>
 workflows:
-  build_lint_test:
+  build-lint-test<%= branch === 'develop' || branch === 'master' ? '-deploy' : '' %>:
     jobs:
       <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i] %>
       <% } %>
@@ -65,3 +109,21 @@ workflows:
       <% } %>
       <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
       <% } %><% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>- no-changes<% } %>
+      <% if (branch === 'develop' || branch === 'master') { %>- hold:
+          type: approval
+          requires:
+            <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i] %>
+            <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i] %>
+            <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
+            <% }} %>
+      <% if (branch === 'develop' || branch === 'master') { for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>:
+          requires:
+            - hold
+      <% } else { %>- build-and-upload-frontend-files:
+          requires:
+            - hold
+      <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-tag:
+          requires:
+            <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>
+            <% } else { %>- build-and-upload-frontend-files
+            <% }}} %>

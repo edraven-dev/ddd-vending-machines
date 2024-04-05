@@ -30,7 +30,11 @@ import { QueryHandlers } from './queries/handlers';
       useValue: new AtmProtoServiceClient(
         ClientProxyFactory.create({
           transport: Transport.GRPC,
-          options: { package: 'atm', protoPath: join(__dirname, 'assets/atm/atm.proto'), url: 'localhost:50051' },
+          options: {
+            package: 'atm',
+            protoPath: join(__dirname, 'assets/atm/atm.proto'),
+            url: process.env.ATM_GRPC_URL || 'localhost:50051',
+          },
         }).getService<AtmProtoService>('AtmProtoService'),
       ),
     },
@@ -42,7 +46,7 @@ import { QueryHandlers } from './queries/handlers';
           options: {
             package: 'snack_machine',
             protoPath: join(__dirname, 'assets/snack-machine/snack-machine.proto'),
-            url: 'localhost:50052',
+            url: process.env.SNACK_MACHINE_GRPC_URL || 'localhost:50052',
           },
         }).getService<SnackMachineProtoService>('SnackMachineProtoService'),
       ),

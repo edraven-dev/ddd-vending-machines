@@ -5,7 +5,8 @@ LINTABLE_PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_H
 TESTABLE_PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_HEAD -t test | jq -R . | jq -s '{testable_projects: .}')
 PARAMETERS=$(cat ./.circleci/parameters.json)
 
-MERGED_JSON=$(echo "${BUILDABLE_PROJECTS}${LINTABLE_PROJECTS}${TESTABLE_PROJECTS}${PARAMETERS}" | jq -s add)
+MERGED_JSON=$(echo "${BUILDABLE_PROJECTS}${LINTABLE_PROJECTS}${TESTABLE_PROJECTS}${PARAMETERS}" | jq -s add | jq --arg branch "$CIRCLE_BRANCH" '. + {branch: $branch}')
 echo "${MERGED_JSON}" > ./.circleci/affected-projects.json
+cat ./.circleci/affected-projects.json
 
 npx -y --no ejs ./.circleci/generated-config-template.ejs -f ./.circleci/affected-projects.json -o ./.circleci/generated-config.yml

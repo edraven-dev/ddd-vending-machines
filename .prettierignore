@@ -1,4 +1,6 @@
 # Add files here to ignore them from prettier formatting
+/.nx
 /dist
 /coverage
-/.nx/cache
+/node_modules
+/test-results
