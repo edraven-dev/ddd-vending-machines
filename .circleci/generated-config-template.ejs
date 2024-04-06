@@ -87,6 +87,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
+      - setup-buildx
       - run:
           name: Build Docker image for <%= buildable_projects[i] %> and push to GHCR
           command: |
