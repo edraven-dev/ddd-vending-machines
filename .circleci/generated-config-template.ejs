@@ -13,8 +13,30 @@ commands:
   checkout_and_install:
     steps:
       - checkout
-      - node/install-packages
-
+      - node/install-packages<%
+  if (branch === 'master' || branch === 'develop') { 
+  %>
+  setup-buildx:
+    steps:
+      - checkout
+      - run:
+          name: Setup buildx and qemu
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y qemu-user-static
+            sudo apt-get install -y binfmt-support
+      - run:
+          name: Check versions
+          command: |
+            qemu-aarch64-static --version
+            update-binfmts --version 
+      - run:
+          name: Create builder
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker buildx create --name arm-builder
+            docker buildx use arm-builder
+            docker buildx inspect --bootstrap <% } %>
 jobs:
   <% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>no-changes:
     resource_class: small
@@ -70,7 +92,7 @@ jobs:
           command: |
             export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
             echo $GH_TOKEN | docker login ghcr.io --username $GH_USERNAME --password-stdin
-            docker build -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" .
+            DOCKER_CLI_EXPERIMENTAL=enabled --platform linux/arm64,linux/amd64 docker buildx build -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" .
             docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1
             docker tag ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %>
             docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === 'master' ? 'latest' : 'dev' %>
