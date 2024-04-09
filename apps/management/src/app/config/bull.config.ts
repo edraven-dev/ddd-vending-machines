@@ -15,7 +15,6 @@ export class BullConfig implements SharedBullConfigurationFactory, RegisterQueue
 
   createRegisterQueueOptions(): RegisterQueueOptions {
     return {
-      connection: {},
       defaultJobOptions: {
         removeOnComplete: 1000,
         removeOnFail: 5000,

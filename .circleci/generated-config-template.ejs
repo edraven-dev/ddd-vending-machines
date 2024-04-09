@@ -23,8 +23,7 @@ commands:
           name: Setup buildx and qemu
           command: |
             sudo apt-get update
-            sudo apt-get install -y qemu-user-static
-            sudo apt-get install -y binfmt-support
+            sudo apt-get install -y qemu-user-static binfmt-support
       - run:
           name: Check versions
           command: |
@@ -33,9 +32,11 @@ commands:
       - run:
           name: Create builder
           command: |
-            export DOCKER_CLI_EXPERIMENTAL=enabled
-            docker buildx create --name arm-builder
-            docker buildx use arm-builder
+            export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            docker run --privileged --rm tonistiigi/binfmt --install arm64
+            docker buildx create --name multiarch-builder
+            docker buildx use multiarch-builder
             docker buildx inspect --bootstrap <% } %>
 jobs:
   <% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>no-changes:
@@ -91,12 +92,10 @@ jobs:
       - run:
           name: Build Docker image for <%= buildable_projects[i] %> and push to GHCR
           command: |
+            export BUILDX_NO_DEFAULT_ATTESTATIONS=1
             export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
             echo $GH_TOKEN | docker login ghcr.io --username $GH_USERNAME --password-stdin
-            DOCKER_CLI_EXPERIMENTAL=enabled --platform linux/arm64,linux/amd64 docker buildx build -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" .
-            docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1
-            docker tag ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %>
-            docker push ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === 'master' ? 'latest' : 'dev' %>
+            docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %> --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" --push .
   <% } else { %>build-and-upload-frontend-files:
     <<: *defaults
     <% Object.entries(parameters['frontend']?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
