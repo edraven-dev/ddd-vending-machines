@@ -1,47 +1,45 @@
 version: 2.1
 
+setup: true
+
 orbs:
-  node: circleci/node@5.0.2
-
-defaults: &defaults
-  resource_class: small
-  docker:
-    - image: cimg/node:20.5.0
-
-commands:
-  checkout_and_install:
-    steps:
-      - checkout
-      - node/install-packages 
+  continuation: circleci/continuation@1.0.0
+  node: circleci/node@5.2.0
+  nx: nrwl/nx@1.6.2
 
 jobs:
-  build:
-    <<: *defaults
+  generate-config:
+    executor: continuation/default
+    resource_class: small
     steps:
-      - checkout_and_install
+      - checkout
+      - node/install:
+          node-version: 22.1.0
+      - node/install-packages:
+          override-ci-command: npm ci && npx -y clean-modules -y
+      - when:
+          condition:
+              equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - nx/set-shas:
+                main-branch-name: master
+                workflow-name: build_lint_test
+      - when:
+          condition:
+              not:
+                  equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - nx/set-shas:
+                main-branch-name: develop
+                workflow-name: build_lint_test
       - run:
-          name: Build all
-          command: npm run build:all
-  test:
-    <<: *defaults
-    docker:
-      - image: cimg/node:20.5.0
-    steps:
-      - checkout_and_install
-      - run:
-          name: Test all
-          command: npm run test:all
-  lint:
-    <<: *defaults
-    steps:
-      - checkout_and_install
-      - run:
-          name: Lint all
-          command: npm run lint:all
+          name: Generate config
+          command: |
+            bash ./.circleci/generate-config.sh
+      - continuation/continue:
+          configuration_path: .circleci/generated-config.yml
 
 workflows:
-  build_and_test:
+  setup:
     jobs:
-      - build
-      - test
-      - lint
+      - generate-config

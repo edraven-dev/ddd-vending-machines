@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package snack_machine;
+
+service SnackMachineProtoService {
+  rpc UnloadMoney (Id) returns (Money) {}
+}
+
+message Id {
+  string id = 1;
+}
+
+message Money {
+  repeated double money = 1;
+}

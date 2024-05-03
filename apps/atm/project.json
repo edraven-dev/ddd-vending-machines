@@ -1,0 +1,89 @@
+{
+  "name": "atm",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/atm/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/atm",
+        "main": "apps/atm/src/main.ts",
+        "tsConfig": "apps/atm/tsconfig.app.json",
+        "assets": [
+          "apps/atm/src/assets",
+          { "glob": "atm.proto", "input": "libs/proto/src/lib/atm", "output": "./assets/atm" }
+        ],
+        "webpackConfig": "apps/atm/webpack.config.ts"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "atm:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "atm:build:development"
+        },
+        "production": {
+          "buildTarget": "atm:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/atm/jest.config.ts"
+      }
+    },
+    "migration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/atm"
+      },
+      "defaultConfiguration": "generate",
+      "configurations": {
+        "create": {
+          "command": "npx mikro-orm migration:create -b -n"
+        },
+        "generate": {
+          "command": "npx mikro-orm migration:create -n"
+        },
+        "up": {
+          "command": "npx mikro-orm migration:up"
+        },
+        "down": {
+          "command": "npx mikro-orm migration:down"
+        },
+        "list": {
+          "command": "npx mikro-orm migration:list"
+        },
+        "check": {
+          "command": "npx mikro-orm migration:check"
+        },
+        "pending": {
+          "command": "npx mikro-orm migration:pending"
+        },
+        "fresh": {
+          "command": "npx mikro-orm migration:fresh"
+        }
+      }
+    }
+  },
+  "tags": []
+}

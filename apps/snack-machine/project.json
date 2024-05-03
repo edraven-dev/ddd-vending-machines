@@ -14,9 +14,15 @@
         "outputPath": "dist/apps/snack-machine",
         "main": "apps/snack-machine/src/main.ts",
         "tsConfig": "apps/snack-machine/tsconfig.app.json",
-        "assets": ["apps/snack-machine/src/assets"],
-        "isolatedConfig": true,
-        "webpackConfig": "apps/snack-machine/webpack.config.js"
+        "assets": [
+          "apps/snack-machine/src/assets",
+          {
+            "glob": "snack-machine.proto",
+            "input": "libs/proto/src/lib/snack-machine",
+            "output": "./assets/snack-machine"
+          }
+        ],
+        "webpackConfig": "apps/snack-machine/webpack.config.ts"
       },
       "configurations": {
         "development": {},
@@ -39,23 +45,46 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/snack-machine/**/*.ts"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/snack-machine/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "apps/snack-machine/jest.config.ts"
+      }
+    },
+    "migration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/snack-machine"
       },
+      "defaultConfiguration": "generate",
       "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
+        "create": {
+          "command": "npx mikro-orm migration:create -b -n"
+        },
+        "generate": {
+          "command": "npx mikro-orm migration:create -n"
+        },
+        "up": {
+          "command": "npx mikro-orm migration:up"
+        },
+        "down": {
+          "command": "npx mikro-orm migration:down"
+        },
+        "list": {
+          "command": "npx mikro-orm migration:list"
+        },
+        "check": {
+          "command": "npx mikro-orm migration:check"
+        },
+        "pending": {
+          "command": "npx mikro-orm migration:pending"
+        },
+        "fresh": {
+          "command": "npx mikro-orm migration:fresh"
         }
       }
     }
