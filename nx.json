@@ -41,7 +41,8 @@
     "sharedGlobals": [
       "{workspaceRoot}/.circleci/config.yml",
       "{workspaceRoot}/.circleci/generate-config.sh",
-      "{workspaceRoot}/.circleci/generated-config-template.ejs"
+      "{workspaceRoot}/.circleci/generated-config-template.ejs",
+      "{workspaceRoot}/.circleci/parameters.json"
     ]
   },
   "generators": {
