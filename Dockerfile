@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:20.11.1-alpine
+ARG NODE_IMAGE=node:22.1.0-alpine
 
 # 🧑‍💻 Development
 FROM ${NODE_IMAGE} as dev

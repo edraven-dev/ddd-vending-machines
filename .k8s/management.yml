@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vending-machines
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vending-machines-management-config
+  namespace: vending-machines
+data:
+  DB_HOST: postgres.postgres.svc.cluster.local
+  DB_PORT: "5432"
+  DB_USER: postgres
+  DB_NAME: vending-machines-management
+  REDIS_HOST: redis-stack-0.redis-service.redis.svc.cluster.local
+  REDIS_PORT: "6379"
+  ATM_GRPC_URL: atm-service:9090
+  SNACK_MACHINE_GRPC_URL: snack-machine-service:9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-deployment
+  namespace: vending-machines
+  labels:
+    app: management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: management
+  template:
+    metadata:
+      labels:
+        app: management
+    spec:
+      containers:
+      - name: management
+        image: ghcr.io/arkadiuszkolodynski/ddd-vending-machines/management:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
+        env:
+        - name: RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: vm-secrets
+              key: RABBITMQ_URL
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vm-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: DB_NAME
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: REDIS_PORT
+        - name: ATM_GRPC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: ATM_GRPC_URL
+        - name: SNACK_MACHINE_GRPC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-management-config
+              key: SNACK_MACHINE_GRPC_URL
+      imagePullSecrets:
+        - name: ghcr-login-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-service
+  namespace: vending-machines
+spec:
+  selector:
+    app: management
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: management-ingress
+  namespace: vending-machines
+spec:
+  rules:
+    - host: "dev-vending-machines.edraven.dev"
+      http:
+        paths:
+          - pathType: Prefix
+            path: /api/management
+            backend:
+              service:
+                name: management-service
+                port:
+                  number: 3000

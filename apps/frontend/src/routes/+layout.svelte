@@ -1,10 +1,15 @@
 <script>
+  import { title } from '$lib/title';
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import '../app.css';
   import Header from '../components/header.svelte';
 
   const options = { pausable: true, reversed: true, intro: { y: 192 } };
 </script>
+
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
 
 <div class="dark min-h-screen bg-black text-gray-200 p-10">
   <Header />
