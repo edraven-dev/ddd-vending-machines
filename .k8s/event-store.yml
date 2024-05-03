@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vending-machines
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vending-machines-event-store-config
+  namespace: vending-machines
+data:
+  DB_HOST: postgres.postgres.svc.cluster.local
+  DB_PORT: "5432"
+  DB_USER: postgres
+  DB_NAME: vending-machines-event-store
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-store-deployment
+  namespace: vending-machines
+  labels:
+    app: event-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-store
+  template:
+    metadata:
+      labels:
+        app: event-store
+    spec:
+      containers:
+      - name: event-store
+        image: ghcr.io/arkadiuszkolodynski/ddd-vending-machines/event-store:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
+        env:
+        - name: RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: vm-secrets
+              key: RABBITMQ_URL
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-event-store-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-event-store-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-event-store-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vm-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: vending-machines-event-store-config
+              key: DB_NAME
+      imagePullSecrets:
+        - name: ghcr-login-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-store-service
+  namespace: vending-machines
+spec:
+  selector:
+    app: event-store
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
