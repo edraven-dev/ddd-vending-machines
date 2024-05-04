@@ -110,7 +110,7 @@ jobs:
             aws s3 rm s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
             aws s3 cp ./dist/apps/frontend s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
     <% }}} if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>
-  push-git-tag:
+  push-git-and-k8s-tags:
     <<: *defaults
     steps:
       - checkout
@@ -121,6 +121,17 @@ jobs:
             git config user.name $GH_USERNAME
             git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
             git push origin release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
+      - run:
+          name: Push image tags in k8s manifests
+          command: |
+            rm -r * .*
+            git clone $K8S_REPOSITORY_URL .
+            git config user.email $GH_EMAIL
+            git config user.name $GH_USERNAME
+            find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i '' -E 's|(image: ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/.*:).*|\1$CIRCLE_SHA1|g' {} \;
+            git add .
+            git commit -m "Update image tags in k8s manifests for CircleCI build nr #<< pipeline.number >>"
+            git push origin master
   <% } %>
 workflows:
   build-lint-test<%= branch === 'develop' || branch === 'master' ? '-deploy' : '' %>:
