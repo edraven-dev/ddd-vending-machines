@@ -155,7 +155,7 @@ workflows:
       <% } else { %>- build-and-upload-frontend-files:
           requires:
             - hold
-      <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-tag:
+      <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-and-k8s-tags:
           requires:
             <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>
             <% } else { %>- build-and-upload-frontend-files
