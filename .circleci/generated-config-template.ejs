@@ -110,7 +110,7 @@ jobs:
             aws s3 rm s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
             aws s3 cp ./dist/apps/frontend s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
     <% }}} if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>
-  push-git-and-k8s-tags:
+  push-git-tag:
     <<: *defaults
     steps:
       - checkout
@@ -121,6 +121,9 @@ jobs:
             git config user.name $GH_USERNAME
             git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
             git push origin release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
+  push-tags-to-k8s-manifests:
+    <<: *defaults
+    steps:
       - run:
           name: Push image tags in k8s manifests
           command: |
@@ -155,8 +158,11 @@ workflows:
       <% } else { %>- build-and-upload-frontend-files:
           requires:
             - hold
-      <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-and-k8s-tags:
+      <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-tag:
           requires:
             <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>
             <% } else { %>- build-and-upload-frontend-files
             <% }}} %>
+      <% if (branch === 'develop' || branch === 'master') { %>- push-tags-to-k8s-manifests:
+          requires:
+            - push-git-tag<% } %>
