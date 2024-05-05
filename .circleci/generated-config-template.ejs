@@ -127,6 +127,7 @@ jobs:
       - run:
           name: Push image tags in k8s manifests
           command: |
+            export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
             git clone $K8S_REPOSITORY_URL .
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
