@@ -130,7 +130,7 @@ jobs:
             git clone $K8S_REPOSITORY_URL .
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
-            find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E 's|(image: ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/.*:).*|\1$CIRCLE_SHA1|g' {} \;
+            find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/.*:).*|\1${CIRCLE_SHA1}|g" {} \;
             git add .
             git commit -m "Update image tags in k8s manifests for CircleCI build nr #<< pipeline.number >>"
             git push origin master
