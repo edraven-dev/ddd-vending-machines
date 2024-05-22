@@ -2,6 +2,7 @@ export * from './aggregate-root';
 export * from './constants';
 export * from './entity';
 export * from './invalid-operation.exception';
+export * from './logger.middleware';
 export * from './money';
 export * from './money.dto';
 export * from './shared.module';
