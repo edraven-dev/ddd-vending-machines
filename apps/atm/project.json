@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/atm/src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
@@ -16,7 +17,11 @@
         "tsConfig": "apps/atm/tsconfig.app.json",
         "assets": [
           "apps/atm/src/assets",
-          { "glob": "atm.proto", "input": "libs/proto/src/lib/atm", "output": "./assets/atm" }
+          {
+            "glob": "atm.proto",
+            "input": "libs/proto/src/lib/atm",
+            "output": "./assets/atm"
+          }
         ],
         "webpackConfig": "apps/atm/webpack.config.ts"
       },
@@ -84,6 +89,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }
