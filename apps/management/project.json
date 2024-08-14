@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/management/src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
@@ -16,7 +17,11 @@
         "tsConfig": "apps/management/tsconfig.app.json",
         "assets": [
           "apps/management/src/assets",
-          { "glob": "**/*.proto", "input": "libs/proto/src/lib", "output": "./assets" }
+          {
+            "glob": "**/*.proto",
+            "input": "libs/proto/src/lib",
+            "output": "./assets"
+          }
         ],
         "webpackConfig": "apps/management/webpack.config.ts"
       },
@@ -84,6 +89,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }

@@ -24,7 +24,7 @@ export abstract class Entity {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EntityMixin<TBase extends abstract new (...args: any[]) => { id: string }>(Base: TBase) {
   abstract class EntityExtendedWithBase extends Base {
     equals(object?: Entity): boolean {
