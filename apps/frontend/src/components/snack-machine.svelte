@@ -1,5 +1,4 @@
 <script lang="ts">
-  // eslint-disable-next-line
   // @ts-nocheck
   import Icon from '@iconify/svelte';
   import type { HttpMethod } from '@sveltejs/kit';
