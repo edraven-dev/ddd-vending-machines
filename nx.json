@@ -60,6 +60,5 @@
       "e2eTestRunner": "none"
     }
   },
-  "defaultBase": "develop",
-  "useLegacyCache": true
+  "defaultBase": "develop"
 }

@@ -3,5 +3,11 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
-  "circleci.persistedProjectSelection": ["gh/ArkadiuszKolodynski/ddd-vending-machines"]
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "circleci.persistedProjectSelection": ["gh/ArkadiuszKolodynski/ddd-vending-machines"],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }

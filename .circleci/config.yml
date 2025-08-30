@@ -3,9 +3,9 @@ version: 2.1
 setup: true
 
 orbs:
-  continuation: circleci/continuation@1.0.0
-  node: circleci/node@5.2.0
-  nx: nrwl/nx@1.6.2
+  continuation: circleci/continuation@2.0.1
+  node: circleci/node@7.1.1
+  nx: nrwl/nx@1.7.0
 
 jobs:
   generate-config:
@@ -14,9 +14,8 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: 22.11.0
-      - node/install-packages:
-          override-ci-command: npm ci && npx -y clean-modules -y
+          node-version: 24.7.0
+      - node/install-packages
       - when:
           condition:
               equal: [ master, << pipeline.git.branch >> ]
