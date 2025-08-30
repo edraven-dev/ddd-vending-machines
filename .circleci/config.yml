@@ -15,8 +15,7 @@ jobs:
       - checkout
       - node/install:
           node-version: 24.7.0
-      - node/install-packages:
-          override-ci-command: npm ci && npx -y clean-modules -y
+      - node/install-packages
       - when:
           condition:
               equal: [ master, << pipeline.git.branch >> ]
