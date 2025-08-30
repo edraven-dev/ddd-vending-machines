@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ManagementController - e2e GET /:id should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 
