@@ -7,7 +7,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:24.7.0
+    - image: cimg/node:<%= node_version %>
 
 commands:
   checkout_and_install:
@@ -97,7 +97,7 @@ jobs:
             export BUILDX_NO_DEFAULT_ATTESTATIONS=1
             export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
             echo $GH_TOKEN | docker login ghcr.io --username $GH_USERNAME --password-stdin
-            docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %> --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" --push .
+            docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %> --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" --build-arg="NODE_VERSION=<%= node_version %>" --push .
   <% } else { %>build-and-upload-frontend-files:
     <<: *defaults
     <% Object.entries(parameters['frontend']?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
@@ -122,7 +122,7 @@ jobs:
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
             git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
-            git push origin release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
+            git push "https://${GH_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
   push-tags-to-k8s-manifests:
     <<: *defaults
     steps:
@@ -133,7 +133,7 @@ jobs:
             git clone $K8S_REPOSITORY_URL .
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
-            git config url.https:///${GH_TOKEN}@github.com/.insteadOf https://github.com/
+            git config url.https://${GH_TOKEN}@github.com/.insteadOf https://github.com/
             find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/.*:).*|\1${CIRCLE_SHA1}|g" {} \;
             git add .
             git commit -m "Update image tags in k8s manifests for CircleCI build nr #<< pipeline.number >>"
