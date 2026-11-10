@@ -13,8 +13,7 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - node/install:
-          node-version: 26.13.0
+      - node/install
       - node/install-packages
       - when:
           condition:

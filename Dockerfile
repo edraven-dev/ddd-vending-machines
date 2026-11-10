@@ -1,7 +1,8 @@
-ARG NODE_IMAGE=node:26.13.0-alpine
+# Exact version comes from .nvmrc (CI passes --build-arg NODE_VERSION); "lts" is only a local fallback
+ARG NODE_VERSION=lts
 
 # 🧑‍💻 Development
-FROM ${NODE_IMAGE} AS dev
+FROM node:${NODE_VERSION}-alpine AS dev
 RUN apk add --no-cache libc6-compat python3 make gcc g++
 WORKDIR /app
 
@@ -12,7 +13,7 @@ COPY --chown=node:node . .
 RUN  npm ci
 
 # 🏡 Production Build
-FROM ${NODE_IMAGE} AS build
+FROM node:${NODE_VERSION}-alpine AS build
 
 ARG NX_PROJECT_NAME
 
@@ -33,7 +34,7 @@ RUN npx -y clean-modules -y
 USER node
 
 # 🚀 Production Server
-FROM ${NODE_IMAGE} AS prod
+FROM node:${NODE_VERSION}-alpine AS prod
 
 ARG NX_PROJECT_NAME
 

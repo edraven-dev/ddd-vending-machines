@@ -49,7 +49,8 @@
       "{workspaceRoot}/.circleci/config.yml",
       "{workspaceRoot}/.circleci/generate-config.sh",
       "{workspaceRoot}/.circleci/generated-config-template.ejs",
-      "{workspaceRoot}/.circleci/parameters.json"
+      "{workspaceRoot}/.circleci/parameters.json",
+      "{workspaceRoot}/.nvmrc"
     ]
   },
   "generators": {

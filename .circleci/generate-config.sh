@@ -4,8 +4,9 @@ BUILDABLE_PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_
 LINTABLE_PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_HEAD -t lint | jq -R . | jq -s '{lintable_projects: .}')
 TESTABLE_PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_HEAD -t test | jq -R . | jq -s '{testable_projects: .}')
 PARAMETERS=$(cat ./.circleci/parameters.json)
+NODE_VERSION=$(tr -d '[:space:]' < ./.nvmrc | sed 's/^v//')
 
-MERGED_JSON=$(echo "${BUILDABLE_PROJECTS}${LINTABLE_PROJECTS}${TESTABLE_PROJECTS}${PARAMETERS}" | jq -s add | jq --arg branch "$CIRCLE_BRANCH" '. + {branch: $branch}')
+MERGED_JSON=$(echo "${BUILDABLE_PROJECTS}${LINTABLE_PROJECTS}${TESTABLE_PROJECTS}${PARAMETERS}" | jq -s add | jq --arg branch "$CIRCLE_BRANCH" --arg node_version "$NODE_VERSION" '. + {branch: $branch, node_version: $node_version}')
 echo "${MERGED_JSON}" > ./.circleci/affected-projects.json
 cat ./.circleci/affected-projects.json
 
