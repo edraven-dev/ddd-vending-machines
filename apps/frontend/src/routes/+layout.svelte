@@ -1,8 +1,8 @@
 <script>
-  import { title } from '$lib/title';
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import '../app.css';
   import Header from '../components/header.svelte';
+  import { title } from '../lib/title';
 
   const options = { pausable: true, reversed: true, intro: { y: 192 } };
 </script>

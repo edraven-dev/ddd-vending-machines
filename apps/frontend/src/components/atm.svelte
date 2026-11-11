@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { HttpMethod } from '@sveltejs/kit';
-  import axios from 'axios';
+  import axios, { type Method } from 'axios';
   import currency from 'currency.js';
   import { failure, success } from '../utils/actions';
 
@@ -8,10 +7,10 @@
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.baseURL = `/api/atm/${id}`;
 
-  export let atm: any; // eslint-disable-line
+  export let atm: any; // oxlint-disable-line typescript/no-explicit-any
   let amount: number;
 
-  const callApi = async (method: HttpMethod, url: string, data?: Record<string, unknown>): Promise<void> => {
+  const callApi = async (method: Method, url: string, data?: Record<string, unknown>): Promise<void> => {
     const response = await axios.request({
       method,
       url,
@@ -25,7 +24,7 @@
     try {
       await callApi('POST', 'take-money', { amount });
       success(`Money withdrawn!`);
-    } catch (err: any) /* eslint-disable-line */ {
+    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
       failure(err.response.data.message);
     }
   };

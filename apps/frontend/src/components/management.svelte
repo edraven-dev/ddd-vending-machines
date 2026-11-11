@@ -2,9 +2,9 @@
   import axios from 'axios';
   axios.defaults.baseURL = `/api`;
 
-  export let headOffice: any; // eslint-disable-line
+  export let headOffice: any; // oxlint-disable-line typescript/no-explicit-any
 
-  let atm: any; // eslint-disable-line
+  let atm: any; // oxlint-disable-line typescript/no-explicit-any
   let snackMachine:
     | { moneyInside: { amount: string }; slots: { position: number; snackPile: { quantity: number } }[] }
     | undefined;

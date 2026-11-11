@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Management from '$components/management.svelte';
+  import Management from '../components/management.svelte';
 
   export let data;
   const { headOffice } = data;
