@@ -5,11 +5,7 @@ packages:
 # One flat node_modules (like npm): every package shares a single copy of each
 # NestJS package, which Nest's dependency injection relies on.
 nodeLinker: hoisted
-
 saveExact: true
-
-# Versions shared by several workspace packages. Packages reference them as "catalog:" so they always stay in sync;
-# strict mode makes `pnpm add` use the catalog version for these packages.
 catalogMode: strict
 
 catalog:

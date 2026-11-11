@@ -10,7 +10,6 @@ export default defineConfig({
   entities: ['.'],
   entitiesTs: ['../app/**/*.entity.ts'],
   migrations: {
-    // Pinned, so DB_NAME or NODE_ENV can't change which committed snapshot generate/check compare with
     snapshotName: '.snapshot-vending_machines_event_store',
     fileName: (timestamp: string, name?: string) => {
       if (!name) {

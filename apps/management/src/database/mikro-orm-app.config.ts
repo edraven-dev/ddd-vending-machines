@@ -4,7 +4,6 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { basename } from 'node:path';
 import defaultConfig from './mikro-orm-default.config';
 
-// The migrations are bundled into the app: tsdown and Vitest both resolve import.meta.glob at build time.
 const migrations = import.meta.glob<Record<string, MigrationObject['class']>>('./migrations/Migration*.ts', {
   eager: true,
 });
@@ -18,6 +17,5 @@ export default defineConfig({
   discovery: { warnWhenNoEntities: false },
   loadStrategy: LoadStrategy.JOINED,
   highlighter: new SqlHighlighter(),
-  // No schema snapshot at runtime: only the CLI uses one (src/database/migrations/.snapshot-*.json).
   migrations: { migrationsList, snapshot: false },
 });

@@ -22,7 +22,6 @@ export class EventSubscriber implements OnApplicationBootstrap {
   }
 
   private subscribe([moduleName, EventType, EventHandler]: [string, Type<IEvent>, Type<IEventHandler>]): void {
-    // Fire-and-forget: amqp-connection-manager runs the setup now and again after every reconnect.
     void this.amqpService.addSubscriber(
       EXCHANGE_NAME,
       `#.${EventType.name}.#`,

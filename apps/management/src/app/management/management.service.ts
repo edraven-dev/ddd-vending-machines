@@ -13,8 +13,7 @@ export class ManagementService implements OnModuleInit {
 
   private async schedulePruneHeadOfficesJob(): Promise<void> {
     const cron = process.env.PRUNE_HEAD_OFFICES_CRON || '0 0 * * *';
-    // Idempotent: creates the scheduler or updates its pattern. The first job waits for the next cron tick (no
-    // `immediately`), as it deletes all head offices.
+
     await this.pruneHeadOfficesQueue.upsertJobScheduler(
       'prune-head-offices-job',
       { pattern: cron },

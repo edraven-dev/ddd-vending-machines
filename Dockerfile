@@ -4,7 +4,6 @@ ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION}-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-# Corepack isn't bundled with Node.js 25+, so install the pnpm version pinned in package.json
 COPY package.json /tmp/package.json
 RUN npm install -g "$(node -p "require('/tmp/package.json').packageManager")" && rm /tmp/package.json
 
@@ -21,7 +20,6 @@ RUN apk add --no-cache python3 make gcc g++
 COPY --from=pruner /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
-# turbo prune copies only workspace packages; the shared build config lives in the repo root
 COPY tsconfig.base.json ./
 COPY tools/ tools/
 RUN pnpm turbo run build --filter="${APP}"
@@ -40,5 +38,4 @@ COPY --chown=node:node --from=builder /app/apps/${APP}/dist dist
 
 USER node
 
-# .mjs: an ES module bundle, so no package.json with "type": "module" is needed next to it
 CMD ["node", "--enable-source-maps", "dist/main.mjs"]

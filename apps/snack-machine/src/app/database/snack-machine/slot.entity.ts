@@ -11,7 +11,6 @@ export class SnackPileEmbeddable {
   @Property({ type: 'varchar', length: 255 })
   price!: string;
 
-  // MikroORM 7 no longer derives nullability and FK rules from `cascade`, so they are spelled out to match the schema.
   @OneToOne(() => SnackEntity, {
     cascade: [Cascade.ALL],
     unique: false,
@@ -30,7 +29,6 @@ export default class SlotEntity {
   @Property({ type: 'int' })
   position!: number;
 
-  // Rel<> keeps the circular SnackMachineEntity import out of the emitted decorator metadata.
   @ManyToOne(() => SnackMachineEntity, { updateRule: 'cascade' })
   snackMachine!: Rel<SnackMachineEntity>;
 
