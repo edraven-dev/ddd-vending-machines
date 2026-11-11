@@ -1,4 +1,5 @@
-import { BaseEntity, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'event_store' })
 export default class EventStoreEntity extends BaseEntity {
@@ -17,6 +18,6 @@ export default class EventStoreEntity extends BaseEntity {
   @Property({ type: 'jsonb' })
   payload!: unknown;
 
-  @Property({ type: 'timestamp with time zone', defaultRaw: 'CURRENT_TIMESTAMP' })
+  @Property({ type: 'timestamp with time zone', length: 0, defaultRaw: 'CURRENT_TIMESTAMP' })
   timestamp: Date = new Date();
 }
