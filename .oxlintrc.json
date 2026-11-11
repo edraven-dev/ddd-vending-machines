@@ -153,6 +153,12 @@
       "files": ["**/*.spec.ts", "**/*.e2e-spec.ts", "**/*.test.ts"],
       "env": {
         "vitest": true
+      },
+      "rules": {
+        "vitest/expect-expect": [
+          "error",
+          { "assertFunctionNames": ["expect", "expectTypeOf", "assert", "assertType", "request.**.expect"] }
+        ]
       }
     },
     {

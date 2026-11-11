@@ -4,6 +4,8 @@ import { Test } from '@nestjs/testing';
 import { ValidationProvider } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import request from 'supertest';
+// Imported explicitly: oxlint's vitest rules only treat *.e2e-spec.ts files as tests when they import from vitest.
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ManagementController } from '../../../app/management/management.controller';
 
 describe('ManagementController - e2e', () => {
