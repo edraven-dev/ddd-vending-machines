@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import type { AtmProtoService } from '@vending-machines/proto';
 import { CoinsAndNotes, LoadMoneyDto } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { of } from 'rxjs';
 import { AtmProtoServiceClient } from '../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('AtmProtoServiceClient', () => {
-  const service = { loadMoney: jest.fn(() => of(void 0)) };
+  const service = { loadMoney: vi.fn<AtmProtoService['loadMoney']>(() => of(void 0)) };
   let protoClient: AtmProtoServiceClient;
 
   beforeAll(async () => {
@@ -17,8 +18,8 @@ describe('AtmProtoServiceClient', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#loadMoney', () => {

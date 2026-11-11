@@ -12,13 +12,13 @@ export class ManagementService implements OnModuleInit {
   }
 
   private async schedulePruneHeadOfficesJob(): Promise<void> {
-    const jobId = 'prune-head-offices-job';
     const cron = process.env.PRUNE_HEAD_OFFICES_CRON || '0 0 * * *';
-    const repeatableJobs = await this.pruneHeadOfficesQueue.getRepeatableJobs();
-    const pruneHeadOfficesJob = repeatableJobs.filter((job) => job.id === jobId).pop();
-    if (pruneHeadOfficesJob && pruneHeadOfficesJob.pattern !== cron) {
-      await this.pruneHeadOfficesQueue.removeRepeatableByKey(pruneHeadOfficesJob.key);
-    }
-    await this.pruneHeadOfficesQueue.add('prune-head-offices', null, { jobId, repeat: { pattern: cron } });
+    // Idempotent: creates the scheduler or updates its pattern. The first job waits for the next cron tick (no
+    // `immediately`), as it deletes all head offices.
+    await this.pruneHeadOfficesQueue.upsertJobScheduler(
+      'prune-head-offices-job',
+      { pattern: cron },
+      { name: 'prune-head-offices', data: null },
+    );
   }
 }

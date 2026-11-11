@@ -7,32 +7,29 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 
 describe('CreateHeadOfficeHandler', () => {
   const headOffice = new HeadOffice(randomUUID());
+  const factory = { create: vi.fn<HeadOfficeFactory['create']>(() => headOffice) };
+  const repository = { save: vi.fn<HeadOfficeRepository['save']>() };
   let handler: CreateHeadOfficeHandler;
-  let factory: HeadOfficeFactory;
-  let repository: HeadOfficeRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateHeadOfficeHandler,
-        { provide: HeadOfficeRepository, useValue: { save: jest.fn() } },
-        { provide: HeadOfficeFactory, useValue: { create: jest.fn(() => headOffice) } },
+        { provide: HeadOfficeRepository, useValue: repository },
+        { provide: HeadOfficeFactory, useValue: factory },
       ],
     }).compile();
 
     handler = module.get<CreateHeadOfficeHandler>(CreateHeadOfficeHandler);
-    factory = module.get<HeadOfficeFactory>(HeadOfficeFactory);
-    repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
     it('should call headOfficeFactory.create', async () => {
-      jest.spyOn(factory, 'create');
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -49,12 +46,12 @@ describe('CreateHeadOfficeHandler', () => {
     });
 
     it('should call headOffice.commit', async () => {
-      jest.spyOn(HeadOffice.prototype, 'commit');
+      const commit = vi.spyOn(HeadOffice.prototype, 'commit');
       const id = headOffice.id;
 
       await handler.execute({ id });
 
-      expect(headOffice.commit).toHaveBeenCalled();
+      expect(commit).toHaveBeenCalled();
     });
   });
 });

@@ -9,37 +9,37 @@ import { AtmProtoServiceClient } from '../../../../../app/management/proto-clien
 
 describe('LoadCashToAtmHandler', () => {
   const headOffice = new HeadOffice(randomUUID());
+  const repository = {
+    findOne: vi.fn<HeadOfficeRepository['findOne']>(),
+    save: vi.fn<HeadOfficeRepository['save']>(),
+  };
+  const protoClient = { loadMoney: vi.fn<AtmProtoServiceClient['loadMoney']>() };
   let handler: LoadCashToAtmHandler;
-  let repository: HeadOfficeRepository;
-  let protoClient: AtmProtoServiceClient;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoadCashToAtmHandler,
-        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(), save: jest.fn() } },
-        { provide: AtmProtoServiceClient, useValue: { loadMoney: jest.fn() } },
+        { provide: HeadOfficeRepository, useValue: repository },
+        { provide: AtmProtoServiceClient, useValue: protoClient },
       ],
     }).compile();
 
     handler = module.get<LoadCashToAtmHandler>(LoadCashToAtmHandler);
-    repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
-    protoClient = module.get<AtmProtoServiceClient>(AtmProtoServiceClient);
   });
 
   beforeEach(() => {
-    jest.spyOn(repository, 'findOne').mockImplementation(async () => headOffice);
+    repository.findOne.mockImplementation(async () => headOffice);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
-      jest.spyOn(repository, 'findOne');
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -48,25 +48,25 @@ describe('LoadCashToAtmHandler', () => {
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should call headOffice.unloadCash', async () => {
-      jest.spyOn(headOffice, 'unloadCash');
+      const unloadCash = vi.spyOn(headOffice, 'unloadCash');
       const id = headOffice.id;
 
       await handler.execute({ id });
 
-      expect(headOffice.unloadCash).toHaveBeenCalledWith();
+      expect(unloadCash).toHaveBeenCalledWith();
     });
 
     it('should call protoClient.loadMoney with correct data', async () => {
       const headOffice = new HeadOffice();
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
-      jest.spyOn(repository, 'findOne').mockImplementation(async () => headOffice);
+      repository.findOne.mockImplementation(async () => headOffice);
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -75,7 +75,6 @@ describe('LoadCashToAtmHandler', () => {
     });
 
     it('should call headOfficeRepository.save', async () => {
-      jest.spyOn(repository, 'save');
       const id = headOffice.id;
 
       await handler.execute({ id });

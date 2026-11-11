@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SnackMachineProtoService } from '@vending-machines/proto';
+import type { SnackMachineProtoService } from '@vending-machines/proto';
 import { UnloadMoneyDto } from '@vending-machines/shared';
 import { lastValueFrom } from 'rxjs';
 

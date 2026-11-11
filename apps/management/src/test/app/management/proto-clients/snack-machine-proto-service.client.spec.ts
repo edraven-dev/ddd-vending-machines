@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import type { SnackMachineProtoService } from '@vending-machines/proto';
 import { UnloadMoneyDto } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { of } from 'rxjs';
@@ -6,7 +7,7 @@ import { SnackMachineProtoServiceClient } from '../../../../app/management/proto
 
 describe('SnackMachineProtoServiceClient', () => {
   const dto: UnloadMoneyDto = { money: [1, 1, 1, 1, 1, 1] };
-  const service = { unloadMoney: jest.fn(() => of(dto)) };
+  const service = { unloadMoney: vi.fn<SnackMachineProtoService['unloadMoney']>(() => of(dto)) };
   let protoClient: SnackMachineProtoServiceClient;
 
   beforeAll(async () => {
@@ -18,8 +19,8 @@ describe('SnackMachineProtoServiceClient', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#unloadMoney', () => {

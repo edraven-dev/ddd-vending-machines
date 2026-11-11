@@ -8,7 +8,7 @@ import { MikroOrmHeadOfficeRepository } from '../../../../app/database/managemen
 import { HeadOffice } from '../../../../app/management/head-office';
 
 describe('MikroOrmHeadOfficeRepository', () => {
-  let entityManager: EntityManager;
+  const entityManager = { flush: vi.fn<EntityManager['flush']>() };
   let repository: MikroOrmHeadOfficeRepository;
   let ormRepository: EntityRepository<HeadOfficeEntity>;
 
@@ -22,19 +22,18 @@ describe('MikroOrmHeadOfficeRepository', () => {
         },
         {
           provide: EntityManager,
-          useValue: { flush: jest.fn() },
+          useValue: entityManager,
         },
       ],
     }).compile();
 
-    entityManager = module.get<EntityManager>(EntityManager);
     repository = module.get<MikroOrmHeadOfficeRepository>(MikroOrmHeadOfficeRepository);
     ormRepository = module.get<EntityRepository<HeadOfficeEntity>>(getRepositoryToken(HeadOfficeEntity));
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#findOne', () => {
@@ -42,15 +41,15 @@ describe('MikroOrmHeadOfficeRepository', () => {
       const headOfficeEntity = new HeadOfficeEntity();
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
 
       await repository.findOne(headOfficeEntity.id);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: headOfficeEntity.id });
+      expect(findOne).toHaveBeenCalledWith({ id: headOfficeEntity.id });
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const id = randomUUID();
 
       const result = await repository.findOne(id);
@@ -62,48 +61,48 @@ describe('MikroOrmHeadOfficeRepository', () => {
       const headOfficeEntity = new HeadOfficeEntity();
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
 
       const result = await repository.findOne(headOfficeEntity.id);
 
       expect(result).toBeInstanceOf(HeadOffice);
-      expect(result.id).toBe('id');
-      expect(result.cash.oneDollarCount).toBe(1);
+      expect(result?.id).toBe('id');
+      expect(result?.cash.oneDollarCount).toBe(1);
     });
   });
 
   describe('#save', () => {
     it('should call ormRepository.findOne with proper id', async () => {
       const headOfficeEntity = new HeadOfficeEntity();
-      headOfficeEntity.assign = jest.fn();
+      vi.spyOn(headOfficeEntity, 'assign').mockReturnThis();
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
       const headOffice = new HeadOffice();
       Object.assign(headOffice, { id: 'id', cash: Money.Dollar });
 
       await repository.save(headOffice);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' });
+      expect(findOne).toHaveBeenCalledWith({ id: 'id' });
     });
 
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
-      jest.spyOn(ormRepository, 'create').mockImplementation(() => new HeadOfficeEntity());
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new HeadOfficeEntity());
       const headOffice = new HeadOffice();
       Object.assign(headOffice, { id: 'id', moneyInside: Money.Dollar });
 
       await repository.save(headOffice);
 
-      expect(ormRepository.create).toHaveBeenCalled();
+      expect(create).toHaveBeenCalled();
     });
 
     it('should call entityManager.flush', async () => {
       const headOfficeEntity = new HeadOfficeEntity();
-      headOfficeEntity.assign = jest.fn();
+      vi.spyOn(headOfficeEntity, 'assign').mockReturnThis();
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
       const headOffice = new HeadOffice();
       Object.assign(headOffice, { id: 'id', cash: Money.Dollar });
 

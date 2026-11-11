@@ -5,7 +5,7 @@ import { HeadOffice } from '../../management/head-office';
 import HeadOfficeEntity from './head-office.entity';
 
 export class HeadOfficeMapper {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line no-empty-function
   private constructor() {}
 
   static toDomain(entity: HeadOfficeEntity): HeadOffice {
@@ -28,7 +28,14 @@ export class HeadOfficeMapper {
     return {
       id: headOffice.id,
       balance: headOffice.balance.value,
-      cash: { ...headOffice.cash },
+      cash: {
+        oneCentCount: headOffice.cash.oneCentCount,
+        tenCentCount: headOffice.cash.tenCentCount,
+        quarterCount: headOffice.cash.quarterCount,
+        oneDollarCount: headOffice.cash.oneDollarCount,
+        fiveDollarCount: headOffice.cash.fiveDollarCount,
+        twentyDollarCount: headOffice.cash.twentyDollarCount,
+      },
     };
   }
 }

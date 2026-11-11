@@ -1,36 +1,30 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Queue, RepeatableJob } from 'bullmq';
+import type { Queue } from 'bullmq';
 import { PRUNE_HEAD_OFFICES_QUEUE_NAME } from '../../../app/config/bull.config';
 import { ManagementService } from '../../../app/management/management.service';
 
 describe('ManagementService', () => {
+  const queue = { upsertJobScheduler: vi.fn<Queue['upsertJobScheduler']>() };
   let service: ManagementService;
-  let queue: Queue;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ManagementService,
-        {
-          provide: getQueueToken(PRUNE_HEAD_OFFICES_QUEUE_NAME),
-          useValue: { getRepeatableJobs: jest.fn(() => []), removeRepeatableByKey: jest.fn(), add: jest.fn() },
-        },
-      ],
+      providers: [ManagementService, { provide: getQueueToken(PRUNE_HEAD_OFFICES_QUEUE_NAME), useValue: queue }],
     }).compile();
 
     service = module.get<ManagementService>(ManagementService);
-    queue = module.get<Queue>(getQueueToken(PRUNE_HEAD_OFFICES_QUEUE_NAME));
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   describe('#onModuleInit', () => {
     it('should schedule pruneHeadOfficesJob', async () => {
-      jest.spyOn(service.constructor.prototype, 'schedulePruneHeadOfficesJob');
+      vi.spyOn(service.constructor.prototype, 'schedulePruneHeadOfficesJob');
 
       await service.onModuleInit();
 
@@ -39,33 +33,31 @@ describe('ManagementService', () => {
   });
 
   describe('#schedulePruneHeadOfficesJob', () => {
-    it('should remove existing prune-head-offices job from queue if pattern has changed', async () => {
-      const cron = '0 0 * * *';
-      const repeatableJobs = [{ id: 'prune-head-offices-job', pattern: '0 0 1 * *' } as RepeatableJob];
-      const jobId = 'prune-head-offices-job';
-      const pattern = { pattern: cron };
-
-      jest.spyOn(queue, 'getRepeatableJobs').mockResolvedValueOnce(repeatableJobs);
+    it('should upsert the prune-head-offices job scheduler with the default cron pattern', async () => {
+      vi.stubEnv('PRUNE_HEAD_OFFICES_CRON', undefined);
+      const jobSchedulerId = 'prune-head-offices-job';
+      const repeatOptions = { pattern: '0 0 * * *' };
 
       await service.onModuleInit();
 
-      expect(queue.getRepeatableJobs).toHaveBeenCalled();
-      expect(queue.removeRepeatableByKey).toHaveBeenCalledWith(repeatableJobs[0].key);
-      expect(queue.add).toHaveBeenCalledWith('prune-head-offices', null, { jobId, repeat: pattern });
+      // Exactly these repeat options: the job must wait for the next cron tick instead of running `immediately`.
+      expect(queue.upsertJobScheduler).toHaveBeenCalledWith(jobSchedulerId, repeatOptions, {
+        name: 'prune-head-offices',
+        data: null,
+      });
     });
 
-    it('should add prune-head-offices job to queue', async () => {
-      const cron = '0 0 * * *';
-      const repeatableJobs: RepeatableJob[] = [];
-      const jobId = 'prune-head-offices-job';
-      const pattern = { pattern: cron };
-
-      jest.spyOn(queue, 'getRepeatableJobs').mockResolvedValueOnce(repeatableJobs);
+    it('should upsert the prune-head-offices job scheduler with the PRUNE_HEAD_OFFICES_CRON pattern', async () => {
+      vi.stubEnv('PRUNE_HEAD_OFFICES_CRON', '0 0 1 * *');
+      const jobSchedulerId = 'prune-head-offices-job';
+      const repeatOptions = { pattern: '0 0 1 * *' };
 
       await service.onModuleInit();
 
-      expect(queue.getRepeatableJobs).toHaveBeenCalled();
-      expect(queue.add).toHaveBeenCalledWith('prune-head-offices', null, { jobId, repeat: pattern });
+      expect(queue.upsertJobScheduler).toHaveBeenCalledWith(jobSchedulerId, repeatOptions, {
+        name: 'prune-head-offices',
+        data: null,
+      });
     });
   });
 });
