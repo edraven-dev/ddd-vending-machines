@@ -26,15 +26,11 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
     this.connection.on('disconnect', ({ err }) => Logger.error(`AMQP disconnected`, err?.stack, this.constructor.name));
     this.connection.on('blocked', ({ reason }) => Logger.error(`AMQP blocked ${reason}`, this.constructor.name));
     this.connection.on('unblocked', () => Logger.debug('AMQP unblocked', this.constructor.name));
-    this.connection.on('error', (err) =>
-      Logger.error((err as Error)?.message, (err as Error)?.stack, this.constructor.name),
-    );
+    this.connection.on('error', (err) => Logger.error(err, this.constructor.name));
     this.channelWrapper = this.connection.createChannel({ json: false });
     this.channelWrapper.on('connect', () => Logger.debug('AMQP channel created', this.constructor.name));
     this.channelWrapper.on('close', () => Logger.debug('AMQP channel closed', this.constructor.name));
-    this.channelWrapper.on('error', (err) =>
-      Logger.error((err as Error)?.message, (err as Error)?.stack, this.constructor.name),
-    );
+    this.channelWrapper.on('error', (err) => Logger.error(err, this.constructor.name));
   }
 
   async onApplicationShutdown() {
@@ -48,7 +44,11 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
     queueName: string,
     consumer: (msg: Buffer) => Promise<void> | void,
   ): Promise<void> {
-    await this.channelWrapper?.addSetup((channel: Channel) => {
+    const channelWrapper = this.channelWrapper;
+    if (!channelWrapper) {
+      throw new Error('AmqpService.addSubscriber() called before onModuleInit()');
+    }
+    await channelWrapper.addSetup((channel: Channel) => {
       return Promise.all([
         channel.assertExchange(exchangeName, 'topic', { durable: true }),
         channel.assertQueue(queueName, {
@@ -66,14 +66,10 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
           }
           try {
             await consumer(msg.content);
-            this.channelWrapper!.ack(msg);
+            channelWrapper.ack(msg);
           } catch (error) {
-            Logger.error(
-              (error as Error).message,
-              (error as Error).stack,
-              `${this.constructor.name}|${exchangeName}|${queueName}`,
-            );
-            setTimeout(() => this.channelWrapper!.nack(msg), this.nackDelay);
+            Logger.error(error, `${this.constructor.name}|${exchangeName}|${queueName}`);
+            setTimeout(() => channelWrapper.nack(msg), this.nackDelay);
           }
         }),
       ]);
