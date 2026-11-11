@@ -6,3 +6,4 @@
 **/.svelte-kit
 **/coverage
 **/test-results
+**/.vitest

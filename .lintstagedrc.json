@@ -1,3 +1,4 @@
 {
-  "*.{ts,js,cjs,mjs,svelte}": "eslint --fix --no-warn-ignored --flag v10_config_lookup_from_file"
+  "*.{js,cjs,mjs,ts,cts,mts,svelte}": ["oxlint --fix", "oxfmt --no-error-on-unmatched-pattern"],
+  "*.{json,jsonc,md,yml,yaml,css,html}": "oxfmt --no-error-on-unmatched-pattern"
 }
