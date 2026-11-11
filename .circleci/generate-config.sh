@@ -1,19 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-# What "affected" is measured against: feature branches compare to their merge-base with develop,
-# develop/master to the commit the branch pointed at before this push (falling back to the previous commit).
-if [ "$CIRCLE_BRANCH" = "develop" ] || [ "$CIRCLE_BRANCH" = "master" ]; then
-  BASE="${BASE_REVISION:-}"
-  if [ -z "$BASE" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-    BASE=$(git rev-parse HEAD~1)
-  fi
-else
-  git fetch --quiet origin develop
-  BASE=$(git merge-base origin/develop HEAD)
-fi
-export TURBO_SCM_BASE="$BASE"
-export TURBO_SCM_HEAD=HEAD
+# nx/set-shas (see config.yml) exported NX_BASE/NX_HEAD via $BASH_ENV: the commit of the last successful
+# build-lint-test-deploy workflow on master/develop, or the merge-base with origin/develop on other branches.
+export TURBO_SCM_BASE="${NX_BASE:?NX_BASE is not set - nx/set-shas must run first}"
+export TURBO_SCM_HEAD="${NX_HEAD:-HEAD}"
 echo "Comparing $TURBO_SCM_BASE...$TURBO_SCM_HEAD"
 
 TURBO_VERSION=$(jq -r '.devDependencies.turbo' package.json)
