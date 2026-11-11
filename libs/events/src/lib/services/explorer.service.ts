@@ -1,9 +1,11 @@
 import { Injectable, Type } from '@nestjs/common';
 import { ModulesContainer } from '@nestjs/core';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { Module } from '@nestjs/core/injector/module';
+import type { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
+import type { Module } from '@nestjs/core/injector/module';
 import { IEvent, IEventHandler } from '@nestjs/cqrs';
-import { EVENTS_HANDLER_METADATA } from '@nestjs/cqrs/dist/decorators/constants';
+
+// Metadata key set by @EventsHandler(). @nestjs/cqrs doesn't export it, and its package exports block dist/ imports.
+const EVENTS_HANDLER_METADATA = '__eventsHandler__';
 
 @Injectable()
 export class ExplorerService<EventBase extends IEvent = IEvent> {

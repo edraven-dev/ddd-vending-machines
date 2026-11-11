@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import type { ConnectionUrl } from 'amqp-connection-manager/dist/types/AmqpConnectionManager';
+import type { ConnectionUrl } from 'amqp-connection-manager';
 import { CONFIG_OPTIONS_TOKEN } from '../constants';
 import { AmqpService } from './amqp.service';
 

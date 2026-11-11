@@ -2,7 +2,7 @@ import { Inject, Injectable, OnApplicationBootstrap, Type } from '@nestjs/common
 import { ModuleRef } from '@nestjs/core';
 import { IEvent, IEventHandler } from '@nestjs/cqrs';
 import { APP_NAME_TOKEN } from '@vending-machines/shared';
-import * as EJSON from 'ejson';
+import EJSON from 'ejson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
 import { ExplorerService } from './services/explorer.service';
@@ -22,7 +22,8 @@ export class EventSubscriber implements OnApplicationBootstrap {
   }
 
   private subscribe([moduleName, EventType, EventHandler]: [string, Type<IEvent>, Type<IEventHandler>]): void {
-    this.amqpService.addSubscriber(
+    // Fire-and-forget: amqp-connection-manager runs the setup now and again after every reconnect.
+    void this.amqpService.addSubscriber(
       EXCHANGE_NAME,
       `#.${EventType.name}.#`,
       `q.${this.appName}.${moduleName}.${EventType.name}.${EventHandler.name}`,
