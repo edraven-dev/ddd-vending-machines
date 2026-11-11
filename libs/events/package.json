@@ -1,0 +1,28 @@
+{
+  "name": "@vending-machines/events",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.lib.json --noEmit",
+    "test": "jest --passWithNoTests",
+    "test:ci": "jest --passWithNoTests --ci --coverage"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.6",
+    "@nestjs/core": "11.1.6",
+    "@nestjs/cqrs": "11.0.3",
+    "@vending-machines/shared": "workspace:*",
+    "amqp-connection-manager": "4.1.14",
+    "amqplib": "0.10.9",
+    "ejson": "2.2.3",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "0.10.7",
+    "@types/ejson": "2.2.2"
+  }
+}

@@ -2,9 +2,6 @@
 export default {
   displayName: 'shared',
   preset: '../../jest.preset.js',
-  testEnvironment: 'node',
-  transform: { '^.+\\.[tj]s$': ['@swc/jest'] },
-  testMatch: ['**/?(*.)+(e2e-spec|spec|test).[jt]s?(x)'],
   moduleFileExtensions: ['ts', 'js', 'html'],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -14,9 +11,9 @@ export default {
     '!./src/**/index.ts',
     '!./src/database/**',
   ],
-  coverageDirectory: '../../coverage/libs/shared',
+  coverageDirectory: './coverage',
   reporters: [
     'default',
-    ['jest-junit', { outputDirectory: './test-results/libs/shared', outputName: 'test-results.xml' }],
+    ['jest-junit', { outputDirectory: './test-results', outputName: 'test-results.xml' }],
   ],
 };

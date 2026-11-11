@@ -5,7 +5,6 @@ setup: true
 orbs:
   continuation: circleci/continuation@2.0.1
   node: circleci/node@7.1.1
-  nx: nrwl/nx@1.7.0
 
 jobs:
   generate-config:
@@ -14,26 +13,11 @@ jobs:
     steps:
       - checkout
       - node/install
-      - node/install-packages
-      - when:
-          condition:
-              equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - nx/set-shas:
-                main-branch-name: master
-                workflow-name: build_lint_test
-      - when:
-          condition:
-              not:
-                  equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - nx/set-shas:
-                main-branch-name: develop
-                workflow-name: build_lint_test
       - run:
           name: Generate config
-          command: |
-            bash ./.circleci/generate-config.sh
+          command: bash ./.circleci/generate-config.sh
+          environment:
+            BASE_REVISION: << pipeline.git.base_revision >>
       - continuation/continue:
           configuration_path: .circleci/generated-config.yml
 
