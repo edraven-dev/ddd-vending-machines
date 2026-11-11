@@ -18,6 +18,6 @@ export default class EventStoreEntity extends BaseEntity {
   @Property({ type: 'jsonb' })
   payload!: unknown;
 
-  @Property({ type: 'timestamp with time zone', length: 0, defaultRaw: 'CURRENT_TIMESTAMP' })
+  @Property({ type: 'timestamp with time zone', defaultRaw: 'CURRENT_TIMESTAMP' })
   timestamp: Date = new Date();
 }
