@@ -4,5 +4,5 @@
   "singleQuote": true,
   "sortPackageJson": false,
   "svelte": true,
-  "ignorePatterns": ["**/migrations/.snapshot-*.json", "apps/frontend/static/**"]
+  "ignorePatterns": ["**/migrations/**", "apps/frontend/static/**"]
 }
