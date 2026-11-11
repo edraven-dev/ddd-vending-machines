@@ -70,7 +70,8 @@ jobs:
       - checkout_and_install
       - run:
           name: Lint <%= lintable_projects[i].id %>
-          command: pnpm turbo run lint typecheck --filter=<%= lintable_projects[i].name %>
+          # migration:check (Nest apps only) compares the entities with the committed snapshot: no database needed
+          command: pnpm turbo run lint typecheck migration:check --filter=<%= lintable_projects[i].name %>
   <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>
   test-<%= testable_projects[i].id %>:
     <<: *defaults

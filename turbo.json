@@ -25,6 +25,9 @@
     "typecheck": {
       "dependsOn": ["transit"]
     },
+    "migration:check": {
+      "dependsOn": ["transit"]
+    },
     "test": {
       "dependsOn": ["transit"],
       "outputs": ["coverage/**", "test-results/**"]
