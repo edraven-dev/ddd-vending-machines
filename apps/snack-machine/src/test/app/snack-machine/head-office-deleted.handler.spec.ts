@@ -4,7 +4,6 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HeadOfficeDeletedEvent } from '@vending-machines/events';
 import { randomUUID } from 'crypto';
-import type { Mock } from 'vitest';
 import { HeadOfficeDeletedHandler } from '../../../app/snack-machine/head-office-deleted.handler';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
@@ -60,7 +59,7 @@ describe('HeadOfficeDeletedHandler', () => {
     it('should log and return early if Atm not found', async () => {
       const loggerSpy = vi.spyOn(Logger, 'error').mockImplementation(vi.fn());
       const markAsDeletedSpy = vi.spyOn(snackMachine, 'markAsDeleted');
-      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',

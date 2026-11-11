@@ -2,7 +2,6 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
-import type { Mock } from 'vitest';
 import { MoneyInMachineDto } from '../../../../../app/snack-machine/dto/money-in-machine.dto';
 import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
@@ -43,7 +42,7 @@ describe('GetMoneyInMachineHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
       const id = snackMachine.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

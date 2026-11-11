@@ -2,7 +2,6 @@ import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
-import type { Mock } from 'vitest';
 import { BuySnackHandler } from '../../../../../app/snack-machine/commands/handlers/buy-snack.handler';
 import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
@@ -50,7 +49,7 @@ describe('BuySnackHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
       const id = snackMachine.id;
       const position = 1;
 

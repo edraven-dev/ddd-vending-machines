@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import Currency from 'currency.js';
-import type { Mock } from 'vitest';
 import { Atm } from '../../../../../app/atm/atm';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
 import { AtmDto } from '../../../../../app/atm/dto/atm.dto';
@@ -42,7 +41,7 @@ describe('GetAtmHandler', () => {
     });
 
     it('should throw NotFoundException if Atm not found', async () => {
-      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
       const id = atm.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

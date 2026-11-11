@@ -4,7 +4,6 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
-import type { Mock } from 'vitest';
 import type { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
 import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
@@ -58,7 +57,7 @@ describe('SnackMachineService', () => {
     });
 
     it('should throw error if snackMachine not found', async () => {
-      (repository.findOne as Mock).mockResolvedValueOnce(null);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       await expect(service.unloadMoney(snackMachine.id)).rejects.toThrow(NotFoundException);
     });

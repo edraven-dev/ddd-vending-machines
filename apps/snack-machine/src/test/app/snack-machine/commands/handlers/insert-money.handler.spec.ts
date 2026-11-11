@@ -3,7 +3,6 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
-import type { Mock } from 'vitest';
 import { InsertMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/insert-money.handler';
 import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
@@ -51,7 +50,7 @@ describe('InsertMoneyHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
+      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
       const id = snackMachine.id;
       const money = Money.Dollar;
 
