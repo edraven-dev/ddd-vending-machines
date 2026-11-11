@@ -1,3 +1,4 @@
 {
-  "recommendations": ["oxc.oxc-vscode", "vitest.explorer", "svelte.svelte-vscode"]
+  "recommendations": ["oxc.oxc-vscode", "vitest.explorer", "svelte.svelte-vscode", "bradlc.vscode-tailwindcss"],
+  "unwantedRecommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
 }

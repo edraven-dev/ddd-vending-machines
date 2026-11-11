@@ -9,5 +9,36 @@
   "circleci.persistedProjectSelection": ["gh/ArkadiuszKolodynski/ddd-vending-machines"],
   "files.associations": {
     "*.css": "tailwindcss"
-  }
+  },
+  "files.eol": "\n",
+  // Format with oxfmt (.oxfmtrc.json) through the Oxc extension, like pre-commit and CI do. The per-language entries
+  // are needed because a per-language formatter in user settings (e.g. Prettier) beats a workspace-wide one.
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  // The repo uses oxlint and oxfmt instead
+  "prettier.enable": false,
+  "eslint.enable": false
 }
