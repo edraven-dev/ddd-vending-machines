@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@7.1.1<% if ((branch === 'master' || branch === 'develop') && buildable_projects.includes('frontend')) { %>
+  node: circleci/node@7.1.1<% if ((branch === 'master' || branch === 'develop') && buildable_projects.some((p) => p.id === 'frontend')) { %>
   aws-cli: circleci/aws-cli@5.4.1<% } %>
 
 defaults: &defaults
@@ -13,8 +13,12 @@ commands:
   checkout_and_install:
     steps:
       - checkout
-      - node/install-packages<%
-  if (branch === 'master' || branch === 'develop') { 
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g "$(node -p "require('./package.json').packageManager")"
+      - node/install-packages:
+          pkg-manager: pnpm<%
+  if (branch === 'master' || branch === 'develop') {
   %>
   setup-buildx:
     steps:
@@ -28,7 +32,7 @@ commands:
           name: Check versions
           command: |
             qemu-aarch64-static --version
-            update-binfmts --version 
+            update-binfmts --version
       - run:
           name: Create builder
           command: |
@@ -48,41 +52,41 @@ jobs:
           name: No changes
           command: echo "No changes"<% } %>
   <% for (let i = 0; i < buildable_projects.length; i++) { %>
-  build-<%= buildable_projects[i] %>:
+  build-<%= buildable_projects[i].id %>:
     <<: *defaults
-    <% Object.entries(parameters[buildable_projects[i]]?.build || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% Object.entries(parameters[buildable_projects[i].id]?.build || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
     <% }); %>
     steps:
       - checkout_and_install
       - run:
-          name: Build <%= buildable_projects[i] %>
-          command: npm run build <%= buildable_projects[i] %>
+          name: Build <%= buildable_projects[i].id %>
+          command: pnpm turbo run build --filter=<%= buildable_projects[i].name %>
   <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>
-  lint-<%= lintable_projects[i] %>:
+  lint-<%= lintable_projects[i].id %>:
     <<: *defaults
-    <% Object.entries(parameters[lintable_projects[i]]?.lint || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% Object.entries(parameters[lintable_projects[i].id]?.lint || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
     <% }); %>
     steps:
       - checkout_and_install
       - run:
-          name: Lint <%= lintable_projects[i] %>
-          command: npm run lint <%= lintable_projects[i] %>
+          name: Lint <%= lintable_projects[i].id %>
+          command: pnpm turbo run lint typecheck --filter=<%= lintable_projects[i].name %>
   <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>
-  test-<%= testable_projects[i] %>:
+  test-<%= testable_projects[i].id %>:
     <<: *defaults
-    <% Object.entries(parameters[testable_projects[i]]?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
+    <% Object.entries(parameters[testable_projects[i].id]?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
     <% }); %>
     steps:
       - checkout_and_install
       - run:
-          name: Test <%= testable_projects[i] %>
-          command: npm run test <%= testable_projects[i] %> -- --configuration ci
+          name: Test <%= testable_projects[i].id %>
+          command: pnpm turbo run test:ci --filter=<%= testable_projects[i].name %>
       - store_test_results:
-          path: test-results
+          path: <%= testable_projects[i].dir %>/test-results
       - store_artifacts:
-          path: coverage
-  <% } %><% if (branch === 'develop' || branch === 'master') {  for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>
-  build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'develop' ? '-dev': '' %>:
+          path: <%= testable_projects[i].dir %>/coverage
+  <% } %><% if (branch === 'develop' || branch === 'master') {  for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i].id !== 'frontend') { %>
+  build-and-push-docker-image-<%= buildable_projects[i].id %><%= branch === 'develop' ? '-dev': '' %>:
     docker:
       - image: cimg/base:current
     resource_class: medium+
@@ -92,12 +96,12 @@ jobs:
           docker_layer_caching: true
       - setup-buildx
       - run:
-          name: Build Docker image for <%= buildable_projects[i] %> and push to GHCR
+          name: Build Docker image for <%= buildable_projects[i].id %> and push to GHCR
           command: |
             export BUILDX_NO_DEFAULT_ATTESTATIONS=1
             export REPO_ORG=$(echo $CIRCLE_PROJECT_USERNAME | tr '[:upper:]' '[:lower:]')
             echo $GH_TOKEN | docker login ghcr.io --username $GH_USERNAME --password-stdin
-            docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:$CIRCLE_SHA1 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i] %>:<%= branch === "master" ? "latest" : "dev" %> --build-arg="NX_PROJECT_NAME=<%= buildable_projects[i] %>" --build-arg="NODE_VERSION=<%= node_version %>" --push .
+            docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i].id %>:$CIRCLE_SHA1 -t ghcr.io/$REPO_ORG/$CIRCLE_PROJECT_REPONAME/<%= buildable_projects[i].id %>:<%= branch === "master" ? "latest" : "dev" %> --build-arg="APP=<%= buildable_projects[i].name %>" --build-arg="NODE_VERSION=<%= node_version %>" --push .
   <% } else { %>build-and-upload-frontend-files:
     <<: *defaults
     <% Object.entries(parameters['frontend']?.test || {}).forEach(([key, value]) => { %><%= key %>: <%= value %>
@@ -108,9 +112,9 @@ jobs:
       - run:
           name: Build frontend and upload
           command: |
-            npm run build frontend
+            pnpm turbo run build --filter=frontend
             aws s3 rm s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
-            aws s3 cp ./dist/apps/frontend s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
+            aws s3 cp ./apps/frontend/build s3://ddd-vending-machines<%= branch === 'master' ? '-prod' : '-dev' %>/ --recursive --endpoint-url=$AWS_ENDPOINT_URL
     <% }}} if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>
   push-git-tag:
     <<: *defaults
@@ -142,20 +146,20 @@ jobs:
 workflows:
   build-lint-test<%= branch === 'develop' || branch === 'master' ? '-deploy' : '' %>:
     jobs:
-      <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i] %>
+      <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i].id %>
       <% } %>
-      <% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i] %>
+      <% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i].id %>
       <% } %>
-      <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
+      <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i].id %>
       <% } %><% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>- no-changes<% } %>
       <% if (branch === 'develop' || branch === 'master') { %>- hold:
           type: approval
           requires:
-            <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i] %>
-            <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i] %>
-            <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i] %>
+            <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i].id %>
+            <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i].id %>
+            <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i].id %>
             <% }} %>
-      <% if (branch === 'develop' || branch === 'master') { for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>:
+      <% if (branch === 'develop' || branch === 'master') { for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i].id !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i].id %><%= branch === 'master' ? '': '-dev' %>:
           requires:
             - hold
       <% } else { %>- build-and-upload-frontend-files:
@@ -163,7 +167,7 @@ workflows:
             - hold
       <% }}} %><% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-git-tag:
           requires:
-            <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i] !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i] %><%= branch === 'master' ? '': '-dev' %>
+            <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i].id !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i].id %><%= branch === 'master' ? '': '-dev' %>
             <% } else { %>- build-and-upload-frontend-files
             <% }}} %>
       <% if (branch === 'develop' || branch === 'master') { %>- push-tags-to-k8s-manifests:

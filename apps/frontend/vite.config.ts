@@ -2,14 +2,9 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
-import viteTsConfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  cacheDir: '../../node_modules/.vite/frontend',
   server: {
-    fs: {
-      allow: ['../..'],
-    },
     proxy: {
       '/api/atm': {
         target: 'http://localhost:3100',
@@ -28,27 +23,15 @@ export default defineConfig({
   plugins: [
     sveltekit(),
     tailwindcss(),
-    viteTsConfigPaths({
-      root: '../../',
-      parseNative: true,
-    }),
   ],
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [
-  //    viteTsConfigPaths({
-  //      root: '../../',
-  //    }),
-  //  ],
-  // },
   test: {
     globals: true,
     coverage: {
       provider: 'istanbul',
-      reportsDirectory: '../../coverage/apps/frontend',
+      reportsDirectory: './coverage',
     },
     reporters: ['default', 'junit'],
-    outputFile: '../../test-results/apps/frontend/test-results.xml',
+    outputFile: './test-results/test-results.xml',
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },

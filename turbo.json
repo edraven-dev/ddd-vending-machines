@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "envMode": "loose",
+  "globalDependencies": [
+    ".nvmrc",
+    ".dockerignore",
+    "Dockerfile",
+    "eslint.config.js",
+    "jest.preset.js",
+    "pnpm-workspace.yaml",
+    "tsconfig.base.json",
+    ".circleci/**",
+    "tools/**"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**"]
+    },
+    "lint": {},
+    "typecheck": {},
+    "test": {
+      "outputs": ["coverage/**", "test-results/**"]
+    },
+    "test:ci": {
+      "outputs": ["coverage/**", "test-results/**"]
+    },
+    "frontend#test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**", "test-results/**"]
+    },
+    "frontend#test:ci": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**", "test-results/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
