@@ -8,7 +8,7 @@ import { MikroOrmSnackMachineRepository } from '../../../../app/database/snack-m
 import { SnackMachine } from '../../../../app/snack-machine/snack-machine';
 
 describe('MikroOrmSnackMachineRepository', () => {
-  let entityManager: EntityManager;
+  const entityManagerMock = { flush: vi.fn<EntityManager['flush']>() };
   let repository: MikroOrmSnackMachineRepository;
   let ormRepository: EntityRepository<SnackMachineEntity>;
 
@@ -20,14 +20,10 @@ describe('MikroOrmSnackMachineRepository', () => {
           provide: getRepositoryToken(SnackMachineEntity),
           useClass: EntityRepository<SnackMachineEntity>,
         },
-        {
-          provide: EntityManager,
-          useValue: { flush: vi.fn<EntityManager['flush']>() },
-        },
+        { provide: EntityManager, useValue: entityManagerMock },
       ],
     }).compile();
 
-    entityManager = module.get<EntityManager>(EntityManager);
     repository = module.get<MikroOrmSnackMachineRepository>(MikroOrmSnackMachineRepository);
     ormRepository = module.get<EntityRepository<SnackMachineEntity>>(getRepositoryToken(SnackMachineEntity));
   });
@@ -69,10 +65,9 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       const result = await repository.findOne(snackMachineEntity.id);
 
-      expect(result).toBeDefined();
-      expect(result!).toBeInstanceOf(SnackMachine);
-      expect(result!.id).toBe('id');
-      expect(result!.moneyInside.oneDollarCount).toBe(1);
+      assert(result instanceof SnackMachine, 'result should be an instance of SnackMachine');
+      expect(result.id).toBe('id');
+      expect(result.moneyInside.oneDollarCount).toBe(1);
     });
   });
 
@@ -83,8 +78,8 @@ describe('MikroOrmSnackMachineRepository', () => {
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
       const spy = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
-      const snackMachine = new SnackMachine();
-      Object.assign(snackMachine, { id: 'id', moneyInside: Money.Dollar });
+      const snackMachine = new SnackMachine('id');
+      snackMachine.moneyInside = Money.Dollar;
 
       await repository.save(snackMachine);
 
@@ -94,8 +89,8 @@ describe('MikroOrmSnackMachineRepository', () => {
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const spy = vi.spyOn(ormRepository, 'create').mockImplementation(() => new SnackMachineEntity());
-      const snackMachine = new SnackMachine();
-      Object.assign(snackMachine, { id: 'id', moneyInside: Money.Dollar });
+      const snackMachine = new SnackMachine('id');
+      snackMachine.moneyInside = Money.Dollar;
 
       await repository.save(snackMachine);
 
@@ -108,16 +103,12 @@ describe('MikroOrmSnackMachineRepository', () => {
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
-      const spy = vi.spyOn(entityManager, 'flush');
-      const snackMachine = new SnackMachine();
-      Object.assign(snackMachine, {
-        id: 'id',
-        moneyInside: Money.Dollar,
-      });
+      const snackMachine = new SnackMachine('id');
+      snackMachine.moneyInside = Money.Dollar;
 
       await repository.save(snackMachine);
 
-      expect(spy).toHaveBeenCalled();
+      expect(entityManagerMock.flush).toHaveBeenCalled();
     });
   });
 });

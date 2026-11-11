@@ -40,7 +40,6 @@ describe('ManagementService', () => {
 
       await service.onModuleInit();
 
-      // Exactly these repeat options: the job must wait for the next cron tick instead of running `immediately`.
       expect(queue.upsertJobScheduler).toHaveBeenCalledWith(jobSchedulerId, repeatOptions, {
         name: 'prune-head-offices',
         data: null,
@@ -48,9 +47,10 @@ describe('ManagementService', () => {
     });
 
     it('should upsert the prune-head-offices job scheduler with the PRUNE_HEAD_OFFICES_CRON pattern', async () => {
-      vi.stubEnv('PRUNE_HEAD_OFFICES_CRON', '0 0 1 * *');
+      const pattern = '0 0 1 * *';
+      vi.stubEnv('PRUNE_HEAD_OFFICES_CRON', pattern);
       const jobSchedulerId = 'prune-head-offices-job';
-      const repeatOptions = { pattern: '0 0 1 * *' };
+      const repeatOptions = { pattern };
 
       await service.onModuleInit();
 

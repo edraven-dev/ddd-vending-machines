@@ -4,12 +4,12 @@ import { Test } from '@nestjs/testing';
 import { ValidationProvider } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import request from 'supertest';
-// Imported explicitly: oxlint's vitest rules only treat *.e2e-spec.ts files as tests when they import from vitest.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ManagementController } from '../../../app/management/management.controller';
 
 describe('ManagementController - e2e', () => {
   const queryBusMock = { execute: () => ({ balance: '$1.00', cash: '$1.00' }) };
+  const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
   const testEndpoint = (id: string) => `/management/${id}`;
 
   let app: INestApplication;
@@ -20,7 +20,7 @@ describe('ManagementController - e2e', () => {
       providers: [
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
-        { provide: CommandBus, useValue: { execute: vi.fn<CommandBus['execute']>() } },
+        { provide: CommandBus, useValue: commandBusMock },
       ],
     }).compile();
 

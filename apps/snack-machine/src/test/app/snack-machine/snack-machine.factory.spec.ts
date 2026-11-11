@@ -8,17 +8,14 @@ import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineFactory } from '../../../app/snack-machine/snack-machine.factory';
 
 describe('SnackMachineFactory', () => {
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine),
+  };
   let factory: SnackMachineFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SnackMachineFactory,
-        {
-          provide: EventPublisher,
-          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
-        },
-      ],
+      providers: [SnackMachineFactory, { provide: EventPublisher, useValue: eventPublisherMock }],
     }).compile();
 
     factory = module.get<SnackMachineFactory>(SnackMachineFactory);

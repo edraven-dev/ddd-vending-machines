@@ -8,25 +8,20 @@ import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-m
 
 describe('CreateSnackMachineHandler', () => {
   const snackMachine = new SnackMachine(randomUUID());
+  const factoryMock = { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) };
+  const repositoryMock = { save: vi.fn<SnackMachineRepository['save']>() };
   let handler: CreateSnackMachineHandler;
-  let factory: SnackMachineFactory;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateSnackMachineHandler,
-        {
-          provide: SnackMachineFactory,
-          useValue: { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) },
-        },
-        { provide: SnackMachineRepository, useValue: { save: vi.fn<SnackMachineRepository['save']>() } },
+        { provide: SnackMachineFactory, useValue: factoryMock },
+        { provide: SnackMachineRepository, useValue: repositoryMock },
       ],
     }).compile();
 
     handler = module.get<CreateSnackMachineHandler>(CreateSnackMachineHandler);
-    factory = module.get<SnackMachineFactory>(SnackMachineFactory);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   afterEach(() => {
@@ -36,12 +31,11 @@ describe('CreateSnackMachineHandler', () => {
 
   describe('#execute', () => {
     it('should create Snack Machine entity', async () => {
-      const spy = vi.spyOn(factory, 'create');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(id);
+      expect(factoryMock.create).toHaveBeenCalledWith(id);
     });
 
     it('should load money into Snack Machine', async () => {
@@ -64,13 +58,12 @@ describe('CreateSnackMachineHandler', () => {
 
     it('should save Snack Machine with repository', async () => {
       vi.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(vi.fn());
-      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(snackMachine);
+      expect(repositoryMock.save).toHaveBeenCalledTimes(1);
+      expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should commit events', async () => {

@@ -17,45 +17,40 @@ describe('LoadSnacksHandler', () => {
     loadSnacks: vi.fn<SnackMachine['loadSnacks']>(),
     commit: vi.fn<SnackMachine['commit']>(),
   };
+  const repositoryMock = {
+    findOne: vi.fn<() => Promise<typeof snackMachine | null>>(async () => snackMachine),
+    save: vi.fn<SnackMachineRepository['save']>(),
+  };
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine),
+  };
   let handler: LoadSnacksHandler;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoadSnacksHandler,
-        {
-          provide: SnackMachineRepository,
-          useValue: {
-            findOne: vi.fn<() => Promise<typeof snackMachine>>(async () => snackMachine),
-            save: vi.fn<SnackMachineRepository['save']>(),
-          },
-        },
-        {
-          provide: EventPublisher,
-          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
-        },
+        { provide: SnackMachineRepository, useValue: repositoryMock },
+        { provide: EventPublisher, useValue: eventPublisherMock },
       ],
     }).compile();
 
     handler = module.get<LoadSnacksHandler>(LoadSnacksHandler);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   describe('#execute', () => {
     it('should call snackMachineRepository.findOne with correct id', async () => {
-      const spy = vi.spyOn(repository, 'findOne');
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
 
       await handler.execute({ id, position, quantity });
 
-      expect(spy).toHaveBeenCalledWith(id);
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
@@ -96,14 +91,13 @@ describe('LoadSnacksHandler', () => {
     });
 
     it('should save snack machine with correct data', async () => {
-      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
 
       await handler.execute({ id, position, quantity });
 
-      expect(spy).toHaveBeenCalledWith(snackMachine);
+      expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should commit events', async () => {

@@ -9,8 +9,7 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { GetHeadOfficeHandler } from '../../../../../app/management/queries/handlers/get-head-office.handler';
 
 describe('GetHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice();
-  Object.assign(headOffice, { id: randomUUID() });
+  const headOffice = new HeadOffice(randomUUID());
   const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
 

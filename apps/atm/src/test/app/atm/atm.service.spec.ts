@@ -18,8 +18,7 @@ describe('AtmService', () => {
   let service: AtmService;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: vi.fn<MikroORM['em']['fork']>() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AtmService,

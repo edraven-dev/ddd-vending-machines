@@ -10,19 +10,15 @@ import { GetAtmHandler } from '../../../../../app/atm/queries/handlers/get-atm.h
 
 describe('GetAtmHandler', () => {
   const atm = new Atm(randomUUID());
+  const repositoryMock = { findOne: vi.fn<AtmRepository['findOne']>(async () => atm) };
   let handler: GetAtmHandler;
-  let repository: AtmRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GetAtmHandler,
-        { provide: AtmRepository, useValue: { findOne: vi.fn<AtmRepository['findOne']>(async () => atm) } },
-      ],
+      providers: [GetAtmHandler, { provide: AtmRepository, useValue: repositoryMock }],
     }).compile();
 
     handler = module.get<GetAtmHandler>(GetAtmHandler);
-    repository = module.get<AtmRepository>(AtmRepository);
   });
 
   afterEach(() => {
@@ -32,16 +28,15 @@ describe('GetAtmHandler', () => {
 
   describe('#execute', () => {
     it('should call AtmRepository.findOne with correct id', async () => {
-      const spy = vi.spyOn(repository, 'findOne');
       const id = atm.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(id);
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if Atm not found', async () => {
-      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = atm.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

@@ -10,31 +10,25 @@ import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine
 
 describe('HeadOfficeDeletedHandler', () => {
   const snackMachine = new SnackMachine();
+  const repositoryMock = {
+    findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine),
+    delete: vi.fn<SnackMachineRepository['delete']>(),
+  };
+  const eventPublisherMock = { mergeObjectContext: vi.fn<() => SnackMachine>(() => snackMachine) };
   let handler: HeadOfficeDeletedHandler;
-  let eventPublisher: EventPublisher;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: vi.fn<MikroORM['em']['fork']>() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HeadOfficeDeletedHandler,
-        {
-          provide: SnackMachineRepository,
-          useValue: {
-            findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine),
-            delete: vi.fn<SnackMachineRepository['delete']>(),
-          },
-        },
+        { provide: SnackMachineRepository, useValue: repositoryMock },
         { provide: MikroORM, useValue: orm },
-        { provide: EventPublisher, useValue: { mergeObjectContext: vi.fn<() => SnackMachine>(() => snackMachine) } },
+        { provide: EventPublisher, useValue: eventPublisherMock },
       ],
     }).compile();
 
     handler = module.get<HeadOfficeDeletedHandler>(HeadOfficeDeletedHandler);
-    eventPublisher = module.get<EventPublisher>(EventPublisher);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   afterEach(() => {
@@ -44,7 +38,6 @@ describe('HeadOfficeDeletedHandler', () => {
 
   describe('#execute', () => {
     it('should call atmRepository.findOne', async () => {
-      const spy = vi.spyOn(repository, 'findOne');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -53,13 +46,13 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(spy).toHaveBeenCalled();
+      expect(repositoryMock.findOne).toHaveBeenCalled();
     });
 
     it('should log and return early if Atm not found', async () => {
       const loggerSpy = vi.spyOn(Logger, 'error').mockImplementation(vi.fn());
       const markAsDeletedSpy = vi.spyOn(snackMachine, 'markAsDeleted');
-      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -73,7 +66,6 @@ describe('HeadOfficeDeletedHandler', () => {
     });
 
     it('should call eventPublisher.mergeObjectContext', async () => {
-      const spy = vi.spyOn(eventPublisher, 'mergeObjectContext');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -82,7 +74,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(spy).toHaveBeenCalled();
+      expect(eventPublisherMock.mergeObjectContext).toHaveBeenCalled();
     });
 
     it('should call atm.markAsDeleted', async () => {
@@ -99,7 +91,6 @@ describe('HeadOfficeDeletedHandler', () => {
     });
 
     it('should call headOfficeRepository.delete', async () => {
-      const spy = vi.spyOn(repository, 'delete');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -108,7 +99,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(spy).toHaveBeenCalled();
+      expect(repositoryMock.delete).toHaveBeenCalled();
     });
 
     it('should commit atm events', async () => {

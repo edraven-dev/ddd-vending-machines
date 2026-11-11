@@ -7,7 +7,7 @@ import { MikroOrmEventStoreRepository } from '../../../app/database/event-store/
 
 describe('MikroOrmEventStoreRepository', () => {
   const flush = vi.fn<() => Promise<void>>();
-  let entityManager: EntityManager;
+  const entityManagerMock = { persist: vi.fn<() => { flush: typeof flush }>(() => ({ flush })) };
   let repository: MikroOrmEventStoreRepository;
 
   beforeAll(async () => {
@@ -18,14 +18,10 @@ describe('MikroOrmEventStoreRepository', () => {
           provide: getRepositoryToken(EventStoreEntity),
           useClass: EntityRepository<EventStoreEntity>,
         },
-        {
-          provide: EntityManager,
-          useValue: { persist: vi.fn<() => { flush: typeof flush }>(() => ({ flush })) },
-        },
+        { provide: EntityManager, useValue: entityManagerMock },
       ],
     }).compile();
 
-    entityManager = module.get<EntityManager>(EntityManager);
     repository = module.get<MikroOrmEventStoreRepository>(MikroOrmEventStoreRepository);
   });
 
@@ -36,7 +32,6 @@ describe('MikroOrmEventStoreRepository', () => {
 
   describe('#save', () => {
     it('should call em.persist with any eventStoreEntity and flush it', async () => {
-      const persist = vi.spyOn(entityManager, 'persist');
       const event = {
         eventId: randomUUID(),
         eventType: randomUUID(),
@@ -55,7 +50,7 @@ describe('MikroOrmEventStoreRepository', () => {
 
       await repository.save(event);
 
-      expect(persist).toHaveBeenCalledWith(eventEntity);
+      expect(entityManagerMock.persist).toHaveBeenCalledWith(eventEntity);
       expect(flush).toHaveBeenCalledOnce();
     });
   });

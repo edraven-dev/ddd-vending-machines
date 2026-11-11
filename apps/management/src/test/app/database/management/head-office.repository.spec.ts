@@ -78,8 +78,8 @@ describe('MikroOrmHeadOfficeRepository', () => {
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
       const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
-      const headOffice = new HeadOffice();
-      Object.assign(headOffice, { id: 'id', cash: Money.Dollar });
+      const headOffice = new HeadOffice('id');
+      headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);
 
@@ -89,8 +89,8 @@ describe('MikroOrmHeadOfficeRepository', () => {
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new HeadOfficeEntity());
-      const headOffice = new HeadOffice();
-      Object.assign(headOffice, { id: 'id', moneyInside: Money.Dollar });
+      const headOffice = new HeadOffice('id');
+      headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);
 
@@ -103,8 +103,8 @@ describe('MikroOrmHeadOfficeRepository', () => {
       headOfficeEntity.id = 'id';
       headOfficeEntity.cash = Money.Dollar;
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
-      const headOffice = new HeadOffice();
-      Object.assign(headOffice, { id: 'id', cash: Money.Dollar });
+      const headOffice = new HeadOffice('id');
+      headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);
 

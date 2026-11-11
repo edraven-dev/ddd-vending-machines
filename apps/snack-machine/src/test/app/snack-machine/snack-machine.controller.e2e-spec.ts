@@ -4,13 +4,14 @@ import { Test } from '@nestjs/testing';
 import { ValidationProvider } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import request from 'supertest';
-// Imported explicitly: oxlint's vitest rules only treat *.e2e-spec.ts files as tests when they import from vitest.
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 describe('SnackMachineController - e2e', () => {
   const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }) };
+  const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
+  const snackMachineServiceMock = { unloadMoney: vi.fn<SnackMachineService['unloadMoney']>() };
   const testEndpoint = (id: string) => `/snack-machine/${id}`;
 
   let app: INestApplication;
@@ -21,8 +22,8 @@ describe('SnackMachineController - e2e', () => {
       providers: [
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
-        { provide: CommandBus, useValue: { execute: vi.fn<CommandBus['execute']>() } },
-        { provide: SnackMachineService, useValue: { unloadMoney: vi.fn<SnackMachineService['unloadMoney']>() } },
+        { provide: CommandBus, useValue: commandBusMock },
+        { provide: SnackMachineService, useValue: snackMachineServiceMock },
       ],
     }).compile();
 

@@ -14,32 +14,27 @@ describe('SnackMachineService', () => {
     unloadMoney: vi.fn<SnackMachine['unloadMoney']>(() => Money.TwentyDollar),
     commit: vi.fn<SnackMachine['commit']>(),
   };
+  const repositoryMock = {
+    findOne: vi.fn<() => Promise<typeof snackMachine | null>>(async () => snackMachine),
+    save: vi.fn<SnackMachineRepository['save']>(),
+  };
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine),
+  };
   let service: SnackMachineService;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: vi.fn<MikroORM['em']['fork']>() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SnackMachineService,
         { provide: MikroORM, useValue: orm },
-        {
-          provide: SnackMachineRepository,
-          useValue: {
-            findOne: vi.fn<() => Promise<typeof snackMachine>>(async () => snackMachine),
-            save: vi.fn<SnackMachineRepository['save']>(),
-          },
-        },
-        {
-          provide: EventPublisher,
-          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
-        },
+        { provide: SnackMachineRepository, useValue: repositoryMock },
+        { provide: EventPublisher, useValue: eventPublisherMock },
       ],
     }).compile();
 
     service = module.get<SnackMachineService>(SnackMachineService);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   afterEach(() => {
@@ -49,15 +44,13 @@ describe('SnackMachineService', () => {
 
   describe('#unloadMoney', () => {
     it('should call repository.findOne with correct id', async () => {
-      const spy = vi.spyOn(repository, 'findOne');
-
       await service.unloadMoney(snackMachine.id);
 
-      expect(spy).toHaveBeenCalledWith(snackMachine.id);
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(snackMachine.id);
     });
 
     it('should throw error if snackMachine not found', async () => {
-      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
 
       await expect(service.unloadMoney(snackMachine.id)).rejects.toThrow(NotFoundException);
     });
@@ -69,11 +62,9 @@ describe('SnackMachineService', () => {
     });
 
     it('should call repository.save with proper data', async () => {
-      const spy = vi.spyOn(repository, 'save');
-
       await service.unloadMoney(snackMachine.id);
 
-      expect(spy).toHaveBeenCalledWith(snackMachine);
+      expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should call snackMachine.commit', async () => {

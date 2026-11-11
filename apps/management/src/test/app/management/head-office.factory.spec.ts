@@ -6,17 +6,14 @@ import { HeadOffice } from '../../../app/management/head-office';
 import { HeadOfficeFactory } from '../../../app/management/head-office.factory';
 
 describe('HeadOfficeFactory', () => {
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((headOffice) => headOffice),
+  };
   let factory: HeadOfficeFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        HeadOfficeFactory,
-        {
-          provide: EventPublisher,
-          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((headOffice) => headOffice) },
-        },
-      ],
+      providers: [HeadOfficeFactory, { provide: EventPublisher, useValue: eventPublisherMock }],
     }).compile();
 
     factory = module.get<HeadOfficeFactory>(HeadOfficeFactory);

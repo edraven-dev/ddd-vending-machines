@@ -12,43 +12,38 @@ describe('ReturnMoneyHandler', () => {
     returnMoney: vi.fn<SnackMachine['returnMoney']>(),
     commit: vi.fn<SnackMachine['commit']>(),
   };
+  const repositoryMock = {
+    findOne: vi.fn<() => Promise<typeof snackMachine | null>>(async () => snackMachine),
+    save: vi.fn<SnackMachineRepository['save']>(),
+  };
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine),
+  };
   let handler: ReturnMoneyHandler;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReturnMoneyHandler,
-        {
-          provide: SnackMachineRepository,
-          useValue: {
-            findOne: vi.fn<() => Promise<typeof snackMachine>>(async () => snackMachine),
-            save: vi.fn<SnackMachineRepository['save']>(),
-          },
-        },
-        {
-          provide: EventPublisher,
-          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
-        },
+        { provide: SnackMachineRepository, useValue: repositoryMock },
+        { provide: EventPublisher, useValue: eventPublisherMock },
       ],
     }).compile();
 
     handler = module.get<ReturnMoneyHandler>(ReturnMoneyHandler);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   describe('#execute', () => {
     it('should call snackMachineRepository.findOne with correct id', async () => {
-      const spy = vi.spyOn(repository, 'findOne');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(id);
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      vi.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = snackMachine.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
@@ -63,12 +58,11 @@ describe('ReturnMoneyHandler', () => {
     });
 
     it('should call snackMachineRepository.save with proper data', async () => {
-      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(snackMachine);
+      expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should call snackMachine.commit', async () => {

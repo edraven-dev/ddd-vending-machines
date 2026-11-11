@@ -8,7 +8,11 @@ import AtmEntity from '../../../../app/database/atm/atm.entity';
 import { MikroOrmAtmRepository } from '../../../../app/database/atm/atm.repository';
 
 describe('MikroOrmAtmRepository', () => {
-  let entityManager: EntityManager;
+  const entityManagerMock = {
+    flush: vi.fn<EntityManager['flush']>(),
+    getReference: vi.fn<EntityManager['getReference']>(),
+    remove: vi.fn<() => Pick<EntityManager, 'flush'>>(() => ({ flush: vi.fn<EntityManager['flush']>() })),
+  };
   let repository: MikroOrmAtmRepository;
   let ormRepository: EntityRepository<AtmEntity>;
 
@@ -20,18 +24,10 @@ describe('MikroOrmAtmRepository', () => {
           provide: getRepositoryToken(AtmEntity),
           useClass: EntityRepository<AtmEntity>,
         },
-        {
-          provide: EntityManager,
-          useValue: {
-            flush: vi.fn<EntityManager['flush']>(),
-            getReference: vi.fn<EntityManager['getReference']>(),
-            remove: vi.fn<() => Pick<EntityManager, 'flush'>>(() => ({ flush: vi.fn<EntityManager['flush']>() })),
-          },
-        },
+        { provide: EntityManager, useValue: entityManagerMock },
       ],
     }).compile();
 
-    entityManager = module.get<EntityManager>(EntityManager);
     repository = module.get<MikroOrmAtmRepository>(MikroOrmAtmRepository);
     ormRepository = module.get<EntityRepository<AtmEntity>>(getRepositoryToken(AtmEntity));
   });
@@ -70,10 +66,10 @@ describe('MikroOrmAtmRepository', () => {
 
       const result = await repository.findOne(atmEntity.id);
 
-      expect(result).toBeDefined();
-      expect(result!).toBeInstanceOf(Atm);
-      expect(result!.id).toBe('id');
-      expect(result!.moneyInside.oneDollarCount).toBe(1);
+      assert(result, 'result should not be null');
+      expect(result).toBeInstanceOf(Atm);
+      expect(result.id).toBe('id');
+      expect(result.moneyInside.oneDollarCount).toBe(1);
     });
   });
 
@@ -84,19 +80,19 @@ describe('MikroOrmAtmRepository', () => {
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
       const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
-      const atm = new Atm();
-      Object.assign(atm, { id: 'id', money: Money.Dollar });
+      const atm = new Atm(atmEntity.id);
+      atm.moneyInside = Money.Dollar;
 
       await repository.save(atm);
 
-      expect(findOne).toHaveBeenCalledWith({ id: 'id' });
+      expect(findOne).toHaveBeenCalledWith({ id: atmEntity.id });
     });
 
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new AtmEntity());
-      const atm = new Atm();
-      Object.assign(atm, { id: 'id', moneyInside: Money.Dollar });
+      const atm = new Atm('id');
+      atm.moneyInside = Money.Dollar;
 
       await repository.save(atm);
 
@@ -109,13 +105,12 @@ describe('MikroOrmAtmRepository', () => {
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
-      const flush = vi.spyOn(entityManager, 'flush');
-      const atm = new Atm();
-      Object.assign(atm, { id: 'id', money: Money.Dollar });
+      const atm = new Atm(atmEntity.id);
+      atm.moneyInside = Money.Dollar;
 
       await repository.save(atm);
 
-      expect(flush).toHaveBeenCalled();
+      expect(entityManagerMock.flush).toHaveBeenCalled();
     });
   });
 
@@ -123,7 +118,7 @@ describe('MikroOrmAtmRepository', () => {
     it('should call entityManager.getReference with proper id', async () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
-      const getReference = vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
+      const getReference = entityManagerMock.getReference.mockImplementation(() => atmEntity);
 
       await repository.delete(atmEntity.id);
 
@@ -134,8 +129,8 @@ describe('MikroOrmAtmRepository', () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
       const atmRef = new AtmEntity();
-      vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmRef);
-      const remove = vi.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
+      entityManagerMock.getReference.mockImplementation(() => atmRef);
+      const remove = entityManagerMock.remove.mockImplementation(() => entityManagerMock);
 
       await repository.delete(atmEntity.id);
 
@@ -145,9 +140,9 @@ describe('MikroOrmAtmRepository', () => {
     it('should call entityManager.flush', async () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
-      vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
-      vi.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
-      const flush = vi.spyOn(entityManager, 'flush').mockImplementation(() => Promise.resolve());
+      entityManagerMock.getReference.mockImplementation(() => atmEntity);
+      entityManagerMock.remove.mockImplementation(() => entityManagerMock);
+      const flush = entityManagerMock.flush.mockImplementation(() => Promise.resolve());
 
       await repository.delete(atmEntity.id);
 

@@ -1,4 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BalanceChangedEvent } from '@vending-machines/events';
@@ -17,8 +17,7 @@ describe('BalanceChangedHandler', () => {
   let handler: BalanceChangedHandler;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: vi.fn<EntityManager['fork']>() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BalanceChangedHandler,
