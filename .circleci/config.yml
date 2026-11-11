@@ -19,6 +19,7 @@ jobs:
           command: git fetch --quiet origin develop master
       # Base for "affected": the last successful build-lint-test-deploy workflow on master/develop (a run still
       # waiting for its deploy approval doesn't count), or the merge-base with develop on other branches.
+      # Reading workflows needs a personal API token in the CIRCLE_API_TOKEN project environment variable.
       - when:
           condition:
             equal: [master, << pipeline.git.branch >>]
@@ -36,6 +37,9 @@ jobs:
       - run:
           name: Generate config
           command: bash ./.circleci/generate-config.sh
+          environment:
+            # The branch tip before this push: on master/develop the base is never newer than this
+            BASE_REVISION: << pipeline.git.base_revision >>
       - continuation/continue:
           configuration_path: .circleci/generated-config.yml
 
