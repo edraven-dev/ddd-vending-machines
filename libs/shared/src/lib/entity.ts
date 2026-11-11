@@ -24,8 +24,8 @@ export abstract class Entity {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function EntityMixin<TBase extends abstract new (...args: any[]) => { id: string }>(Base: TBase) {
+// oxlint-disable-next-line typescript/no-explicit-any -- TypeScript requires a mixin constructor to take any[]
+export function EntityMixin<TBase extends abstract new (...args: any[]) => { readonly id: string }>(Base: TBase) {
   abstract class EntityExtendedWithBase extends Base {
     equals(object?: Entity): boolean {
       if (object == null || object == undefined) {

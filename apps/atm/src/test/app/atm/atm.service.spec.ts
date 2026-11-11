@@ -4,36 +4,36 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import type { Atm } from '../../../app/atm/atm';
 import { AtmRepository } from '../../../app/atm/atm.repository.interface';
 import { AtmService } from '../../../app/atm/atm.service';
 
 describe('AtmService', () => {
-  const atm = { id: randomUUID(), loadMoney: jest.fn(), commit: jest.fn() };
+  const atm = { id: randomUUID(), loadMoney: vi.fn<Atm['loadMoney']>(), commit: vi.fn<Atm['commit']>() };
+  const repository = {
+    findOne: vi.fn<(id: string) => Promise<typeof atm | null>>(async () => atm),
+    save: vi.fn<AtmRepository['save']>(),
+  };
+  const eventPublisher = { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((atm) => atm) };
   let service: AtmService;
-  let repository: AtmRepository;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: jest.fn() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AtmService,
         { provide: MikroORM, useValue: orm },
-        {
-          provide: AtmRepository,
-          useValue: { findOne: jest.fn(async () => atm), save: jest.fn() },
-        },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } },
+        { provide: AtmRepository, useValue: repository },
+        { provide: EventPublisher, useValue: eventPublisher },
       ],
     }).compile();
 
     service = module.get<AtmService>(AtmService);
-    repository = module.get<AtmRepository>(AtmRepository);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#loadMoney', () => {
@@ -46,7 +46,7 @@ describe('AtmService', () => {
     });
 
     it('should throw error if atm not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce(null);
       const money = new Money(1, 1, 1, 1, 1, 1);
 
       await expect(service.loadMoney(atm.id, money)).rejects.toThrow(NotFoundException);

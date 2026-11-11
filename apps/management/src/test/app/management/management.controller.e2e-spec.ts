@@ -1,26 +1,15 @@
-import { HttpStatus, INestApplication, Module } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import request from 'supertest';
-import { HeadOfficeRepository } from '../../../app/management/head-office.repository.interface';
-
-@Module({
-  providers: [{ provide: HeadOfficeRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
-  exports: [HeadOfficeRepository],
-})
-class DatabaseModuleMock {}
-jest.mock('../../../app/database/database.module', () => {
-  return {
-    DatabaseModule: DatabaseModuleMock,
-  };
-});
-
 import { ValidationProvider } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import request from 'supertest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ManagementController } from '../../../app/management/management.controller';
 
 describe('ManagementController - e2e', () => {
   const queryBusMock = { execute: () => ({ balance: '$1.00', cash: '$1.00' }) };
+  const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
   const testEndpoint = (id: string) => `/management/${id}`;
 
   let app: INestApplication;
@@ -31,7 +20,7 @@ describe('ManagementController - e2e', () => {
       providers: [
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
+        { provide: CommandBus, useValue: commandBusMock },
       ],
     }).compile();
 

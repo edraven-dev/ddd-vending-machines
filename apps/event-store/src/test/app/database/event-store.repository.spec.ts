@@ -6,7 +6,8 @@ import EventStoreEntity from '../../../app/database/event-store/event-store.enti
 import { MikroOrmEventStoreRepository } from '../../../app/database/event-store/event-store.repository';
 
 describe('MikroOrmEventStoreRepository', () => {
-  let entityManager: EntityManager;
+  const flush = vi.fn<() => Promise<void>>();
+  const entityManagerMock = { persist: vi.fn<() => { flush: typeof flush }>(() => ({ flush })) };
   let repository: MikroOrmEventStoreRepository;
 
   beforeAll(async () => {
@@ -17,25 +18,20 @@ describe('MikroOrmEventStoreRepository', () => {
           provide: getRepositoryToken(EventStoreEntity),
           useClass: EntityRepository<EventStoreEntity>,
         },
-        {
-          provide: EntityManager,
-          useValue: { persistAndFlush: jest.fn() },
-        },
+        { provide: EntityManager, useValue: entityManagerMock },
       ],
     }).compile();
 
-    entityManager = module.get<EntityManager>(EntityManager);
     repository = module.get<MikroOrmEventStoreRepository>(MikroOrmEventStoreRepository);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#save', () => {
-    it('should call ormRepository.persistAndFlush with any eventStoreEntity', async () => {
-      jest.spyOn(entityManager, 'persistAndFlush');
+    it('should call em.persist with any eventStoreEntity and flush it', async () => {
       const event = {
         eventId: randomUUID(),
         eventType: randomUUID(),
@@ -54,7 +50,8 @@ describe('MikroOrmEventStoreRepository', () => {
 
       await repository.save(event);
 
-      expect(entityManager.persistAndFlush).toHaveBeenCalledWith(eventEntity);
+      expect(entityManagerMock.persist).toHaveBeenCalledWith(eventEntity);
+      expect(flush).toHaveBeenCalledOnce();
     });
   });
 });

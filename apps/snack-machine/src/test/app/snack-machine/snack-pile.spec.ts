@@ -13,8 +13,7 @@ describe('Snack Pile', () => {
     });
 
     it('should prevent creating snack pile when price contains more than two decimal places', () => {
-      const price = new Currency(1.0);
-      Object.assign(price, { intValue: 100.5 });
+      const price = new Currency(1.005, { precision: 3 });
       expect(() => new SnackPile(Snack.Chocolate, 0, price)).toThrow('Price cannot contain part of cent');
     });
 

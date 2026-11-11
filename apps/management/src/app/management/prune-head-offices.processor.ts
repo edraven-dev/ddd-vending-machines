@@ -2,7 +2,8 @@ import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { CommandBus } from '@nestjs/cqrs';
 import { Job } from 'bullmq';
 
-import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Logger } from '@nestjs/common';
 import { PRUNE_HEAD_OFFICES_QUEUE_NAME } from '../config/bull.config';
 import { DeleteHeadOfficeCommand } from './commands/impl/delete-head-office.command';

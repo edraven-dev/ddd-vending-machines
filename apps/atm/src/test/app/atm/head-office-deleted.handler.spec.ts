@@ -10,30 +10,30 @@ import { HeadOfficeDeletedHandler } from '../../../app/atm/head-office-deleted.h
 
 describe('HeadOfficeDeletedHandler', () => {
   const atm = new Atm();
+  const repository = {
+    findOne: vi.fn<(id: string) => Promise<Atm | undefined>>(async () => atm),
+    delete: vi.fn<AtmRepository['delete']>(),
+  };
+  const eventPublisher = { mergeObjectContext: vi.fn<() => Atm>(() => atm) };
   let handler: HeadOfficeDeletedHandler;
-  let eventPublisher: EventPublisher;
-  let repository: AtmRepository;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: jest.fn() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HeadOfficeDeletedHandler,
-        { provide: AtmRepository, useValue: { findOne: jest.fn(async () => atm), delete: jest.fn() } },
+        { provide: AtmRepository, useValue: repository },
         { provide: MikroORM, useValue: orm },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn(() => atm) } },
+        { provide: EventPublisher, useValue: eventPublisher },
       ],
     }).compile();
 
     handler = module.get<HeadOfficeDeletedHandler>(HeadOfficeDeletedHandler);
-    eventPublisher = module.get<EventPublisher>(EventPublisher);
-    repository = module.get<AtmRepository>(AtmRepository);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
@@ -50,9 +50,9 @@ describe('HeadOfficeDeletedHandler', () => {
     });
 
     it('should log and return early if Atm not found', async () => {
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn());
-      jest.spyOn(atm, 'markAsDeleted');
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const error = vi.spyOn(Logger, 'error').mockImplementation(vi.fn());
+      const markAsDeleted = vi.spyOn(atm, 'markAsDeleted');
+      repository.findOne.mockResolvedValueOnce(undefined);
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -61,8 +61,8 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(atm.markAsDeleted).not.toHaveBeenCalled();
-      expect(Logger.error).toHaveBeenCalled();
+      expect(markAsDeleted).not.toHaveBeenCalled();
+      expect(error).toHaveBeenCalled();
     });
 
     it('should call eventPublisher.mergeObjectContext', async () => {
@@ -78,7 +78,7 @@ describe('HeadOfficeDeletedHandler', () => {
     });
 
     it('should call atm.markAsDeleted', async () => {
-      jest.spyOn(atm, 'markAsDeleted');
+      const markAsDeleted = vi.spyOn(atm, 'markAsDeleted');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -87,7 +87,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(atm.markAsDeleted).toHaveBeenCalled();
+      expect(markAsDeleted).toHaveBeenCalled();
     });
 
     it('should call headOfficeRepository.delete', async () => {
@@ -103,7 +103,7 @@ describe('HeadOfficeDeletedHandler', () => {
     });
 
     it('should commit atm events', async () => {
-      jest.spyOn(atm, 'commit');
+      const commit = vi.spyOn(atm, 'commit');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -112,7 +112,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(atm.commit).toHaveBeenCalled();
+      expect(commit).toHaveBeenCalled();
     });
   });
 });

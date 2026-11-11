@@ -9,27 +9,25 @@ import { CreateAtmCommand } from '../../../../../app/atm/commands/impl/create-at
 
 describe('CreateAtmHandler', () => {
   const atm = new Atm(randomUUID());
+  const factory = { create: vi.fn<AtmFactory['create']>(() => atm) };
+  const atmRepository = { save: vi.fn<AtmRepository['save']>() };
   let handler: CreateAtmHandler;
-  let factory: AtmFactory;
-  let atmRepository: AtmRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateAtmHandler,
-        { provide: AtmFactory, useValue: { create: jest.fn(() => atm) } },
-        { provide: AtmRepository, useValue: { save: jest.fn() } },
+        { provide: AtmFactory, useValue: factory },
+        { provide: AtmRepository, useValue: atmRepository },
       ],
     }).compile();
 
     handler = module.get<CreateAtmHandler>(CreateAtmHandler);
-    factory = module.get<AtmFactory>(AtmFactory);
-    atmRepository = module.get<AtmRepository>(AtmRepository);
   });
 
   describe('#execute', () => {
     it('should create ATM entity', async () => {
-      jest.spyOn(factory, 'create');
+      vi.spyOn(factory, 'create');
       const id = atm.id;
 
       await handler.execute(new CreateAtmCommand(id));
@@ -38,12 +36,12 @@ describe('CreateAtmHandler', () => {
     });
 
     it('should load money into ATM', async () => {
-      jest.spyOn(Atm.prototype, 'loadMoney');
+      const loadMoney = vi.spyOn(Atm.prototype, 'loadMoney');
       const id = atm.id;
 
       await handler.execute(new CreateAtmCommand(id));
 
-      expect(atm.loadMoney).toHaveBeenCalledWith(new Money(100, 100, 100, 100, 100, 100));
+      expect(loadMoney).toHaveBeenCalledWith(new Money(100, 100, 100, 100, 100, 100));
     });
 
     it('should save ATM with repository', async () => {
@@ -55,12 +53,12 @@ describe('CreateAtmHandler', () => {
     });
 
     it('should commit events', async () => {
-      jest.spyOn(Atm.prototype, 'commit');
+      const commit = vi.spyOn(Atm.prototype, 'commit');
       const id = atm.id;
 
       await handler.execute(new CreateAtmCommand(id));
 
-      expect(atm.commit).toHaveBeenCalled();
+      expect(commit).toHaveBeenCalled();
     });
   });
 });

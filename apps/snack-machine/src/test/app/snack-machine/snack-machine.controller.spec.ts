@@ -13,30 +13,27 @@ import { SnackMachineController } from '../../../app/snack-machine/snack-machine
 import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 describe('SnackMachineController', () => {
+  const service = { unloadMoney: vi.fn<SnackMachineService['unloadMoney']>() };
+  const commandBus = { execute: vi.fn<CommandBus['execute']>() };
+  const queryBus = { execute: vi.fn<QueryBus['execute']>() };
   let controller: SnackMachineController;
-  let service: SnackMachineService;
-  let commandBus: CommandBus;
-  let queryBus: QueryBus;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SnackMachineController],
       providers: [
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
-        { provide: QueryBus, useValue: { execute: jest.fn() } },
-        { provide: SnackMachineService, useValue: { unloadMoney: jest.fn() } },
+        { provide: CommandBus, useValue: commandBus },
+        { provide: QueryBus, useValue: queryBus },
+        { provide: SnackMachineService, useValue: service },
       ],
     }).compile();
 
     controller = module.get<SnackMachineController>(SnackMachineController);
-    service = module.get<SnackMachineService>(SnackMachineService);
-    commandBus = module.get<CommandBus>(CommandBus);
-    queryBus = module.get<QueryBus>(QueryBus);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#getById', () => {

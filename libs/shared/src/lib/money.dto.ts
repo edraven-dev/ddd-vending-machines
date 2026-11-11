@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsUUID } from 'class-validator';
 import Currency from 'currency.js';
-import { CoinsAndNotes } from './money';
+import type { CoinsAndNotes } from './money';
 
 export class MoneyDto {
   @ApiProperty({ type: String, default: '$1.00' })

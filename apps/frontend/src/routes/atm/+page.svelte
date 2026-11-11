@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Atm from '$components/atm.svelte';
+  import Atm from '../../components/atm.svelte';
 
   export let data;
   const { atm } = data;

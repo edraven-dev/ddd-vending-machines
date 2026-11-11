@@ -7,29 +7,30 @@ import { Atm } from '../../../app/atm/atm';
 import { AtmFactory } from '../../../app/atm/atm.factory';
 
 describe('AtmFactory', () => {
+  const eventPublisher = { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((atm) => atm) };
   let factory: AtmFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AtmFactory, { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } }],
+      providers: [AtmFactory, { provide: EventPublisher, useValue: eventPublisher }],
     }).compile();
 
     factory = module.get<AtmFactory>(AtmFactory);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#create', () => {
     it('should apply AtmCreatedEvent', () => {
-      jest.spyOn(Atm.prototype, 'apply');
+      const apply = vi.spyOn(Atm.prototype, 'apply');
       const id = randomUUID();
 
-      const atm = factory.create(id);
+      factory.create(id);
 
-      expect(atm.apply).toHaveBeenCalledWith(expect.any(AtmCreatedEvent));
+      expect(apply).toHaveBeenCalledWith(expect.any(AtmCreatedEvent));
     });
 
     it('should return Atm with proper id', () => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AtmProtoService } from '@vending-machines/proto';
+import type { AtmProtoService } from '@vending-machines/proto';
 import { LoadMoneyDto } from '@vending-machines/shared';
 import { lastValueFrom } from 'rxjs';
 

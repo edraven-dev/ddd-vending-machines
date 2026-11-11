@@ -1,4 +1,5 @@
-import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Money } from '@vending-machines/shared';

@@ -8,32 +8,32 @@ import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineFactory } from '../../../app/snack-machine/snack-machine.factory';
 
 describe('SnackMachineFactory', () => {
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine),
+  };
   let factory: SnackMachineFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SnackMachineFactory,
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((snackMachine) => snackMachine) } },
-      ],
+      providers: [SnackMachineFactory, { provide: EventPublisher, useValue: eventPublisherMock }],
     }).compile();
 
     factory = module.get<SnackMachineFactory>(SnackMachineFactory);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#create', () => {
     it('should apply SnackMachineCreatedEvent', () => {
-      jest.spyOn(SnackMachine.prototype, 'apply');
+      const spy = vi.spyOn(SnackMachine.prototype, 'apply');
       const id = randomUUID();
 
-      const snackMachine = factory.create(id);
+      factory.create(id);
 
-      expect(snackMachine.apply).toHaveBeenCalledWith(expect.any(SnackMachineCreatedEvent));
+      expect(spy).toHaveBeenCalledWith(expect.any(SnackMachineCreatedEvent));
     });
 
     it('should return SnackMachine with proper id', () => {

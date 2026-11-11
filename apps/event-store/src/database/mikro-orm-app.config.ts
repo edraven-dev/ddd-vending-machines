@@ -1,38 +1,22 @@
-import { LoadStrategy, MigrationObject } from '@mikro-orm/core';
-import { Migrator } from '@mikro-orm/migrations';
+import { LoadStrategy, type MigrationObject } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/postgresql';
-import { SeedManager } from '@mikro-orm/seeder';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import { basename } from 'path';
+import { basename } from 'node:path';
 import defaultConfig from './mikro-orm-default.config';
 
-//#region
-// to consider - build each migration as separate entry file: https://stackoverflow.com/a/61218909
-let migrationsList: MigrationObject[] = [];
-if (process.env.NODE_ENV !== 'test') {
-  // @ts-expect-error using webpack's require#context
-  const migrationsCtx = require.context('./migrations', false, /\.ts$/);
-  migrationsList = migrationsCtx
-    .keys()
-    .reduce(
-      (acc: Record<string, unknown>[], key: string) => [
-        ...acc,
-        { name: basename(key), class: Object.values(migrationsCtx(key))[0] },
-      ],
-      [],
-    );
-}
-//#endregion
+const migrations = import.meta.glob<Record<string, MigrationObject['class']>>('./migrations/Migration*.ts', {
+  eager: true,
+});
+const migrationsList: MigrationObject[] = Object.keys(migrations)
+  .sort()
+  .map((path) => ({ name: basename(path, '.ts'), class: Object.values(migrations[path])[0] }));
 
 export default defineConfig({
   ...defaultConfig,
   debug: process.env.NODE_ENV === 'development',
-  discovery: { disableDynamicFileAccess: true, warnWhenNoEntities: false },
+  discovery: { warnWhenNoEntities: false },
   loadStrategy: LoadStrategy.JOINED,
   highlighter: new SqlHighlighter(),
-  extensions: [Migrator, SeedManager],
-  migrations: { migrationsList },
+  migrations: { migrationsList, snapshot: false },
   allowGlobalContext: true,
-  // @ts-expect-error nestjs adapter options
-  autoLoadEntities: true,
 });

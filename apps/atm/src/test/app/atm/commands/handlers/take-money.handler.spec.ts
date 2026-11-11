@@ -3,33 +3,34 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import Currency from 'currency.js';
+import type { Atm } from '../../../../../app/atm/atm';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
 import { TakeMoneyHandler } from '../../../../../app/atm/commands/handlers/take-money.handler';
 
 describe('TakeMoneyHandler', () => {
-  const atm = { id: randomUUID(), takeMoney: jest.fn(), commit: jest.fn() };
+  const atm = { id: randomUUID(), takeMoney: vi.fn<Atm['takeMoney']>(), commit: vi.fn<Atm['commit']>() };
+  const atmRepository = {
+    findOne: vi.fn<(id: string) => Promise<typeof atm | undefined>>(async () => atm),
+    save: vi.fn<AtmRepository['save']>(),
+  };
+  const eventPublisher = { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((atm) => atm) };
   let handler: TakeMoneyHandler;
-  let atmRepository: AtmRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TakeMoneyHandler,
-        {
-          provide: AtmRepository,
-          useValue: { findOne: jest.fn(async () => atm), save: jest.fn() },
-        },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((atm) => atm) } },
+        { provide: AtmRepository, useValue: atmRepository },
+        { provide: EventPublisher, useValue: eventPublisher },
       ],
     }).compile();
 
     handler = module.get<TakeMoneyHandler>(TakeMoneyHandler);
-    atmRepository = module.get<AtmRepository>(AtmRepository);
   });
 
   describe('#execute', () => {
     it('should call atmRepository.findOne with correct id', async () => {
-      const spy = jest.spyOn(atmRepository, 'findOne');
+      const spy = vi.spyOn(atmRepository, 'findOne');
       const id = atm.id;
       const amount = new Currency(1);
 
@@ -39,7 +40,7 @@ describe('TakeMoneyHandler', () => {
     });
 
     it('should throw NotFoundException if Atm not found', async () => {
-      (atmRepository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      atmRepository.findOne.mockResolvedValueOnce(undefined);
       const id = atm.id;
       const amount = new Currency(1);
 

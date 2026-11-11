@@ -6,32 +6,32 @@ import { HeadOffice } from '../../../app/management/head-office';
 import { HeadOfficeFactory } from '../../../app/management/head-office.factory';
 
 describe('HeadOfficeFactory', () => {
+  const eventPublisherMock = {
+    mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((headOffice) => headOffice),
+  };
   let factory: HeadOfficeFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        HeadOfficeFactory,
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((headOffice) => headOffice) } },
-      ],
+      providers: [HeadOfficeFactory, { provide: EventPublisher, useValue: eventPublisherMock }],
     }).compile();
 
     factory = module.get<HeadOfficeFactory>(HeadOfficeFactory);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#create', () => {
     it('should apply HeadOfficeCreatedEvent', () => {
-      jest.spyOn(HeadOffice.prototype, 'apply');
+      const apply = vi.spyOn(HeadOffice.prototype, 'apply');
       const id = randomUUID();
 
-      const headOffice = factory.create(id);
+      factory.create(id);
 
-      expect(headOffice.apply).toHaveBeenCalledWith(expect.any(HeadOfficeCreatedEvent));
+      expect(apply).toHaveBeenCalledWith(expect.any(HeadOfficeCreatedEvent));
     });
 
     it('should return HeadOffice with proper id', () => {

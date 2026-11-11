@@ -4,7 +4,8 @@ setup: true
 
 orbs:
   continuation: circleci/continuation@2.0.1
-  node: circleci/node@7.1.1
+  node: circleci/node@7.2.1
+  nx: nrwl/nx@1.7.0 # only for nx/set-shas (plain Node + the CircleCI API, no Nx packages)
 
 jobs:
   generate-config:
@@ -13,6 +14,23 @@ jobs:
     steps:
       - checkout
       - node/install
+      - run:
+          name: Fetch the main branches for affected detection
+          command: git fetch --quiet origin develop master
+      - when:
+          condition:
+            equal: [master, << pipeline.git.branch >>]
+          steps:
+            - nx/set-shas:
+                main-branch-name: master
+                workflow-name: build-lint-test-deploy
+      - unless:
+          condition:
+            equal: [master, << pipeline.git.branch >>]
+          steps:
+            - nx/set-shas:
+                main-branch-name: develop
+                workflow-name: build-lint-test-deploy
       - run:
           name: Generate config
           command: bash ./.circleci/generate-config.sh

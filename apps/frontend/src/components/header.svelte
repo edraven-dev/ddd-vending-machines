@@ -1,20 +1,17 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import Nav from './nav.svelte';
-  let subpage = '';
-  let componentName = '';
-  page.subscribe((value) => {
-    subpage = value.url.pathname;
-    componentName = (function () {
-      switch (value.url.pathname) {
-        case '/atm':
-          return 'ATM';
-        case '/snack-machine':
-          return 'Snack Machine';
-        default:
-          return 'Management';
-      }
-    })();
+
+  const subpage = $derived(page.url.pathname);
+  const componentName = $derived.by(() => {
+    switch (page.url.pathname) {
+      case '/atm':
+        return 'ATM';
+      case '/snack-machine':
+        return 'Snack Machine';
+      default:
+        return 'Management';
+    }
   });
 </script>
 

@@ -1,4 +1,4 @@
-import { DomainEvent } from '@vending-machines/events';
+import type { DomainEvent } from '@vending-machines/events';
 
 export interface EventStoreRepository {
   save<T extends Record<string, unknown>>(event: DomainEvent<T>): void | Promise<void>;

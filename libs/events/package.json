@@ -2,27 +2,36 @@
   "name": "@vending-machines/events",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.lib.json --noEmit",
-    "test": "jest --passWithNoTests",
-    "test:ci": "jest --passWithNoTests --ci --coverage"
+    "lint": "oxlint -c ../../.oxlintrc.json --type-aware",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:ci": "vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=./test-results/test-results.xml"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.6",
-    "@nestjs/core": "11.1.6",
-    "@nestjs/cqrs": "11.0.3",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/cqrs": "catalog:",
     "@vending-machines/shared": "workspace:*",
-    "amqp-connection-manager": "4.1.14",
-    "amqplib": "0.10.9",
-    "ejson": "2.2.3",
-    "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.2"
+    "amqp-connection-manager": "catalog:",
+    "amqplib": "catalog:",
+    "ejson": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:"
   },
   "devDependencies": {
-    "@types/amqplib": "0.10.7",
-    "@types/ejson": "2.2.2"
+    "@types/ejson": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

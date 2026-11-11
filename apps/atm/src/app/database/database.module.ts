@@ -7,7 +7,7 @@ import { AtmRepositoryProvider } from './atm/atm.repository';
 
 @Global()
 @Module({
-  imports: [MikroOrmModule.forRoot(ormConfig), MikroOrmModule.forFeature([AtmEntity])],
+  imports: [MikroOrmModule.forRoot({ ...ormConfig, autoLoadEntities: true }), MikroOrmModule.forFeature([AtmEntity])],
   providers: [AtmRepositoryProvider],
   exports: [AtmRepositoryProvider],
 })
@@ -16,9 +16,9 @@ export class DatabaseModule implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     if (process.env.NODE_ENV !== 'test') {
-      await this.orm.getMigrator().up();
+      await this.orm.migrator.up();
     } else {
-      await this.orm.getSchemaGenerator().updateSchema();
+      await this.orm.schema.update();
     }
   }
 }

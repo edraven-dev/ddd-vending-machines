@@ -12,13 +12,12 @@ export class ManagementService implements OnModuleInit {
   }
 
   private async schedulePruneHeadOfficesJob(): Promise<void> {
-    const jobId = 'prune-head-offices-job';
     const cron = process.env.PRUNE_HEAD_OFFICES_CRON || '0 0 * * *';
-    const repeatableJobs = await this.pruneHeadOfficesQueue.getRepeatableJobs();
-    const pruneHeadOfficesJob = repeatableJobs.filter((job) => job.id === jobId).pop();
-    if (pruneHeadOfficesJob && pruneHeadOfficesJob.pattern !== cron) {
-      await this.pruneHeadOfficesQueue.removeRepeatableByKey(pruneHeadOfficesJob.key);
-    }
-    await this.pruneHeadOfficesQueue.add('prune-head-offices', null, { jobId, repeat: { pattern: cron } });
+
+    await this.pruneHeadOfficesQueue.upsertJobScheduler(
+      'prune-head-offices-job',
+      { pattern: cron },
+      { name: 'prune-head-offices', data: null },
+    );
   }
 }

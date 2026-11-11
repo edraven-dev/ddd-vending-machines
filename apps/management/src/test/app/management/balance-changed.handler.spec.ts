@@ -10,27 +10,28 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 
 describe('BalanceChangedHandler', () => {
   const headOffice = new HeadOffice();
+  const repository = {
+    findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
+    save: vi.fn<HeadOfficeRepository['save']>(),
+  };
   let handler: BalanceChangedHandler;
-  let repository: HeadOfficeRepository;
 
   beforeAll(async () => {
-    const orm = Object.create(MikroORM.prototype);
-    Object.assign(orm, { em: { name: 'default', fork: jest.fn() } });
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}) } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BalanceChangedHandler,
-        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() } },
+        { provide: HeadOfficeRepository, useValue: repository },
         { provide: MikroORM, useValue: orm },
       ],
     }).compile();
 
     handler = module.get<BalanceChangedHandler>(BalanceChangedHandler);
-    repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
@@ -47,9 +48,9 @@ describe('BalanceChangedHandler', () => {
     });
 
     it('should log and return early if HeadOffice not found', async () => {
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn());
-      jest.spyOn(headOffice, 'changeBalance');
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      const loggerError = vi.spyOn(Logger, 'error').mockImplementation(() => undefined);
+      const changeBalance = vi.spyOn(headOffice, 'changeBalance');
+      repository.findOne.mockResolvedValueOnce(null);
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -58,12 +59,12 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
-      expect(headOffice.changeBalance).not.toHaveBeenCalled();
-      expect(Logger.error).toHaveBeenCalled();
+      expect(changeBalance).not.toHaveBeenCalled();
+      expect(loggerError).toHaveBeenCalled();
     });
 
     it('should call headOffice.changeBalance with correct value', async () => {
-      jest.spyOn(headOffice, 'changeBalance');
+      const changeBalance = vi.spyOn(headOffice, 'changeBalance');
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -72,7 +73,7 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
-      expect(headOffice.changeBalance).toHaveBeenCalledWith(new Currency(event.payload.delta));
+      expect(changeBalance).toHaveBeenCalledWith(new Currency(event.payload.delta));
     });
 
     it('should call headOfficeRepository.save', async () => {

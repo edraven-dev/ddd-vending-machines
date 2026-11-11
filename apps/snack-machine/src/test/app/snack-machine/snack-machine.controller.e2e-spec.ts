@@ -1,27 +1,17 @@
-import { HttpStatus, INestApplication, Module } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { ValidationProvider } from '@vending-machines/shared';
-import request from 'supertest';
-import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
-import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
-
-@Module({
-  providers: [{ provide: SnackMachineRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
-  exports: [SnackMachineRepository],
-})
-class DatabaseModuleMock {}
-jest.mock('../../../app/database/database.module', () => {
-  return {
-    DatabaseModule: DatabaseModuleMock,
-  };
-});
-
 import { randomUUID } from 'crypto';
+import request from 'supertest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
+import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 describe('SnackMachineController - e2e', () => {
   const queryBusMock = { execute: () => ({ moneyInTransaction: '$1.00', moneyInside: '$1.00' }) };
+  const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
+  const snackMachineServiceMock = { unloadMoney: vi.fn<SnackMachineService['unloadMoney']>() };
   const testEndpoint = (id: string) => `/snack-machine/${id}`;
 
   let app: INestApplication;
@@ -32,8 +22,8 @@ describe('SnackMachineController - e2e', () => {
       providers: [
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
-        { provide: SnackMachineService, useValue: { unloadMoney: jest.fn() } },
+        { provide: CommandBus, useValue: commandBusMock },
+        { provide: SnackMachineService, useValue: snackMachineServiceMock },
       ],
     }).compile();
 
@@ -46,8 +36,8 @@ describe('SnackMachineController - e2e', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('GET /:id', () => {

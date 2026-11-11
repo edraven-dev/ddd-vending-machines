@@ -1,17 +1,21 @@
 <script lang="ts">
-  // @ts-nocheck
   import Icon from '@iconify/svelte';
-  import type { HttpMethod } from '@sveltejs/kit';
-  import axios from 'axios';
+  import axios, { type Method } from 'axios';
   import { failure, success } from '../utils/actions';
 
   const id = localStorage.getItem('id');
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.baseURL = `/api/snack-machine/${id}`;
 
-  export let snackMachine: any; // eslint-disable-line
+  type SnackMachine = {
+    moneyInside: { amount: string };
+    moneyInTransaction: { amount: string };
+    slots: { id: string; position: number; snackPile: { snack: { name: string }; price: string; quantity: number } }[];
+  };
 
-  const callApi = async (method: HttpMethod, url: string, data?: Record<string, unknown>): Promise<void> => {
+  export let snackMachine: SnackMachine;
+
+  const callApi = async (method: Method, url: string, data?: Record<string, unknown>): Promise<void> => {
     const response = await axios.request({
       method,
       url,
@@ -29,7 +33,7 @@
     try {
       await callApi('POST', 'buy-snack', { position });
       success(`Snack bought!`);
-    } catch (err: any) /* eslint-disable-line */ {
+    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
       failure(
         Array.isArray(err.response.data.message) ? err.response.data.message.join('\r\n') : err.response.data.message,
       );
@@ -40,7 +44,7 @@
     try {
       await callApi('POST', 'return-money');
       success(`Money returned!`);
-    } catch (err: any) /* eslint-disable-line */ {
+    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
       failure(err.response.data.message);
     }
   };

@@ -57,7 +57,7 @@ describe('SnackMachine', () => {
 
     it('should apply MoneyInsertedEvent when inserting money', () => {
       const snackMachine = new SnackMachine();
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.insertMoney(Money.Dollar);
 
@@ -131,7 +131,7 @@ describe('SnackMachine', () => {
       const snackMachine = new SnackMachine();
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
       snackMachine.insertMoney(Money.Dollar);
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.buySnack(1);
 
@@ -178,7 +178,7 @@ describe('SnackMachine', () => {
 
     it('should apply SnacksLoadedEvent when loading snacks', () => {
       const snackMachine = new SnackMachine();
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
 
@@ -209,7 +209,7 @@ describe('SnackMachine', () => {
 
     it('should apply MoneyLoadedEvent when loading money', () => {
       const snackMachine = new SnackMachine();
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.loadMoney(Money.Dollar);
 
@@ -255,7 +255,7 @@ describe('SnackMachine', () => {
     it('should apply MoneyUnloadedEvent when unloading money', () => {
       const snackMachine = new SnackMachine();
       snackMachine.loadMoney(Money.Dollar);
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.unloadMoney();
 
@@ -273,7 +273,7 @@ describe('SnackMachine', () => {
   describe('#markAsDeleted', () => {
     it('should apply HeadOfficeDeletedEvent when marking as deleted', () => {
       const snackMachine = new SnackMachine();
-      const spy = jest.spyOn(snackMachine, 'apply');
+      const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.markAsDeleted();
 

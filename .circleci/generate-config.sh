@@ -1,25 +1,23 @@
 #!/bin/bash
 set -euo pipefail
 
-# What "affected" is measured against: feature branches compare to their merge-base with develop,
-# develop/master to the commit the branch pointed at before this push (falling back to the previous commit).
-if [ "$CIRCLE_BRANCH" = "develop" ] || [ "$CIRCLE_BRANCH" = "master" ]; then
-  BASE="${BASE_REVISION:-}"
-  if [ -z "$BASE" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-    BASE=$(git rev-parse HEAD~1)
+BASE="${NX_BASE:?NX_BASE is not set - nx/set-shas must run first}"
+if [ "$CIRCLE_BRANCH" = develop ] || [ "$CIRCLE_BRANCH" = master ]; then
+  if [ -z "${CIRCLE_API_TOKEN:-}" ]; then
+    echo "WARNING: CIRCLE_API_TOKEN is not set, so nx/set-shas can't read previous workflows (see README)"
   fi
-else
-  git fetch --quiet origin develop
-  BASE=$(git merge-base origin/develop HEAD)
+
+  if [ -n "${BASE_REVISION:-}" ] && git cat-file -e "${BASE_REVISION}^{commit}" 2>/dev/null; then
+    BASE=$(git merge-base "$BASE" "$BASE_REVISION" || echo "$BASE")
+  fi
 fi
 export TURBO_SCM_BASE="$BASE"
-export TURBO_SCM_HEAD=HEAD
+export TURBO_SCM_HEAD="${NX_HEAD:-HEAD}"
 echo "Comparing $TURBO_SCM_BASE...$TURBO_SCM_HEAD"
 
 TURBO_VERSION=$(jq -r '.devDependencies.turbo' package.json)
 EJS_VERSION=$(jq -r '.devDependencies.ejs' package.json)
 
-# Packages affected for a task that actually define a script for it: [{ id, name, dir }]
 affected() {
   npx -y "turbo@${TURBO_VERSION}" run "$1" --affected --dry=json |
     jq --arg task "$1" '[.tasks[] | select(.task == $task and .command != "<NONEXISTENT>")

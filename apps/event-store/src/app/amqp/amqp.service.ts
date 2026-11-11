@@ -1,15 +1,15 @@
 import { Inject, Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { Channel, ChannelWrapper, connect } from 'amqp-connection-manager';
-import type { IAmqpConnectionManager } from 'amqp-connection-manager/dist/types/AmqpConnectionManager';
+import { connect } from 'amqp-connection-manager';
+import type { AmqpConnectionManager, Channel, ChannelWrapper } from 'amqp-connection-manager';
 import { CONFIG_OPTIONS_TOKEN } from '../constants';
-import { AmqpConfig } from './amqp.module';
+import type { AmqpConfig } from './amqp.module';
 
 @Injectable()
 export class AmqpService implements OnModuleInit, OnApplicationShutdown {
   private readonly deliveryLimit = 10;
   private readonly nackDelay = 1000;
 
-  public connection: IAmqpConnectionManager | undefined;
+  public connection: AmqpConnectionManager | undefined;
   public channelWrapper: ChannelWrapper | undefined;
 
   constructor(@Inject(CONFIG_OPTIONS_TOKEN) private readonly config: AmqpConfig) {}
@@ -17,19 +17,20 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
   onModuleInit() {
     this.connection = connect(this.config);
     this.connection.on('connectFailed', ({ url }) =>
-      Logger.error(`AMQP connection to ${url} failed. Trying again...`, this.constructor.name),
+      Logger.error(
+        `AMQP connection to ${typeof url === 'string' ? url : JSON.stringify(url)} failed. Trying again...`,
+        this.constructor.name,
+      ),
     );
     this.connection.on('connect', () => Logger.debug('AMQP connected', this.constructor.name));
-    this.connection.on('disconnect', ({ err }) => Logger.error(`AMQP disconnected`, err.stack, this.constructor.name));
+    this.connection.on('disconnect', ({ err }) => Logger.error(`AMQP disconnected`, err?.stack, this.constructor.name));
     this.connection.on('blocked', ({ reason }) => Logger.error(`AMQP blocked ${reason}`, this.constructor.name));
     this.connection.on('unblocked', () => Logger.debug('AMQP unblocked', this.constructor.name));
-    this.connection.on('error', (err) =>
-      Logger.error((err as Error)?.message, (err as Error)?.stack, this.constructor.name),
-    );
+    this.connection.on('error', (err) => Logger.error(err, this.constructor.name));
     this.channelWrapper = this.connection.createChannel({ json: false });
     this.channelWrapper.on('connect', () => Logger.debug('AMQP channel created', this.constructor.name));
     this.channelWrapper.on('close', () => Logger.debug('AMQP channel closed', this.constructor.name));
-    this.channelWrapper.on('error', (err) => Logger.error(err.message, err.stack, this.constructor.name));
+    this.channelWrapper.on('error', (err) => Logger.error(err, this.constructor.name));
   }
 
   async onApplicationShutdown() {
@@ -43,7 +44,11 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
     queueName: string,
     consumer: (msg: Buffer) => Promise<void> | void,
   ): Promise<void> {
-    await this.channelWrapper?.addSetup((channel: Channel) => {
+    const channelWrapper = this.channelWrapper;
+    if (!channelWrapper) {
+      throw new Error('AmqpService.addSubscriber() called before onModuleInit()');
+    }
+    await channelWrapper.addSetup((channel: Channel) => {
       return Promise.all([
         channel.assertExchange(exchangeName, 'topic', { durable: true }),
         channel.assertQueue(queueName, {
@@ -61,14 +66,10 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
           }
           try {
             await consumer(msg.content);
-            this.channelWrapper!.ack(msg);
+            channelWrapper.ack(msg);
           } catch (error) {
-            Logger.error(
-              (error as Error).message,
-              (error as Error).stack,
-              `${this.constructor.name}|${exchangeName}|${queueName}`,
-            );
-            setTimeout(() => this.channelWrapper!.nack(msg), this.nackDelay);
+            Logger.error(error, `${this.constructor.name}|${exchangeName}|${queueName}`);
+            setTimeout(() => channelWrapper.nack(msg), this.nackDelay);
           }
         }),
       ]);

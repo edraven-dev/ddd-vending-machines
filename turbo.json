@@ -4,33 +4,44 @@
   "globalDependencies": [
     ".nvmrc",
     ".dockerignore",
+    ".oxlintrc.json",
     "Dockerfile",
-    "eslint.config.js",
-    "jest.preset.js",
     "pnpm-workspace.yaml",
     "tsconfig.base.json",
     ".circleci/**",
     "tools/**"
   ],
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"]
     },
-    "lint": {},
-    "typecheck": {},
+    "lint": {
+      "dependsOn": ["transit"]
+    },
+    "typecheck": {
+      "dependsOn": ["transit"]
+    },
+    "migration:check": {
+      "dependsOn": ["transit"]
+    },
     "test": {
+      "dependsOn": ["transit"],
       "outputs": ["coverage/**", "test-results/**"]
     },
     "test:ci": {
+      "dependsOn": ["transit"],
       "outputs": ["coverage/**", "test-results/**"]
     },
     "frontend#test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["transit", "build"],
       "outputs": ["coverage/**", "test-results/**"]
     },
     "frontend#test:ci": {
-      "dependsOn": ["build"],
+      "dependsOn": ["transit", "build"],
       "outputs": ["coverage/**", "test-results/**"]
     },
     "dev": {

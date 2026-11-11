@@ -8,13 +8,12 @@ import { SnackMapper } from '../snack/snack.mapper';
 import SnackMachineEntity from './snack-machine.entity';
 
 export class SnackMachineMapper {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line no-empty-function
   private constructor() {}
 
   static toDomain(entity: SnackMachineEntity): SnackMachine {
-    const snackMachine = new SnackMachine();
+    const snackMachine = new SnackMachine(entity.id);
     return Object.assign(snackMachine, {
-      id: entity.id,
       moneyInside: new Money(
         entity.money.oneCentCount,
         entity.money.tenCentCount,
@@ -30,17 +29,19 @@ export class SnackMachineMapper {
         Object.assign(slot, {
           id: slotEntity.id,
           snackPile: new SnackPile(snack, slotEntity.snackPile.quantity, new Currency(slotEntity.snackPile.price)),
-        });
+        } satisfies Partial<Slot>);
         slots.push(slot);
         return slots;
       }, []),
-    });
+    } satisfies Partial<SnackMachine>);
   }
 
   static toPersistence(snackMachine: SnackMachine): RequiredEntityData<SnackMachineEntity> {
+    const { oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount } =
+      snackMachine.moneyInside;
     return {
       id: snackMachine.id,
-      money: { ...snackMachine.moneyInside },
+      money: { oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount },
       moneyInTransaction: snackMachine.moneyInTransaction.format({ symbol: '' }),
       slots: snackMachine.slots
         .map((slot) => ({

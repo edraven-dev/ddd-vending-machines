@@ -1,4 +1,4 @@
-import { Embeddable, Property } from '@mikro-orm/core';
+import { Embeddable, Property } from '@mikro-orm/decorators/legacy';
 import Currency from 'currency.js';
 import { InvalidOperationException } from './invalid-operation.exception';
 import { ValueObject } from './value-object';

@@ -1,8 +1,9 @@
+<%_ const images = buildable_projects.filter((p) => p.id !== 'frontend') -%>
 version: 2.1
 
 orbs:
-  node: circleci/node@7.1.1<% if ((branch === 'master' || branch === 'develop') && buildable_projects.some((p) => p.id === 'frontend')) { %>
-  aws-cli: circleci/aws-cli@5.4.1<% } %>
+  node: circleci/node@7.2.1<% if ((branch === 'master' || branch === 'develop') && buildable_projects.some((p) => p.id === 'frontend')) { %>
+  aws-cli: circleci/aws-cli@5.4.3<% } %>
 
 defaults: &defaults
   resource_class: small
@@ -43,14 +44,13 @@ commands:
             docker buildx use multiarch-builder
             docker buildx inspect --bootstrap <% } %>
 jobs:
-  <% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>no-changes:
-    docker: # executor type
-      - image: cimg/base:stable
-    resource_class: small
+  format-check:
+    <<: *defaults
     steps:
+      - checkout_and_install
       - run:
-          name: No changes
-          command: echo "No changes"<% } %>
+          name: Check formatting
+          command: pnpm format:check
   <% for (let i = 0; i < buildable_projects.length; i++) { %>
   build-<%= buildable_projects[i].id %>:
     <<: *defaults
@@ -70,7 +70,8 @@ jobs:
       - checkout_and_install
       - run:
           name: Lint <%= lintable_projects[i].id %>
-          command: pnpm turbo run lint typecheck --filter=<%= lintable_projects[i].name %>
+          # migration:check (Nest apps only) compares the entities with the committed snapshot: no database needed
+          command: pnpm turbo run lint typecheck migration:check --filter=<%= lintable_projects[i].name %>
   <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>
   test-<%= testable_projects[i].id %>:
     <<: *defaults
@@ -127,6 +128,7 @@ jobs:
             git config user.name $GH_USERNAME
             git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
             git push "https://${GH_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
+  <% } if ((branch === 'develop' || branch === 'master') && images.length) { %>
   push-tags-to-k8s-manifests:
     <<: *defaults
     steps:
@@ -138,8 +140,8 @@ jobs:
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
             git config url.https://${GH_TOKEN}@github.com/.insteadOf https://github.com/
-            find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/.*:).*|\1${CIRCLE_SHA1}|g" {} \;
-            git add .
+            <% images.forEach((p) => { %>find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/<%= p.id %>:).*|\1${CIRCLE_SHA1}|g" {} \;
+            <% }) %>git add .
             git commit -m "Update image tags in k8s manifests for CircleCI build nr #<< pipeline.number >>"
             git push origin master
   <% } %>
@@ -151,10 +153,11 @@ workflows:
       <% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i].id %>
       <% } %>
       <% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i].id %>
-      <% } %><% if (!buildable_projects.length && !lintable_projects.length && !testable_projects.length) { %>- no-changes<% } %>
+      <% } %>- format-check
       <% if (branch === 'develop' || branch === 'master') { %>- hold:
           type: approval
           requires:
+            - format-check
             <% for (let i = 0; i < buildable_projects.length; i++) { %>- build-<%= buildable_projects[i].id %>
             <% } %><% for (let i = 0; i < lintable_projects.length; i++) { %>- lint-<%= lintable_projects[i].id %>
             <% } %><% for (let i = 0; i < testable_projects.length; i++) { %>- test-<%= testable_projects[i].id %>
@@ -170,6 +173,6 @@ workflows:
             <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i].id !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i].id %><%= branch === 'master' ? '': '-dev' %>
             <% } else { %>- build-and-upload-frontend-files
             <% }}} %>
-      <% if (branch === 'develop' || branch === 'master') { %>- push-tags-to-k8s-manifests:
+      <% if ((branch === 'develop' || branch === 'master') && images.length) { %>- push-tags-to-k8s-manifests:
           requires:
             - push-git-tag<% } %>

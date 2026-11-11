@@ -1,20 +1,16 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "target": "ES2023",
+    "isolatedModules": true,
     "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "lib": ["es2020", "dom"],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
     "strict": true,
-    "baseUrl": "."
-  },
-  "exclude": ["node_modules", "tmp"]
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  }
 }

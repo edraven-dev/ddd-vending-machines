@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money, UnloadMoneyDto } from '@vending-machines/shared';
+import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { UnloadCashFromSnackMachineHandler } from '../../../../../app/management/commands/handlers/unload-cash-from-snack-machine.handler';
 import { HeadOffice } from '../../../../../app/management/head-office';
@@ -9,35 +9,34 @@ import { SnackMachineProtoServiceClient } from '../../../../../app/management/pr
 
 describe('UnloadCashFromSnackMachineHandler', () => {
   const headOffice = new HeadOffice(randomUUID());
+  const repository = {
+    findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
+    save: vi.fn<HeadOfficeRepository['save']>(),
+  };
+  const protoClient = {
+    unloadMoney: vi.fn<SnackMachineProtoServiceClient['unloadMoney']>(async () => ({ money: [1, 1, 1, 1, 1, 1] })),
+  };
   let handler: UnloadCashFromSnackMachineHandler;
-  let repository: HeadOfficeRepository;
-  let protoClient: SnackMachineProtoServiceClient;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UnloadCashFromSnackMachineHandler,
-        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice), save: jest.fn() } },
-        {
-          provide: SnackMachineProtoServiceClient,
-          useValue: { unloadMoney: jest.fn(async (): Promise<UnloadMoneyDto> => ({ money: [1, 1, 1, 1, 1, 1] })) },
-        },
+        { provide: HeadOfficeRepository, useValue: repository },
+        { provide: SnackMachineProtoServiceClient, useValue: protoClient },
       ],
     }).compile();
 
     handler = module.get<UnloadCashFromSnackMachineHandler>(UnloadCashFromSnackMachineHandler);
-    repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
-    protoClient = module.get<SnackMachineProtoServiceClient>(SnackMachineProtoServiceClient);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
-      jest.spyOn(repository, 'findOne');
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -46,14 +45,13 @@ describe('UnloadCashFromSnackMachineHandler', () => {
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
     });
 
     it('should call protoClient.unloadMoney with correct data', async () => {
-      jest.spyOn(protoClient, 'unloadMoney');
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -62,16 +60,15 @@ describe('UnloadCashFromSnackMachineHandler', () => {
     });
 
     it('should call headOffice.loadCash with correct data', async () => {
-      jest.spyOn(headOffice, 'loadCash');
+      const loadCash = vi.spyOn(headOffice, 'loadCash');
       const id = headOffice.id;
 
       await handler.execute({ id });
 
-      expect(headOffice.loadCash).toHaveBeenCalledWith(new Money(1, 1, 1, 1, 1, 1));
+      expect(loadCash).toHaveBeenCalledWith(new Money(1, 1, 1, 1, 1, 1));
     });
 
     it('should call headOfficeRepository.save', async () => {
-      jest.spyOn(repository, 'save');
       const id = headOffice.id;
 
       await handler.execute({ id });

@@ -1,4 +1,5 @@
-import { BaseEntity, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@mikro-orm/core';
+import { Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MoneyEmbeddable } from '@vending-machines/shared';
 
 @Entity({ tableName: 'atm' })

@@ -21,6 +21,6 @@ const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'Manageme
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('{*splat}');
   }
 }

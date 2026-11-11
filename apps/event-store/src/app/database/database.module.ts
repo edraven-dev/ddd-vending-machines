@@ -7,7 +7,10 @@ import { EventStoreRepositoryProvider } from './event-store/event-store.reposito
 
 @Global()
 @Module({
-  imports: [MikroOrmModule.forRoot(ormConfig), MikroOrmModule.forFeature([EventStoreEntity])],
+  imports: [
+    MikroOrmModule.forRoot({ ...ormConfig, autoLoadEntities: true }),
+    MikroOrmModule.forFeature([EventStoreEntity]),
+  ],
   providers: [EventStoreRepositoryProvider],
   exports: [EventStoreRepositoryProvider],
 })
@@ -16,9 +19,9 @@ export class DatabaseModule implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     if (process.env.NODE_ENV !== 'test') {
-      await this.orm.getMigrator().up();
+      await this.orm.migrator.up();
     } else {
-      await this.orm.getSchemaGenerator().updateSchema();
+      await this.orm.schema.update();
     }
   }
 }

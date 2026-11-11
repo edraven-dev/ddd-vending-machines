@@ -9,19 +9,15 @@ import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-m
 
 describe('GetSnackMachineHandler', () => {
   const snackMachine = new SnackMachine(randomUUID());
+  const repositoryMock = { findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine) };
   let handler: GetSnackMachineHandler;
-  let repository: SnackMachineRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GetSnackMachineHandler,
-        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine) } },
-      ],
+      providers: [GetSnackMachineHandler, { provide: SnackMachineRepository, useValue: repositoryMock }],
     }).compile();
 
     handler = module.get<GetSnackMachineHandler>(GetSnackMachineHandler);
-    repository = module.get<SnackMachineRepository>(SnackMachineRepository);
   });
 
   beforeEach(() => {
@@ -30,16 +26,15 @@ describe('GetSnackMachineHandler', () => {
 
   describe('#execute', () => {
     it('should call SnackMachineRepository.findOne with correct id', async () => {
-      const spy = jest.spyOn(repository, 'findOne');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(spy).toHaveBeenCalledWith(id);
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = snackMachine.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

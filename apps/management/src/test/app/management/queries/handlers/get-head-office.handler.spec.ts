@@ -9,26 +9,20 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { GetHeadOfficeHandler } from '../../../../../app/management/queries/handlers/get-head-office.handler';
 
 describe('GetHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice();
-  Object.assign(headOffice, { id: randomUUID() });
+  const headOffice = new HeadOffice(randomUUID());
+  const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
-  let repository: HeadOfficeRepository;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GetHeadOfficeHandler,
-        { provide: HeadOfficeRepository, useValue: { findOne: jest.fn(async () => headOffice) } },
-      ],
+      providers: [GetHeadOfficeHandler, { provide: HeadOfficeRepository, useValue: repository }],
     }).compile();
 
     handler = module.get<GetHeadOfficeHandler>(GetHeadOfficeHandler);
-    repository = module.get<HeadOfficeRepository>(HeadOfficeRepository);
   });
 
   describe('#execute', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
-      jest.spyOn(repository, 'findOne');
       const id = headOffice.id;
 
       await handler.execute({ id });
@@ -37,7 +31,7 @@ describe('GetHeadOfficeHandler', () => {
     });
 
     it('should throw NotFoundException if HeadOffice not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

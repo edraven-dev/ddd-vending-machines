@@ -21,7 +21,7 @@ async function bootstrap() {
       transport: Transport.GRPC,
       options: {
         package: 'snack_machine',
-        protoPath: join(__dirname, 'assets/snack-machine/snack-machine.proto'),
+        protoPath: join(import.meta.dirname, 'assets/snack-machine/snack-machine.proto'),
         url: process.env.GRPC_URL || 'localhost:50052',
       },
     },
@@ -33,4 +33,4 @@ async function bootstrap() {
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
-bootstrap();
+await bootstrap();

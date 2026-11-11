@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable, Provider } from '@nestjs/common';
-import { DomainEvent } from '@vending-machines/events';
+import type { DomainEvent } from '@vending-machines/events';
 import { EventStoreRepository } from '../../event-store/event-store.repository.interface';
 import EventStoreEntity from './event-store.entity';
 
@@ -17,7 +17,7 @@ export class MikroOrmEventStoreRepository implements EventStoreRepository {
     eventEntity.aggregate_type = event.aggregateType;
     eventEntity.payload = event.payload;
 
-    await this.em.persistAndFlush(eventEntity);
+    await this.em.persist(eventEntity).flush();
   }
 }
 

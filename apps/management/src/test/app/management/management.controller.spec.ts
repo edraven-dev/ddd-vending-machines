@@ -8,27 +8,25 @@ import { ManagementController } from '../../../app/management/management.control
 import { GetHeadOfficeQuery } from '../../../app/management/queries/impl/get-head-office.query';
 
 describe('ManagementController', () => {
+  const commandBus = { execute: vi.fn<CommandBus['execute']>() };
+  const queryBus = { execute: vi.fn<QueryBus['execute']>() };
   let controller: ManagementController;
-  let commandBus: CommandBus;
-  let queryBus: QueryBus;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ManagementController],
       providers: [
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
-        { provide: QueryBus, useValue: { execute: jest.fn() } },
+        { provide: CommandBus, useValue: commandBus },
+        { provide: QueryBus, useValue: queryBus },
       ],
     }).compile();
 
     controller = module.get<ManagementController>(ManagementController);
-    commandBus = module.get<CommandBus>(CommandBus);
-    queryBus = module.get<QueryBus>(QueryBus);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#getById', () => {
