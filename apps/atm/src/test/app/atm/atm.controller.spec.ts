@@ -11,30 +11,27 @@ import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
 
 describe('AtmController', () => {
   const id = randomUUID();
+  const commandBus = { execute: vi.fn<CommandBus['execute']>() };
+  const queryBus = { execute: vi.fn<QueryBus['execute']>() };
+  const service = { loadMoney: vi.fn<AtmService['loadMoney']>() };
   let controller: AtmController;
-  let service: AtmService;
-  let commandBus: CommandBus;
-  let queryBus: QueryBus;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AtmController],
       providers: [
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
-        { provide: QueryBus, useValue: { execute: jest.fn() } },
-        { provide: AtmService, useValue: { loadMoney: jest.fn() } },
+        { provide: CommandBus, useValue: commandBus },
+        { provide: QueryBus, useValue: queryBus },
+        { provide: AtmService, useValue: service },
       ],
     }).compile();
 
     controller = module.get<AtmController>(AtmController);
-    service = module.get<AtmService>(AtmService);
-    commandBus = module.get<CommandBus>(CommandBus);
-    queryBus = module.get<QueryBus>(QueryBus);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#getById', () => {

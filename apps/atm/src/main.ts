@@ -21,7 +21,7 @@ async function bootstrap() {
       transport: Transport.GRPC,
       options: {
         package: 'atm',
-        protoPath: join(__dirname, 'assets/atm/atm.proto'),
+        protoPath: join(import.meta.dirname, 'assets/atm/atm.proto'),
         url: process.env.GRPC_URL || 'localhost:50051',
       },
     },
@@ -33,4 +33,4 @@ async function bootstrap() {
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
-bootstrap();
+await bootstrap();

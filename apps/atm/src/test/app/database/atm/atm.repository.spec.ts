@@ -22,7 +22,11 @@ describe('MikroOrmAtmRepository', () => {
         },
         {
           provide: EntityManager,
-          useValue: { flush: jest.fn(), getReference: jest.fn(), remove: jest.fn(() => ({ flush: jest.fn() })) },
+          useValue: {
+            flush: vi.fn<EntityManager['flush']>(),
+            getReference: vi.fn<EntityManager['getReference']>(),
+            remove: vi.fn<() => Pick<EntityManager, 'flush'>>(() => ({ flush: vi.fn<EntityManager['flush']>() })),
+          },
         },
       ],
     }).compile();
@@ -33,8 +37,8 @@ describe('MikroOrmAtmRepository', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#findOne', () => {
@@ -42,15 +46,15 @@ describe('MikroOrmAtmRepository', () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
+      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
 
       await repository.findOne(atmEntity.id);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: atmEntity.id });
+      expect(findOne).toHaveBeenCalledWith({ id: atmEntity.id });
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const id = randomUUID();
 
       const result = await repository.findOne(id);
@@ -62,7 +66,7 @@ describe('MikroOrmAtmRepository', () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
 
       const result = await repository.findOne(atmEntity.id);
 
@@ -76,41 +80,42 @@ describe('MikroOrmAtmRepository', () => {
   describe('#save', () => {
     it('should call ormRepository.findOne with proper id', async () => {
       const atmEntity = new AtmEntity();
-      atmEntity.assign = jest.fn();
+      vi.spyOn(atmEntity, 'assign').mockReturnThis();
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
+      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
       const atm = new Atm();
       Object.assign(atm, { id: 'id', money: Money.Dollar });
 
       await repository.save(atm);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' });
+      expect(findOne).toHaveBeenCalledWith({ id: 'id' });
     });
 
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
-      jest.spyOn(ormRepository, 'create').mockImplementation(() => new AtmEntity());
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new AtmEntity());
       const atm = new Atm();
       Object.assign(atm, { id: 'id', moneyInside: Money.Dollar });
 
       await repository.save(atm);
 
-      expect(ormRepository.create).toHaveBeenCalled();
+      expect(create).toHaveBeenCalled();
     });
 
     it('should call entityManager.flush', async () => {
       const atmEntity = new AtmEntity();
-      atmEntity.assign = jest.fn();
+      vi.spyOn(atmEntity, 'assign').mockReturnThis();
       atmEntity.id = 'id';
       atmEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => atmEntity);
+      const flush = vi.spyOn(entityManager, 'flush');
       const atm = new Atm();
       Object.assign(atm, { id: 'id', money: Money.Dollar });
 
       await repository.save(atm);
 
-      expect(entityManager.flush).toHaveBeenCalled();
+      expect(flush).toHaveBeenCalled();
     });
   });
 
@@ -118,35 +123,35 @@ describe('MikroOrmAtmRepository', () => {
     it('should call entityManager.getReference with proper id', async () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
-      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
+      const getReference = vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
 
       await repository.delete(atmEntity.id);
 
-      expect(entityManager.getReference).toHaveBeenCalledWith(AtmEntity, 'id');
+      expect(getReference).toHaveBeenCalledWith(AtmEntity, 'id');
     });
 
     it('should call entityManager.remove with reference returned by entityManager.getReference', async () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
       const atmRef = new AtmEntity();
-      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmRef);
-      jest.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
+      vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmRef);
+      const remove = vi.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
 
       await repository.delete(atmEntity.id);
 
-      expect(entityManager.remove).toHaveBeenCalledWith(atmRef);
+      expect(remove).toHaveBeenCalledWith(atmRef);
     });
 
     it('should call entityManager.flush', async () => {
       const atmEntity = new AtmEntity();
       atmEntity.id = 'id';
-      jest.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
-      jest.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
-      jest.spyOn(entityManager, 'flush').mockImplementation(() => Promise.resolve());
+      vi.spyOn(entityManager, 'getReference').mockImplementation(() => atmEntity);
+      vi.spyOn(entityManager, 'remove').mockImplementation(() => entityManager);
+      const flush = vi.spyOn(entityManager, 'flush').mockImplementation(() => Promise.resolve());
 
       await repository.delete(atmEntity.id);
 
-      expect(entityManager.flush).toHaveBeenCalled();
+      expect(flush).toHaveBeenCalled();
     });
   });
 });

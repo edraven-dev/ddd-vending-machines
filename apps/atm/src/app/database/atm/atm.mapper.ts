@@ -5,7 +5,7 @@ import { Atm } from '../../atm/atm';
 import AtmEntity from './atm.entity';
 
 export class AtmMapper {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line no-empty-function
   private constructor() {}
 
   static toDomain(entity: AtmEntity): Atm {
@@ -27,7 +27,14 @@ export class AtmMapper {
   static toPersistence(atm: Atm): RequiredEntityData<AtmEntity> {
     return {
       id: atm.id,
-      money: { ...atm.moneyInside },
+      money: {
+        oneCentCount: atm.moneyInside.oneCentCount,
+        tenCentCount: atm.moneyInside.tenCentCount,
+        quarterCount: atm.moneyInside.quarterCount,
+        oneDollarCount: atm.moneyInside.oneDollarCount,
+        fiveDollarCount: atm.moneyInside.fiveDollarCount,
+        twentyDollarCount: atm.moneyInside.twentyDollarCount,
+      },
       moneyCharged: atm.moneyCharged.format({ symbol: '' }),
     };
   }

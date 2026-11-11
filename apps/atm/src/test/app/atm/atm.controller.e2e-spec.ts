@@ -1,27 +1,14 @@
-import { HttpStatus, INestApplication, Module } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { ValidationProvider } from '@vending-machines/shared';
+import { randomUUID } from 'crypto';
 import request from 'supertest';
-import { AtmRepository } from '../../../app/atm/atm.repository.interface';
+import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
 
-@Module({
-  providers: [{ provide: AtmRepository, useValue: { findOne: jest.fn(), save: jest.fn() } }],
-  exports: [AtmRepository],
-})
-class DatabaseModuleMock {}
-jest.mock('../../../app/database/database.module', () => {
-  return {
-    DatabaseModule: DatabaseModuleMock,
-  };
-});
-
-import { randomUUID } from 'crypto';
-import { AtmController } from '../../../app/atm/atm.controller';
-
 describe('AtmController - e2e', () => {
-  const queryBusMock = { execute: jest.fn(async () => ({ moneyCharged: '$1.00', moneyInside: '$1.00' })) };
+  const queryBusMock = { execute: vi.fn(async () => ({ moneyCharged: '$1.00', moneyInside: '$1.00' })) };
   const testEndpoint = (id: string) => `/atm/${id}`;
 
   let app: INestApplication;
@@ -32,8 +19,8 @@ describe('AtmController - e2e', () => {
       providers: [
         ValidationProvider,
         { provide: QueryBus, useValue: queryBusMock },
-        { provide: CommandBus, useValue: { execute: jest.fn() } },
-        { provide: AtmService, useValue: { loadMoney: jest.fn() } },
+        { provide: CommandBus, useValue: { execute: vi.fn() } },
+        { provide: AtmService, useValue: { loadMoney: vi.fn() } },
       ],
     }).compile();
 

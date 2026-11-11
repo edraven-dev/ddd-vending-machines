@@ -17,7 +17,7 @@ describe('Atm', () => {
     it('should apply MoneyLoadedEvent', () => {
       const atm = new Atm();
       atm.moneyInside = Money.Dollar;
-      const spy = jest.spyOn(atm, 'apply');
+      const spy = vi.spyOn(atm, 'apply');
 
       atm.loadMoney(Money.Dollar);
 
@@ -119,7 +119,7 @@ describe('Atm', () => {
   describe('#markAsDeleted', () => {
     it('should apply AtmDeletedEvent', () => {
       const atm = new Atm();
-      const spy = jest.spyOn(atm, 'apply');
+      const spy = vi.spyOn(atm, 'apply');
 
       atm.markAsDeleted();
 
