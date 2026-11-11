@@ -1,3 +1,4 @@
+<%_ const images = buildable_projects.filter((p) => p.id !== 'frontend') -%>
 version: 2.1
 
 orbs:
@@ -126,6 +127,7 @@ jobs:
             git config user.name $GH_USERNAME
             git tag -a release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >> -m "Release <%= branch === 'master' ? '' : 'dev ' %>CircleCI build nr #<< pipeline.number >>"
             git push "https://${GH_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" release<%= branch === 'master' ? '' : '-dev' %>-<< pipeline.number >>
+  <% } if ((branch === 'develop' || branch === 'master') && images.length) { %>
   push-tags-to-k8s-manifests:
     <<: *defaults
     steps:
@@ -137,8 +139,8 @@ jobs:
             git config user.email $GH_EMAIL
             git config user.name $GH_USERNAME
             git config url.https://${GH_TOKEN}@github.com/.insteadOf https://github.com/
-            find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/.*:).*|\1${CIRCLE_SHA1}|g" {} \;
-            git add .
+            <% images.forEach((p) => { %>find ./<%= branch === 'master' ? 'prod' : 'dev' %> -type f -exec sed -i -E "s|(image: ghcr.io/${REPO_ORG}/${CIRCLE_PROJECT_REPONAME}/<%= p.id %>:).*|\1${CIRCLE_SHA1}|g" {} \;
+            <% }) %>git add .
             git commit -m "Update image tags in k8s manifests for CircleCI build nr #<< pipeline.number >>"
             git push origin master
   <% } %>
@@ -170,6 +172,6 @@ workflows:
             <% for (let i = 0; i < buildable_projects.length; i++) { if (buildable_projects[i].id !== 'frontend') { %>- build-and-push-docker-image-<%= buildable_projects[i].id %><%= branch === 'master' ? '': '-dev' %>
             <% } else { %>- build-and-upload-frontend-files
             <% }}} %>
-      <% if ((branch === 'develop' || branch === 'master') && buildable_projects.length) { %>- push-tags-to-k8s-manifests:
+      <% if ((branch === 'develop' || branch === 'master') && images.length) { %>- push-tags-to-k8s-manifests:
           requires:
             - push-git-tag<% } %>
