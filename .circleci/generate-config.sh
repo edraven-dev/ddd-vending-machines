@@ -1,19 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
-BASE="${NX_BASE:?NX_BASE is not set - nx/set-shas must run first}"
-if [ "$CIRCLE_BRANCH" = develop ] || [ "$CIRCLE_BRANCH" = master ]; then
-  if [ -z "${CIRCLE_API_TOKEN:-}" ]; then
-    echo "WARNING: CIRCLE_API_TOKEN is not set, so nx/set-shas can't read previous workflows (see README)"
-  fi
-
+case "$CIRCLE_BRANCH" in
+  develop) BASE=$(git describe --tags --abbrev=0 --match 'release-dev-*' HEAD 2>/dev/null || true) ;;
+  master) BASE=$(git describe --tags --abbrev=0 --match 'release-[0-9]*' HEAD 2>/dev/null || true) ;;
+  *) BASE=$(git merge-base origin/develop HEAD) ;;
+esac
+if [ -z "$BASE" ]; then
   if [ -n "${BASE_REVISION:-}" ] && git cat-file -e "${BASE_REVISION}^{commit}" 2>/dev/null; then
-    BASE=$(git merge-base "$BASE" "$BASE_REVISION" || echo "$BASE")
+    BASE=$BASE_REVISION
+  else
+    BASE=HEAD~1
   fi
 fi
-export TURBO_SCM_BASE="$BASE"
-export TURBO_SCM_HEAD="${NX_HEAD:-HEAD}"
-echo "Comparing $TURBO_SCM_BASE...$TURBO_SCM_HEAD"
+TURBO_SCM_BASE=$(git rev-parse "${BASE}^{commit}")
+export TURBO_SCM_BASE
+export TURBO_SCM_HEAD=HEAD
+echo "Comparing $BASE ($TURBO_SCM_BASE)...HEAD"
 
 TURBO_VERSION=$(jq -r '.devDependencies.turbo' package.json)
 EJS_VERSION=$(jq -r '.devDependencies.ejs' package.json)

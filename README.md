@@ -53,7 +53,7 @@ The apps also apply pending migrations on startup.
 
 ## CI and Docker
 
-CircleCI generates its pipeline from `turbo run <task> --affected` (`.circleci/generate-config.sh`), comparing against the commit of the last successful `build-lint-test-deploy` workflow on `develop`/`master` (or the merge-base with `develop` on other branches), so only changed packages are built, linted and tested. Finding that workflow needs a CircleCI personal API token in the project's `CIRCLE_API_TOKEN` environment variable; without it, or when no successful run exists yet, `develop`/`master` compare against the branch tip before the push. A deploy updates the k8s manifests only for the images it rebuilt. Docker images are built per app with `docker build --build-arg APP=<app> .`, which uses `turbo prune` and `pnpm deploy` so each image contains only that app's production dependencies.
+CircleCI generates its pipeline from `turbo run <task> --affected` (`.circleci/generate-config.sh`), comparing `develop` and `master` against their last deployed commit (the newest `release-dev-*` or `release-*` tag, which the pipeline pushes after a successful deploy) and other branches against their merge-base with `develop`, so only changed packages are built, linted and tested. A deploy updates the k8s manifests only for the images it rebuilt. Docker images are built per app with `docker build --build-arg APP=<app> .`, which uses `turbo prune` and `pnpm deploy` so each image contains only that app's production dependencies.
 
 ## Upgrade note: BullMQ 6
 
