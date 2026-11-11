@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "strictPropertyInitialization": true,
     "types": ["node", "vitest/globals"],
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
