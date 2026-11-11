@@ -17,7 +17,7 @@ export class SnackPile extends ValueObject {
     if (price.value < 0) {
       throw new InvalidOperationException('Snack price cannot be negative');
     }
-    if (price.intValue % 1 !== 0) {
+    if (price.intValue % 1 !== 0 || new Currency(price.value).value !== price.value) {
       throw new InvalidOperationException('Price cannot contain part of cent');
     }
     this.snack = snack;
