@@ -42,9 +42,12 @@ Each NestJS app has its own MikroORM migrations. The CLI reads the app's `.env` 
 
 ```sh
 pnpm --filter atm migration:generate <Name>   # create a migration from entity changes
+pnpm --filter atm migration:create <Name>     # create an empty migration (refused while entity changes have no migration)
+pnpm --filter atm migration:check             # fail if an entity change has no migration (also runs in CI)
 pnpm --filter atm migration:up
-pnpm --filter atm migration:check
 ```
+
+`migration:generate` and `migration:check` compare the entities with the schema snapshot committed next to the migrations (`src/database/migrations/.snapshot-<db>.json`), not with your local database, so they need no database. Commit the snapshot together with each migration. If it conflicts during a rebase, take the target branch's snapshot, delete your migration and generate it again.
 
 The apps also apply pending migrations on startup.
 
