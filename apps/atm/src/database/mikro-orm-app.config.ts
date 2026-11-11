@@ -18,5 +18,6 @@ export default defineConfig({
   discovery: { warnWhenNoEntities: false },
   loadStrategy: LoadStrategy.JOINED,
   highlighter: new SqlHighlighter(),
-  migrations: { migrationsList },
+  // No schema snapshot at runtime: only the CLI uses one (src/database/migrations/.snapshot-*.json).
+  migrations: { migrationsList, snapshot: false },
 });
