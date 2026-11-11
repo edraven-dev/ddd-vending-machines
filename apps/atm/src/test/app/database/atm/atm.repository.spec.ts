@@ -66,8 +66,7 @@ describe('MikroOrmAtmRepository', () => {
 
       const result = await repository.findOne(atmEntity.id);
 
-      assert(result, 'result should not be null');
-      expect(result).toBeInstanceOf(Atm);
+      assert(result instanceof Atm, 'result should be an instance of Atm');
       expect(result.id).toBe('id');
       expect(result.moneyInside.oneDollarCount).toBe(1);
     });
