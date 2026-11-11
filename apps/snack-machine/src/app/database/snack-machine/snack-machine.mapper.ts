@@ -12,9 +12,8 @@ export class SnackMachineMapper {
   private constructor() {}
 
   static toDomain(entity: SnackMachineEntity): SnackMachine {
-    const snackMachine = new SnackMachine();
+    const snackMachine = new SnackMachine(entity.id);
     return Object.assign(snackMachine, {
-      id: entity.id,
       moneyInside: new Money(
         entity.money.oneCentCount,
         entity.money.tenCentCount,
@@ -30,11 +29,11 @@ export class SnackMachineMapper {
         Object.assign(slot, {
           id: slotEntity.id,
           snackPile: new SnackPile(snack, slotEntity.snackPile.quantity, new Currency(slotEntity.snackPile.price)),
-        });
+        } satisfies Partial<Slot>);
         slots.push(slot);
         return slots;
       }, []),
-    });
+    } satisfies Partial<SnackMachine>);
   }
 
   static toPersistence(snackMachine: SnackMachine): RequiredEntityData<SnackMachineEntity> {

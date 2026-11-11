@@ -9,8 +9,7 @@ export class Snack extends AggregateRoot {
   readonly name: string;
 
   private constructor(id: string, name: string) {
-    super();
-    this.id = id;
+    super(id);
     this.name = name;
   }
 }

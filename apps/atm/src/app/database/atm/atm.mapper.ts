@@ -9,19 +9,17 @@ export class AtmMapper {
   private constructor() {}
 
   static toDomain(entity: AtmEntity): Atm {
-    const atm = new Atm();
-    return Object.assign(atm, {
-      id: entity.id,
-      moneyInside: new Money(
-        entity.money.oneCentCount,
-        entity.money.tenCentCount,
-        entity.money.quarterCount,
-        entity.money.oneDollarCount,
-        entity.money.fiveDollarCount,
-        entity.money.twentyDollarCount,
-      ),
-      moneyCharged: new Currency(entity.moneyCharged),
-    });
+    const atm = new Atm(entity.id);
+    atm.moneyInside = new Money(
+      entity.money.oneCentCount,
+      entity.money.tenCentCount,
+      entity.money.quarterCount,
+      entity.money.oneDollarCount,
+      entity.money.fiveDollarCount,
+      entity.money.twentyDollarCount,
+    );
+    atm.moneyCharged = new Currency(entity.moneyCharged);
+    return atm;
   }
 
   static toPersistence(atm: Atm): RequiredEntityData<AtmEntity> {

@@ -9,19 +9,17 @@ export class HeadOfficeMapper {
   private constructor() {}
 
   static toDomain(entity: HeadOfficeEntity): HeadOffice {
-    const headOffice = new HeadOffice();
-    return Object.assign(headOffice, {
-      id: entity.id,
-      balance: new Currency(entity.balance),
-      cash: new Money(
-        entity.cash.oneCentCount,
-        entity.cash.tenCentCount,
-        entity.cash.quarterCount,
-        entity.cash.oneDollarCount,
-        entity.cash.fiveDollarCount,
-        entity.cash.twentyDollarCount,
-      ),
-    });
+    const headOffice = new HeadOffice(entity.id);
+    headOffice.balance = new Currency(entity.balance);
+    headOffice.cash = new Money(
+      entity.cash.oneCentCount,
+      entity.cash.tenCentCount,
+      entity.cash.quarterCount,
+      entity.cash.oneDollarCount,
+      entity.cash.fiveDollarCount,
+      entity.cash.twentyDollarCount,
+    );
+    return headOffice;
   }
 
   static toPersistence(headOffice: HeadOffice): RequiredEntityData<HeadOfficeEntity> {
