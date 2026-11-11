@@ -3,11 +3,17 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import type { Mock } from 'vitest';
 import { InsertMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/insert-money.handler';
+import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('InsertMoneyHandler', () => {
-  const snackMachine = { id: randomUUID(), insertMoney: jest.fn(), commit: jest.fn() };
+  const snackMachine = {
+    id: randomUUID(),
+    insertMoney: vi.fn<SnackMachine['insertMoney']>(),
+    commit: vi.fn<SnackMachine['commit']>(),
+  };
   let handler: InsertMoneyHandler;
   let repository: SnackMachineRepository;
 
@@ -15,8 +21,17 @@ describe('InsertMoneyHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         InsertMoneyHandler,
-        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine), save: jest.fn() } },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((snackMachine) => snackMachine) } },
+        {
+          provide: SnackMachineRepository,
+          useValue: {
+            findOne: vi.fn<() => Promise<typeof snackMachine>>(async () => snackMachine),
+            save: vi.fn<SnackMachineRepository['save']>(),
+          },
+        },
+        {
+          provide: EventPublisher,
+          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
+        },
       ],
     }).compile();
 
@@ -26,7 +41,7 @@ describe('InsertMoneyHandler', () => {
 
   describe('#execute', () => {
     it('should call snackMachineRepository.findOne with correct id', async () => {
-      const spy = jest.spyOn(repository, 'findOne');
+      const spy = vi.spyOn(repository, 'findOne');
       const id = snackMachine.id;
       const money = Money.Dollar;
 
@@ -36,7 +51,7 @@ describe('InsertMoneyHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
       const id = snackMachine.id;
       const money = Money.Dollar;
 
@@ -53,12 +68,13 @@ describe('InsertMoneyHandler', () => {
     });
 
     it('should call snackMachineRepository.save with proper data', async () => {
+      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
       const money = Money.Dollar;
 
       await handler.execute({ id, money });
 
-      expect(repository.save).toHaveBeenCalledWith(snackMachine);
+      expect(spy).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should call snackMachine.commit', async () => {

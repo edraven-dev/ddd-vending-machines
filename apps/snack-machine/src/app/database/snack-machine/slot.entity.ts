@@ -1,4 +1,5 @@
-import { Cascade, Embeddable, Embedded, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, type Rel } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import SnackEntity from '../snack/snack.entity';
 import SnackMachineEntity from './snack-machine.entity';
 
@@ -10,7 +11,14 @@ export class SnackPileEmbeddable {
   @Property({ type: 'varchar', length: 255 })
   price!: string;
 
-  @OneToOne({ cascade: [Cascade.ALL], unique: false })
+  // MikroORM 7 no longer derives nullability and FK rules from `cascade`, so they are spelled out to match the schema.
+  @OneToOne(() => SnackEntity, {
+    cascade: [Cascade.ALL],
+    unique: false,
+    nullable: true,
+    deleteRule: 'cascade',
+    updateRule: 'cascade',
+  })
   snack!: SnackEntity;
 }
 
@@ -22,8 +30,9 @@ export default class SlotEntity {
   @Property({ type: 'int' })
   position!: number;
 
-  @ManyToOne(() => SnackMachineEntity)
-  snackMachine!: SnackMachineEntity;
+  // Rel<> keeps the circular SnackMachineEntity import out of the emitted decorator metadata.
+  @ManyToOne(() => SnackMachineEntity, { updateRule: 'cascade' })
+  snackMachine!: Rel<SnackMachineEntity>;
 
   @Embedded(() => SnackPileEmbeddable)
   snackPile!: SnackPileEmbeddable;

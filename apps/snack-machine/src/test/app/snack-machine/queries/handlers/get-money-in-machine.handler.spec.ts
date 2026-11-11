@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import type { Mock } from 'vitest';
 import { MoneyInMachineDto } from '../../../../../app/snack-machine/dto/money-in-machine.dto';
 import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
@@ -16,7 +17,10 @@ describe('GetMoneyInMachineHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetMoneyInMachineHandler,
-        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine) } },
+        {
+          provide: SnackMachineRepository,
+          useValue: { findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine) },
+        },
       ],
     }).compile();
 
@@ -30,7 +34,7 @@ describe('GetMoneyInMachineHandler', () => {
 
   describe('#execute', () => {
     it('should call SnackMachineRepository.findOne with correct id', async () => {
-      const spy = jest.spyOn(repository, 'findOne');
+      const spy = vi.spyOn(repository, 'findOne');
       const id = snackMachine.id;
 
       await handler.execute({ id });
@@ -39,7 +43,7 @@ describe('GetMoneyInMachineHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
       const id = snackMachine.id;
 
       await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);

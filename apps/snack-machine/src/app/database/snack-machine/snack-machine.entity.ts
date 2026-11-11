@@ -1,14 +1,5 @@
-import {
-  BaseEntity,
-  Cascade,
-  Collection,
-  Embeddable,
-  Embedded,
-  Entity,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { BaseEntity, Cascade, Collection } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import SlotEntity from './slot.entity';
 
 @Embeddable()

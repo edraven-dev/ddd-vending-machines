@@ -16,8 +16,11 @@ describe('CreateSnackMachineHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateSnackMachineHandler,
-        { provide: SnackMachineFactory, useValue: { create: jest.fn(() => snackMachine) } },
-        { provide: SnackMachineRepository, useValue: { save: jest.fn() } },
+        {
+          provide: SnackMachineFactory,
+          useValue: { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) },
+        },
+        { provide: SnackMachineRepository, useValue: { save: vi.fn<SnackMachineRepository['save']>() } },
       ],
     }).compile();
 
@@ -27,55 +30,56 @@ describe('CreateSnackMachineHandler', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#execute', () => {
     it('should create Snack Machine entity', async () => {
-      jest.spyOn(factory, 'create');
+      const spy = vi.spyOn(factory, 'create');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(factory.create).toHaveBeenCalledWith(id);
+      expect(spy).toHaveBeenCalledWith(id);
     });
 
     it('should load money into Snack Machine', async () => {
-      jest.spyOn(SnackMachine.prototype, 'loadMoney');
+      const spy = vi.spyOn(SnackMachine.prototype, 'loadMoney');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(snackMachine.loadMoney).toHaveBeenCalledWith(new Money(10, 10, 10, 10, 10, 10));
+      expect(spy).toHaveBeenCalledWith(new Money(10, 10, 10, 10, 10, 10));
     });
 
     it('should load snacks into snack machine 3 times', async () => {
-      jest.spyOn(SnackMachine.prototype, 'loadSnacks');
+      const spy = vi.spyOn(SnackMachine.prototype, 'loadSnacks');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(snackMachine.loadSnacks).toHaveBeenCalledTimes(3);
+      expect(spy).toHaveBeenCalledTimes(3);
     });
 
     it('should save Snack Machine with repository', async () => {
-      jest.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(jest.fn());
+      vi.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(vi.fn());
+      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(repository.save).toHaveBeenCalledTimes(1);
-      expect(repository.save).toHaveBeenCalledWith({ ...snackMachine, slots: expect.any(Array) });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should commit events', async () => {
-      jest.spyOn(SnackMachine.prototype, 'commit');
+      const spy = vi.spyOn(SnackMachine.prototype, 'commit');
       const id = snackMachine.id;
 
       await handler.execute({ id });
 
-      expect(snackMachine.commit).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

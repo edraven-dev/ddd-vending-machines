@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CoinsAndNotes } from '@vending-machines/shared';
+import type { CoinsAndNotes } from '@vending-machines/shared';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt } from 'class-validator';
 
 export class InsertMoneyDto {

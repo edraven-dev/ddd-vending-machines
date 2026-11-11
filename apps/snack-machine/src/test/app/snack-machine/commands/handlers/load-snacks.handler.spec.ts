@@ -3,7 +3,9 @@ import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import Currency from 'currency.js';
+import type { Mock } from 'vitest';
 import { LoadSnacksHandler } from '../../../../../app/snack-machine/commands/handlers/load-snacks.handler';
+import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 import { SnackPile } from '../../../../../app/snack-machine/snack-pile';
 import { Snack } from '../../../../../app/snack/snack';
@@ -12,9 +14,9 @@ describe('LoadSnacksHandler', () => {
   const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1));
   const snackMachine = {
     id: randomUUID(),
-    getSnackPile: jest.fn(() => snackPile),
-    loadSnacks: jest.fn(),
-    commit: jest.fn(),
+    getSnackPile: vi.fn<SnackMachine['getSnackPile']>(() => snackPile),
+    loadSnacks: vi.fn<SnackMachine['loadSnacks']>(),
+    commit: vi.fn<SnackMachine['commit']>(),
   };
   let handler: LoadSnacksHandler;
   let repository: SnackMachineRepository;
@@ -23,8 +25,17 @@ describe('LoadSnacksHandler', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LoadSnacksHandler,
-        { provide: SnackMachineRepository, useValue: { findOne: jest.fn(async () => snackMachine), save: jest.fn() } },
-        { provide: EventPublisher, useValue: { mergeObjectContext: jest.fn((snackMachine) => snackMachine) } },
+        {
+          provide: SnackMachineRepository,
+          useValue: {
+            findOne: vi.fn<() => Promise<typeof snackMachine>>(async () => snackMachine),
+            save: vi.fn<SnackMachineRepository['save']>(),
+          },
+        },
+        {
+          provide: EventPublisher,
+          useValue: { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((snackMachine) => snackMachine) },
+        },
       ],
     }).compile();
 
@@ -34,7 +45,7 @@ describe('LoadSnacksHandler', () => {
 
   describe('#execute', () => {
     it('should call snackMachineRepository.findOne with correct id', async () => {
-      const spy = jest.spyOn(repository, 'findOne');
+      const spy = vi.spyOn(repository, 'findOne');
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
@@ -45,7 +56,7 @@ describe('LoadSnacksHandler', () => {
     });
 
     it('should throw NotFoundException if SnackMachine not found', async () => {
-      (repository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
+      (repository.findOne as Mock).mockResolvedValueOnce(undefined);
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
@@ -64,14 +75,14 @@ describe('LoadSnacksHandler', () => {
     });
 
     it('should add quantity to snack pile', async () => {
-      jest.spyOn(snackPile, 'addQuantity');
+      const spy = vi.spyOn(snackPile, 'addQuantity');
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
 
       await handler.execute({ id, position, quantity });
 
-      expect(snackPile.addQuantity).toHaveBeenCalledWith(quantity);
+      expect(spy).toHaveBeenCalledWith(quantity);
     });
 
     it('should load snacks at correct position', async () => {
@@ -86,13 +97,14 @@ describe('LoadSnacksHandler', () => {
     });
 
     it('should save snack machine with correct data', async () => {
+      const spy = vi.spyOn(repository, 'save');
       const id = snackMachine.id;
       const position = 1;
       const quantity = 10;
 
       await handler.execute({ id, position, quantity });
 
-      expect(repository.save).toHaveBeenCalledWith(snackMachine);
+      expect(spy).toHaveBeenCalledWith(snackMachine);
     });
 
     it('should commit events', async () => {

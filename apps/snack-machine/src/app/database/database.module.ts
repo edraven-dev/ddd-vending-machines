@@ -8,7 +8,10 @@ import SnackEntity from './snack/snack.entity';
 
 @Global()
 @Module({
-  imports: [MikroOrmModule.forRoot(ormConfig), MikroOrmModule.forFeature([SnackMachineEntity, SnackEntity])],
+  imports: [
+    MikroOrmModule.forRoot({ ...ormConfig, autoLoadEntities: true }),
+    MikroOrmModule.forFeature([SnackMachineEntity, SnackEntity]),
+  ],
   providers: [SnackMachineRepositoryProvider],
   exports: [SnackMachineRepositoryProvider],
 })
@@ -17,9 +20,9 @@ export class DatabaseModule implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     if (process.env.NODE_ENV !== 'test') {
-      await this.orm.getMigrator().up();
+      await this.orm.migrator.up();
     } else {
-      await this.orm.getSchemaGenerator().updateSchema();
+      await this.orm.schema.update();
     }
   }
 }

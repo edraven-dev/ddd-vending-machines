@@ -22,7 +22,7 @@ describe('MikroOrmSnackMachineRepository', () => {
         },
         {
           provide: EntityManager,
-          useValue: { flush: jest.fn() },
+          useValue: { flush: vi.fn<EntityManager['flush']>() },
         },
       ],
     }).compile();
@@ -33,8 +33,8 @@ describe('MikroOrmSnackMachineRepository', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('#findOne', () => {
@@ -42,18 +42,18 @@ describe('MikroOrmSnackMachineRepository', () => {
       const snackMachineEntity = new SnackMachineEntity();
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
+      const spy = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
 
       await repository.findOne(snackMachineEntity.id);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith(
+      expect(spy).toHaveBeenCalledWith(
         { id: snackMachineEntity.id },
         { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'] },
       );
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const id = randomUUID();
 
       const result = await repository.findOne(id);
@@ -65,7 +65,7 @@ describe('MikroOrmSnackMachineRepository', () => {
       const snackMachineEntity = new SnackMachineEntity();
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
 
       const result = await repository.findOne(snackMachineEntity.id);
 
@@ -79,35 +79,36 @@ describe('MikroOrmSnackMachineRepository', () => {
   describe('#save', () => {
     it('should call ormRepository.findOne with proper id', async () => {
       const snackMachineEntity = new SnackMachineEntity();
-      snackMachineEntity.assign = jest.fn();
+      vi.spyOn(snackMachineEntity, 'assign').mockReturnThis();
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
+      const spy = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
       const snackMachine = new SnackMachine();
       Object.assign(snackMachine, { id: 'id', moneyInside: Money.Dollar });
 
       await repository.save(snackMachine);
 
-      expect(ormRepository.findOne).toHaveBeenCalledWith({ id: 'id' }, { populate: ['slots'] });
+      expect(spy).toHaveBeenCalledWith({ id: 'id' }, { populate: ['slots'] });
     });
 
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
-      jest.spyOn(ormRepository, 'create').mockImplementation(() => new SnackMachineEntity());
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      const spy = vi.spyOn(ormRepository, 'create').mockImplementation(() => new SnackMachineEntity());
       const snackMachine = new SnackMachine();
       Object.assign(snackMachine, { id: 'id', moneyInside: Money.Dollar });
 
       await repository.save(snackMachine);
 
-      expect(ormRepository.create).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
     });
 
     it('should call entityManager.flush', async () => {
       const snackMachineEntity = new SnackMachineEntity();
-      snackMachineEntity.assign = jest.fn();
+      vi.spyOn(snackMachineEntity, 'assign').mockReturnThis();
       snackMachineEntity.id = 'id';
       snackMachineEntity.money = Money.Dollar;
-      jest.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
+      const spy = vi.spyOn(entityManager, 'flush');
       const snackMachine = new SnackMachine();
       Object.assign(snackMachine, {
         id: 'id',
@@ -116,7 +117,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
       await repository.save(snackMachine);
 
-      expect(entityManager.flush).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
     });
   });
 });
