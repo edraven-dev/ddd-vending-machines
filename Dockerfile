@@ -21,6 +21,8 @@ RUN apk add --no-cache python3 make gcc g++
 COPY --from=pruner /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
+# turbo prune copies only workspace packages; the shared build config lives in the repo root
+COPY tsconfig.base.json ./
 COPY tools/ tools/
 RUN pnpm turbo run build --filter="${APP}"
 RUN pnpm --filter="${APP}" --prod deploy /prod/app
@@ -38,4 +40,5 @@ COPY --chown=node:node --from=builder /app/apps/${APP}/dist dist
 
 USER node
 
-CMD ["node", "dist/main.js"]
+# .mjs: an ES module bundle, so no package.json with "type": "module" is needed next to it
+CMD ["node", "--enable-source-maps", "dist/main.mjs"]
