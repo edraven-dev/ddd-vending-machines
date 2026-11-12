@@ -51,10 +51,10 @@
     "@vending-machines/shared": "workspace:*",
     "amqp-connection-manager": "catalog:",
     "amqplib": "catalog:",
-    "bullmq": "6.7.3",
+    "bullmq": "6.7.4",
     "currency.js": "catalog:",
     "ejson": "catalog:",
-    "ioredis": "5.11.1",
+    "ioredis": "6.0.0",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"
