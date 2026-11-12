@@ -47,7 +47,6 @@ export class SnackMachineMapper {
         .map((slot) => ({
           id: slot.id,
           position: slot.position,
-          snackMachine: snackMachine.id as unknown as SnackMachineEntity,
           snackPile: {
             quantity: slot.snackPile.quantity,
             price: slot.snackPile.price.format({ symbol: '' }),
