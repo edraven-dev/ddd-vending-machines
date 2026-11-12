@@ -121,10 +121,19 @@ describe('SnackMachineController - e2e', () => {
       expect(response.body.message).toMatchSnapshot();
     });
 
+    it('should return 400 BAD REQUEST when payload is an array of non-integer numbers', async () => {
+      const response = await request(app.getHttpServer())
+        .put(`${testEndpoint(randomUUID())}/insert-money`)
+        .send({ money: [0.5, 0, 0, 0, 0, 0] })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
     it('should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers', async () => {
       const response = await request(app.getHttpServer())
         .put(`${testEndpoint(randomUUID())}/insert-money`)
-        .send({ money: ['0', '0', '0', '0', '0', '1'] })
+        .send({ money: [-1, 0, 0, 0, 0, 2] })
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
@@ -153,6 +162,24 @@ describe('SnackMachineController - e2e', () => {
       const response = await request(app.getHttpServer())
         .post(`${testEndpoint(randomUUID())}/buy-snack`)
         .send({ position: 'not an integer' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when payload is a non-integer number', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint(randomUUID())}/buy-snack`)
+        .send({ position: 1.5 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when payload is below 1', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint(randomUUID())}/buy-snack`)
+        .send({ position: 0 })
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();

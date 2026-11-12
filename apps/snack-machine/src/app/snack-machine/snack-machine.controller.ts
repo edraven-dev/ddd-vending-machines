@@ -15,10 +15,10 @@ import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
 import { LoadSnacksCommand } from './commands/impl/load-snacks.command';
 import { ReturnMoneyCommand } from './commands/impl/return-money.command';
-import { BuySnackDto } from './dto/buy-snack.dto';
-import { CreateSnackMachineDto } from './dto/create-snack-machine.dto';
-import { InsertMoneyDto } from './dto/insert-money.dto';
-import { LoadSnacksDto } from './dto/load-snacks.dto';
+import { type BuySnackDto, buySnackSchema } from './dto/buy-snack.dto';
+import { type CreateSnackMachineDto, createSnackMachineSchema } from './dto/create-snack-machine.dto';
+import { type InsertMoneyDto, insertMoneySchema } from './dto/insert-money.dto';
+import { type LoadSnacksDto, loadSnacksSchema } from './dto/load-snacks.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
 import { SnackMachineDto } from './dto/snack-machine.dto';
 import { GetMoneyInMachineQuery } from './queries/impl/get-money-in-machine.query';
@@ -47,7 +47,9 @@ export class SnackMachineController {
   @ApiOperation({ summary: 'Create snack machine', description: 'Creates snack machine' })
   @ApiCreatedResponse({ type: SnackMachineDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  async create(@Body() requestDto: CreateSnackMachineDto): Promise<SnackMachineDto> {
+  async create(
+    @Body({ schema: createSnackMachineSchema }) requestDto: CreateSnackMachineDto,
+  ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new CreateSnackMachineCommand(requestDto.id));
     return this.queryBus.execute(new GetSnackMachineQuery(requestDto.id));
   }
@@ -67,7 +69,7 @@ export class SnackMachineController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async insertMoney(
-    @Body() requestDto: InsertMoneyDto,
+    @Body({ schema: insertMoneySchema }) requestDto: InsertMoneyDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new InsertMoneyCommand(id, new Money(...requestDto.money)));
@@ -81,7 +83,7 @@ export class SnackMachineController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async buySnack(
-    @Body() buySnackDto: BuySnackDto,
+    @Body({ schema: buySnackSchema }) buySnackDto: BuySnackDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new BuySnackCommand(id, buySnackDto.position));
@@ -106,7 +108,7 @@ export class SnackMachineController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async loadSnacks(
-    @Body() requestDto: LoadSnacksDto,
+    @Body({ schema: loadSnacksSchema }) requestDto: LoadSnacksDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new LoadSnacksCommand(id, requestDto.position, requestDto.quantity));

@@ -52,13 +52,12 @@
     "amqp-connection-manager": "catalog:",
     "amqplib": "catalog:",
     "bullmq": "6.7.3",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
     "currency.js": "catalog:",
     "ejson": "catalog:",
     "ioredis": "5.11.1",
     "reflect-metadata": "catalog:",
-    "rxjs": "catalog:"
+    "rxjs": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@mikro-orm/cli": "catalog:",

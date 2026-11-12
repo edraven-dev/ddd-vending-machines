@@ -6,75 +6,81 @@ exports[`SnackMachineController - e2e > GET /:id/money-in-machine > should retur
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is a non-integer number 1`] = `
 [
-  "position must be an integer number",
+  "position: Invalid input: expected int, received number",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is above 3 1`] = `
 [
-  "position must not be greater than 3",
+  "position: Too big: expected number to be <=3",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is below 1 1`] = `
 [
-  "position must not be less than 1",
+  "position: Too small: expected number to be >=1",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is not a integer 1`] = `
 [
-  "position must not be greater than 3",
-  "position must not be less than 1",
-  "position must be an integer number",
+  "position: Invalid input: expected number, received string",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when quantity is a non-integer number 1`] = `
 [
-  "quantity must be an integer number",
+  "quantity: Invalid input: expected int, received number",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when quantity is above 20 1`] = `
 [
-  "quantity must not be greater than 20",
+  "quantity: Too big: expected number to be <=20",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when quantity is below 1 1`] = `
 [
-  "quantity must not be less than 1",
+  "quantity: Too small: expected number to be >=1",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when quantity is not a integer 1`] = `
 [
-  "quantity must not be greater than 20",
-  "quantity must not be less than 1",
-  "quantity must be an integer number",
+  "quantity: Invalid input: expected number, received string",
 ]
 `;
 
 exports[`SnackMachineController - e2e > POST / > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
 [
-  "id must be a UUID",
+  "id: Invalid UUID",
 ]
 `;
 
 exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 
+exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when payload is a non-integer number 1`] = `
+[
+  "position: Invalid input: expected int, received number",
+]
+`;
+
+exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when payload is below 1 1`] = `
+[
+  "position: Too small: expected number to be >=1",
+]
+`;
+
 exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when payload is not an integer 1`] = `
 [
-  "position must not be greater than 3",
-  "position must not be less than 1",
-  "position must be an integer number",
+  "position: Invalid input: expected number, received string",
 ]
 `;
 
 exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when payload is not an integer between 1 and 3 1`] = `
 [
-  "position must not be greater than 3",
+  "position: Too big: expected number to be <=3",
 ]
 `;
 
@@ -82,38 +88,44 @@ exports[`SnackMachineController - e2e > POST /:id/return-money > should return 4
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
 
+exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is an array of non-integer numbers 1`] = `
+[
+  "money.0: Invalid input: expected int, received number",
+]
+`;
+
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is an array with <6 elements 1`] = `
 [
-  "money must contain at least 6 elements",
+  "money: Too small: expected array to have >=6 items",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is an array with >6 elements 1`] = `
 [
-  "money must contain no more than 6 elements",
+  "money: Too big: expected array to have <=6 items",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is not an array 1`] = `
 [
-  "money must contain no more than 6 elements",
-  "money must contain at least 6 elements",
-  "money must be an array",
-  "each value in money must be one of the following values: 0, 1",
-  "each value in money must be an integer number",
+  "money: Invalid input: expected tuple, received string",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is not an array of 0 and 1 integers 1`] = `
 [
-  "each value in money must be one of the following values: 0, 1",
-  "each value in money must be an integer number",
+  "money.0: Too small: expected number to be >=0",
+  "money.5: Too big: expected number to be <=1",
 ]
 `;
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is not an array of integers 1`] = `
 [
-  "each value in money must be one of the following values: 0, 1",
-  "each value in money must be an integer number",
+  "money.0: Invalid input: expected number, received string",
+  "money.1: Invalid input: expected number, received string",
+  "money.2: Invalid input: expected number, received string",
+  "money.3: Invalid input: expected number, received string",
+  "money.4: Invalid input: expected number, received string",
+  "money.5: Invalid input: expected number, received string",
 ]
 `;

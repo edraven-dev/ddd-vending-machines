@@ -20,11 +20,10 @@
     "@nestjs/core": "catalog:",
     "@nestjs/cqrs": "catalog:",
     "@nestjs/swagger": "catalog:",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
     "currency.js": "catalog:",
     "reflect-metadata": "catalog:",
-    "rxjs": "catalog:"
+    "rxjs": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/express": "catalog:",

@@ -11,7 +11,7 @@ import {
 import { CreateHeadOfficeCommand } from './commands/impl/create-head-office.command';
 import { LoadCashToAtmCommand } from './commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from './commands/impl/unload-cash-from-snack-machine.command';
-import { CreateHeadOfficeDto } from './dto/create-head-office.dto';
+import { type CreateHeadOfficeDto, createHeadOfficeSchema } from './dto/create-head-office.dto';
 import { HeadOfficeDto } from './dto/head-office.dto';
 import { GetHeadOfficeQuery } from './queries/impl/get-head-office.query';
 
@@ -35,7 +35,7 @@ export class ManagementController {
   @ApiOperation({ summary: 'Create head office', description: 'Creates head office' })
   @ApiCreatedResponse({ type: HeadOfficeDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  async create(@Body() requestDto: CreateHeadOfficeDto): Promise<HeadOfficeDto> {
+  async create(@Body({ schema: createHeadOfficeSchema }) requestDto: CreateHeadOfficeDto): Promise<HeadOfficeDto> {
     await this.commandBus.execute(new CreateHeadOfficeCommand(requestDto.id));
     return this.queryBus.execute(new GetHeadOfficeQuery(requestDto.id));
   }

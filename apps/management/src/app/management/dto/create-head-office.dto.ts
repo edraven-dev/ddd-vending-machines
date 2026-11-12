@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { z } from 'zod';
 
-export class CreateHeadOfficeDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  @IsUUID('4')
-  readonly id!: string;
-}
+export const createHeadOfficeSchema = z
+  .object({
+    id: z.uuidv4(),
+  })
+  .meta({ id: 'CreateHeadOfficeDto' });
+
+export type CreateHeadOfficeDto = z.infer<typeof createHeadOfficeSchema>;

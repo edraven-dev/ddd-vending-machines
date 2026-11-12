@@ -1,10 +1,10 @@
-import { Provider, ValidationPipe } from '@nestjs/common';
+import { Provider, StandardSchemaValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { InvalidOperationExceptionFilter } from './invalid-operation-exception.filter';
 
 export const ValidationProvider: Provider = {
   provide: APP_PIPE,
-  useValue: new ValidationPipe({ transform: true, whitelist: true }),
+  useClass: StandardSchemaValidationPipe,
 };
 
 export const InvalidOperationExceptionFilterProvider: Provider = {

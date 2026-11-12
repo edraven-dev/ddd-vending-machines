@@ -1,8 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
-import { ValidationProvider } from '@vending-machines/shared';
+import type { AtmProtoService } from '@vending-machines/proto';
+import { Money, ValidationProvider } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { lastValueFrom } from 'rxjs';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AtmController } from '../../../app/atm/atm.controller';
@@ -18,8 +23,12 @@ describe('AtmController - e2e', () => {
   const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
   const atmServiceMock = { loadMoney: vi.fn<AtmService['loadMoney']>() };
   const testEndpoint = (id: string) => `/atm/${id}`;
+  const protoDir = dirname(createRequire(import.meta.url).resolve('@vending-machines/proto/package.json'));
+  const grpcOptions = { package: 'atm', protoPath: join(protoDir, 'src/lib/atm/atm.proto'), url: 'localhost:50151' };
 
   let app: INestApplication;
+  let grpcClient: ClientGrpcProxy;
+  let atmProtoService: AtmProtoService;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -33,10 +42,19 @@ describe('AtmController - e2e', () => {
     }).compile();
 
     app = module.createNestApplication();
+    app.connectMicroservice<MicroserviceOptions>(
+      { transport: Transport.GRPC, options: grpcOptions },
+      { inheritAppConfig: true },
+    );
+    await app.startAllMicroservices();
     await app.init();
+
+    grpcClient = ClientProxyFactory.create({ transport: Transport.GRPC, options: grpcOptions });
+    atmProtoService = grpcClient.getService<AtmProtoService>('AtmProtoService');
   });
 
   afterAll(async () => {
+    grpcClient.close();
     await app.close();
   });
 
@@ -101,6 +119,24 @@ describe('AtmController - e2e', () => {
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('gRPC LoadMoney', () => {
+    it('should load money', async () => {
+      const id = randomUUID();
+
+      await lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }));
+
+      expect(atmServiceMock.loadMoney).toHaveBeenCalledWith(id, new Money(1, 1, 1, 1, 1, 1));
+    });
+
+    it('should reject the payload when id is not a valid uuid', async () => {
+      await expect(
+        lastValueFrom(atmProtoService.loadMoney({ id: 'not-valid-uuid', money: [1, 1, 1, 1, 1, 1] })),
+      ).rejects.toThrow('Internal server error');
+
+      expect(atmServiceMock.loadMoney).not.toHaveBeenCalledWith('not-valid-uuid', expect.anything());
     });
   });
 });
