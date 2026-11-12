@@ -1,17 +1,16 @@
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsDefined, isCurrency } from 'class-validator';
 import Currency from 'currency.js';
+import { z } from 'zod';
 
-export class TakeMoneyDto {
-  @ApiProperty({ type: String, example: '1.00' })
-  @IsDefined()
-  @Transform(({ value }) => {
-    if (!isCurrency(value)) {
-      throw new BadRequestException('amount must be a valid currency');
-    }
-    return new Currency(value);
+const CURRENCY_PATTERN = /^(?=.*\d)-?\$?(0|[1-9]\d*|[1-9]\d{0,2}(,\d{3})*)?(\.\d{2})?$/;
+
+export const takeMoneySchema = z
+  .object({
+    amount: z
+      .string()
+      .regex(CURRENCY_PATTERN, 'Invalid currency')
+      .meta({ examples: ['1.00'] })
+      .transform((amount) => new Currency(amount)),
   })
-  amount!: Currency;
-}
+  .meta({ id: 'TakeMoneyDto' });
+
+export type TakeMoneyDto = z.infer<typeof takeMoneySchema>;

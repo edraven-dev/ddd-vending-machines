@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { z } from 'zod';
 
-export class CreateSnackMachineDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  @IsUUID('4')
-  readonly id!: string;
-}
+export const createSnackMachineSchema = z
+  .object({
+    id: z.uuidv4(),
+  })
+  .meta({ id: 'CreateSnackMachineDto' });
+
+export type CreateSnackMachineDto = z.infer<typeof createSnackMachineSchema>;

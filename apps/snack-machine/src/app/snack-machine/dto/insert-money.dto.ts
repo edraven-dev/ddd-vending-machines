@@ -1,13 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import type { CoinsAndNotes } from '@vending-machines/shared';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt } from 'class-validator';
+import { z } from 'zod';
 
-export class InsertMoneyDto {
-  @ApiProperty({ type: Number, isArray: true, minLength: 6, maxLength: 6, example: [0, 0, 0, 0, 0, 1] })
-  @IsInt({ each: true })
-  @IsIn([0, 1], { each: true })
-  @IsArray()
-  @ArrayMinSize(6)
-  @ArrayMaxSize(6)
-  readonly money!: CoinsAndNotes;
-}
+const pieceCount = z.int().min(0).max(1);
+
+export const insertMoneySchema = z
+  .object({
+    money: z
+      .tuple([pieceCount, pieceCount, pieceCount, pieceCount, pieceCount, pieceCount])
+      .meta({ examples: [[0, 0, 0, 0, 0, 1]] }),
+  })
+  .meta({ id: 'InsertMoneyDto' });
+
+export type InsertMoneyDto = z.infer<typeof insertMoneySchema>;

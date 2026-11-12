@@ -37,8 +37,6 @@ catalog:
   '@vitest/coverage-v8': 5.1.0
   amqp-connection-manager: 5.0.1
   amqplib: 2.3.1
-  class-transformer: 0.5.1
-  class-validator: 0.15.1
   currency.js: 2.0.4
   ejson: 2.2.3
   oxlint: 1.93.0
@@ -51,6 +49,7 @@ catalog:
   typescript: 6.0.3
   vite: 8.3.7
   vitest: 5.1.0
+  zod: 4.6.7
 
 allowBuilds:
   '@parcel/watcher': true

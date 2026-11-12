@@ -1,8 +1,10 @@
+import { status } from '@grpc/grpc-js';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { SnackMachineProtoService } from '@vending-machines/proto';
-import { UnloadMoneyDto } from '@vending-machines/shared';
+import { InvalidOperationException, UnloadMoneyDto } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SnackMachineProtoServiceClient } from '../../../../app/management/proto-clients/snack-machine-proto-service.client';
 
 describe('SnackMachineProtoServiceClient', () => {
@@ -38,6 +40,34 @@ describe('SnackMachineProtoServiceClient', () => {
       const result = await protoClient.unloadMoney(id);
 
       expect(result).toEqual(dto);
+    });
+
+    it('should rethrow FAILED_PRECONDITION as InvalidOperationException', async () => {
+      const details = 'Cannot unload money during transaction';
+      service.unloadMoney.mockReturnValueOnce(throwError(() => ({ code: status.FAILED_PRECONDITION, details })));
+
+      const result = protoClient.unloadMoney(randomUUID());
+
+      await expect(result).rejects.toBeInstanceOf(InvalidOperationException);
+      await expect(result).rejects.toThrow(details);
+    });
+
+    it('should rethrow NOT_FOUND as NotFoundException', async () => {
+      const id = randomUUID();
+      const details = `Snack machine with id ${id} not found`;
+      service.unloadMoney.mockReturnValueOnce(throwError(() => ({ code: status.NOT_FOUND, details })));
+
+      const result = protoClient.unloadMoney(id);
+
+      await expect(result).rejects.toBeInstanceOf(NotFoundException);
+      await expect(result).rejects.toThrow(details);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.unloadMoney.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.unloadMoney(randomUUID())).rejects.toBe(error);
     });
   });
 });

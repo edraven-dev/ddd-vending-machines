@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsUUID } from 'class-validator';
 import Currency from 'currency.js';
-import type { CoinsAndNotes } from './money';
+import { z } from 'zod';
 
 export class MoneyDto {
   @ApiProperty({ type: String, default: '$1.00' })
@@ -12,15 +11,14 @@ export class MoneyDto {
   }
 }
 
-export class UnloadMoneyDto {
-  @IsInt({ each: true })
-  @IsArray()
-  @ArrayMinSize(6)
-  @ArrayMaxSize(6)
-  readonly money!: CoinsAndNotes;
-}
+export const unloadMoneySchema = z.object({
+  money: z.tuple([z.int(), z.int(), z.int(), z.int(), z.int(), z.int()]),
+});
 
-export class LoadMoneyDto extends UnloadMoneyDto {
-  @IsUUID('4')
-  readonly id!: string;
-}
+export type UnloadMoneyDto = z.infer<typeof unloadMoneySchema>;
+
+export const loadMoneySchema = unloadMoneySchema.extend({
+  id: z.uuidv4(),
+});
+
+export type LoadMoneyDto = z.infer<typeof loadMoneySchema>;

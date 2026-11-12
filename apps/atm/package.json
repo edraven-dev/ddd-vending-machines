@@ -50,12 +50,11 @@
     "@vending-machines/shared": "workspace:*",
     "amqp-connection-manager": "catalog:",
     "amqplib": "catalog:",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
     "currency.js": "catalog:",
     "ejson": "catalog:",
     "reflect-metadata": "catalog:",
-    "rxjs": "catalog:"
+    "rxjs": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@mikro-orm/cli": "catalog:",

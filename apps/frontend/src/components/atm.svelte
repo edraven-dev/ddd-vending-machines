@@ -25,7 +25,9 @@
       await callApi('POST', 'take-money', { amount });
       success(`Money withdrawn!`);
     } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
-      failure(err.response.data.message);
+      failure(
+        Array.isArray(err.response.data.message) ? err.response.data.message.join('\r\n') : err.response.data.message,
+      );
     }
   };
 </script>

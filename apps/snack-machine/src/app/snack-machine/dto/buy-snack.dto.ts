@@ -1,10 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Max, Min } from 'class-validator';
+import { z } from 'zod';
 
-export class BuySnackDto {
-  @ApiProperty({ type: Number, minimum: 1, maximum: 3, example: 1 })
-  @IsInt()
-  @Min(1)
-  @Max(3)
-  readonly position!: number;
-}
+export const buySnackSchema = z
+  .object({
+    position: z
+      .int()
+      .min(1)
+      .max(3)
+      .meta({ examples: [1] }),
+  })
+  .meta({ id: 'BuySnackDto' });
+
+export type BuySnackDto = z.infer<typeof buySnackSchema>;

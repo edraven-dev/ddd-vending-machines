@@ -1,8 +1,19 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
-import { ValidationProvider } from '@vending-machines/shared';
+import type { AtmProtoService } from '@vending-machines/proto';
+import {
+  HttpExceptionFilterProvider,
+  InvalidOperationExceptionFilterProvider,
+  Money,
+  ValidationProvider,
+} from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { lastValueFrom } from 'rxjs';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AtmController } from '../../../app/atm/atm.controller';
@@ -18,14 +29,20 @@ describe('AtmController - e2e', () => {
   const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
   const atmServiceMock = { loadMoney: vi.fn<AtmService['loadMoney']>() };
   const testEndpoint = (id: string) => `/atm/${id}`;
+  const protoDir = dirname(createRequire(import.meta.url).resolve('@vending-machines/proto/package.json'));
+  const grpcOptions = { package: 'atm', protoPath: join(protoDir, 'src/lib/atm/atm.proto'), url: 'localhost:50151' };
 
   let app: INestApplication;
+  let grpcClient: ClientGrpcProxy;
+  let atmProtoService: AtmProtoService;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       controllers: [AtmController],
       providers: [
         ValidationProvider,
+        InvalidOperationExceptionFilterProvider,
+        HttpExceptionFilterProvider,
         { provide: QueryBus, useValue: queryBusMock },
         { provide: CommandBus, useValue: commandBusMock },
         { provide: AtmService, useValue: atmServiceMock },
@@ -33,10 +50,19 @@ describe('AtmController - e2e', () => {
     }).compile();
 
     app = module.createNestApplication();
+    app.connectMicroservice<MicroserviceOptions>(
+      { transport: Transport.GRPC, options: grpcOptions },
+      { inheritAppConfig: true },
+    );
+    await app.startAllMicroservices();
     await app.init();
+
+    grpcClient = ClientProxyFactory.create({ transport: Transport.GRPC, options: grpcOptions });
+    atmProtoService = grpcClient.getService<AtmProtoService>('AtmProtoService');
   });
 
   afterAll(async () => {
+    grpcClient.close();
     await app.close();
   });
 
@@ -101,6 +127,40 @@ describe('AtmController - e2e', () => {
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('gRPC LoadMoney', () => {
+    it('should load money', async () => {
+      const id = randomUUID();
+
+      await lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }));
+
+      expect(atmServiceMock.loadMoney).toHaveBeenCalledWith(id, new Money(1, 1, 1, 1, 1, 1));
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(
+        lastValueFrom(atmProtoService.loadMoney({ id: 'not-valid-uuid', money: [1, 1, 1, 1, 1, 1] })),
+      ).rejects.toMatchObject({ code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' });
+
+      expect(atmServiceMock.loadMoney).not.toHaveBeenCalledWith('not-valid-uuid', expect.anything());
+    });
+
+    it('should fail with NOT_FOUND when the ATM does not exist', async () => {
+      const id = randomUUID();
+      atmServiceMock.loadMoney.mockRejectedValueOnce(new NotFoundException(`Atm with id ${id} not found`));
+
+      await expect(lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }))).rejects.toMatchObject({
+        code: status.NOT_FOUND,
+        details: `Atm with id ${id} not found`,
+      });
+    });
+
+    it('should fail with FAILED_PRECONDITION when the domain rejects the money', async () => {
+      await expect(
+        lastValueFrom(atmProtoService.loadMoney({ id: randomUUID(), money: [-1, 0, 0, 0, 0, 0] })),
+      ).rejects.toMatchObject({ code: status.FAILED_PRECONDITION, details: 'Money components cannot be negative' });
     });
   });
 });

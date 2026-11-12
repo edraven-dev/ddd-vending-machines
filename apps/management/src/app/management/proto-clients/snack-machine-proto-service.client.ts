@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { SnackMachineProtoService } from '@vending-machines/proto';
 import { UnloadMoneyDto } from '@vending-machines/shared';
 import { lastValueFrom } from 'rxjs';
+import { mapGrpcErrors } from './map-grpc-errors';
 
 @Injectable()
 export class SnackMachineProtoServiceClient {
@@ -12,6 +13,6 @@ export class SnackMachineProtoServiceClient {
   }
 
   unloadMoney(id: string): Promise<UnloadMoneyDto> {
-    return lastValueFrom(this.service.unloadMoney({ id }));
+    return lastValueFrom(this.service.unloadMoney({ id }).pipe(mapGrpcErrors));
   }
 }

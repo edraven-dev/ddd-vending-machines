@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -9,13 +9,13 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { LoadMoneyDto, Money } from '@vending-machines/shared';
+import { type LoadMoneyDto, loadMoneySchema, Money } from '@vending-machines/shared';
 import { AtmService } from './atm.service';
 import { CreateAtmCommand } from './commands/impl/create-atm.command';
 import { TakeMoneyCommand } from './commands/impl/take-money.command';
 import { AtmDto } from './dto/atm.dto';
-import { CreateAtmDto } from './dto/create-atm.dto';
-import { TakeMoneyDto } from './dto/take-money.dto';
+import { type CreateAtmDto, createAtmSchema } from './dto/create-atm.dto';
+import { type TakeMoneyDto, takeMoneySchema } from './dto/take-money.dto';
 import { GetAtmQuery } from './queries/impl/get-atm.query';
 
 @ApiTags('ATM')
@@ -40,7 +40,7 @@ export class AtmController {
   @ApiOperation({ summary: 'Create ATM', description: 'Creates ATM' })
   @ApiCreatedResponse({ type: AtmDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  async create(@Body() requestDto: CreateAtmDto): Promise<void> {
+  async create(@Body({ schema: createAtmSchema }) requestDto: CreateAtmDto): Promise<void> {
     await this.commandBus.execute(new CreateAtmCommand(requestDto.id));
     return this.queryBus.execute(new GetAtmQuery(requestDto.id));
   }
@@ -52,7 +52,7 @@ export class AtmController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   @ApiNotFoundResponse({ description: 'ATM not found' })
   async takeMoney(
-    @Body() requestDto: TakeMoneyDto,
+    @Body({ schema: takeMoneySchema }) requestDto: TakeMoneyDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<AtmDto> {
     await this.commandBus.execute(new TakeMoneyCommand(id, requestDto.amount));
@@ -60,7 +60,7 @@ export class AtmController {
   }
 
   @GrpcMethod('AtmProtoService', 'LoadMoney')
-  loadMoney(requestDto: LoadMoneyDto): Promise<void> {
+  loadMoney(@Payload({ schema: loadMoneySchema }) requestDto: LoadMoneyDto): Promise<void> {
     return this.atmService.loadMoney(requestDto.id, new Money(...requestDto.money));
   }
 }
