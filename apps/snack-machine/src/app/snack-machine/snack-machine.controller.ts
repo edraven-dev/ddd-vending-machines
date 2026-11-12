@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -21,6 +21,7 @@ import { type InsertMoneyDto, insertMoneySchema } from './dto/insert-money.dto';
 import { type LoadSnacksDto, loadSnacksSchema } from './dto/load-snacks.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
 import { SnackMachineDto } from './dto/snack-machine.dto';
+import { type UnloadMoneyRequestDto, unloadMoneyRequestSchema } from './dto/unload-money-request.dto';
 import { GetMoneyInMachineQuery } from './queries/impl/get-money-in-machine.query';
 import { GetSnackMachineQuery } from './queries/impl/get-snack-machine.query';
 import { SnackMachineService } from './snack-machine.service';
@@ -116,7 +117,7 @@ export class SnackMachineController {
   }
 
   @GrpcMethod('SnackMachineProtoService', 'UnloadMoney')
-  unloadMoney({ id }: { id: string }): Promise<UnloadMoneyDto> {
+  unloadMoney(@Payload({ schema: unloadMoneyRequestSchema }) { id }: UnloadMoneyRequestDto): Promise<UnloadMoneyDto> {
     return this.snackMachineService.unloadMoney(id);
   }
 }

@@ -934,6 +934,9 @@ importers:
 
   libs/shared:
     dependencies:
+      '@grpc/grpc-js':
+        specifier: 'catalog:'
+        version: 1.14.7
       '@mikro-orm/core':
         specifier: 'catalog:'
         version: 7.2.8(dataloader@2.2.3)

@@ -1,8 +1,19 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
-import { ValidationProvider } from '@vending-machines/shared';
+import type { SnackMachineProtoService } from '@vending-machines/proto';
+import {
+  HttpExceptionFilterProvider,
+  InvalidOperationException,
+  InvalidOperationExceptionFilterProvider,
+  ValidationProvider,
+} from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { lastValueFrom } from 'rxjs';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
@@ -13,14 +24,24 @@ describe('SnackMachineController - e2e', () => {
   const commandBusMock = { execute: vi.fn<CommandBus['execute']>() };
   const snackMachineServiceMock = { unloadMoney: vi.fn<SnackMachineService['unloadMoney']>() };
   const testEndpoint = (id: string) => `/snack-machine/${id}`;
+  const protoDir = dirname(createRequire(import.meta.url).resolve('@vending-machines/proto/package.json'));
+  const grpcOptions = {
+    package: 'snack_machine',
+    protoPath: join(protoDir, 'src/lib/snack-machine/snack-machine.proto'),
+    url: 'localhost:50152',
+  };
 
   let app: INestApplication;
+  let grpcClient: ClientGrpcProxy;
+  let snackMachineProtoService: SnackMachineProtoService;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       controllers: [SnackMachineController],
       providers: [
         ValidationProvider,
+        InvalidOperationExceptionFilterProvider,
+        HttpExceptionFilterProvider,
         { provide: QueryBus, useValue: queryBusMock },
         { provide: CommandBus, useValue: commandBusMock },
         { provide: SnackMachineService, useValue: snackMachineServiceMock },
@@ -28,10 +49,19 @@ describe('SnackMachineController - e2e', () => {
     }).compile();
 
     app = module.createNestApplication();
+    app.connectMicroservice<MicroserviceOptions>(
+      { transport: Transport.GRPC, options: grpcOptions },
+      { inheritAppConfig: true },
+    );
+    await app.startAllMicroservices();
     await app.init();
+
+    grpcClient = ClientProxyFactory.create({ transport: Transport.GRPC, options: grpcOptions });
+    snackMachineProtoService = grpcClient.getService<SnackMachineProtoService>('SnackMachineProtoService');
   });
 
   afterAll(async () => {
+    grpcClient.close();
     await app.close();
   });
 
@@ -317,6 +347,48 @@ describe('SnackMachineController - e2e', () => {
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
+    });
+  });
+
+  describe('gRPC UnloadMoney', () => {
+    it('should unload money', async () => {
+      const id = randomUUID();
+      snackMachineServiceMock.unloadMoney.mockResolvedValueOnce({ money: [1, 1, 1, 1, 1, 1] });
+
+      const result = await lastValueFrom(snackMachineProtoService.unloadMoney({ id }));
+
+      expect(result).toEqual({ money: [1, 1, 1, 1, 1, 1] });
+      expect(snackMachineServiceMock.unloadMoney).toHaveBeenCalledWith(id);
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(lastValueFrom(snackMachineProtoService.unloadMoney({ id: 'not-valid-uuid' }))).rejects.toMatchObject(
+        { code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' },
+      );
+
+      expect(snackMachineServiceMock.unloadMoney).not.toHaveBeenCalled();
+    });
+
+    it('should fail with NOT_FOUND when the snack machine does not exist', async () => {
+      const id = randomUUID();
+      snackMachineServiceMock.unloadMoney.mockRejectedValueOnce(
+        new NotFoundException(`Snack machine with id ${id} not found`),
+      );
+
+      await expect(lastValueFrom(snackMachineProtoService.unloadMoney({ id }))).rejects.toMatchObject({
+        code: status.NOT_FOUND,
+        details: `Snack machine with id ${id} not found`,
+      });
+    });
+
+    it('should fail with FAILED_PRECONDITION when the domain rejects the operation', async () => {
+      const message = 'Cannot unload money during transaction';
+      snackMachineServiceMock.unloadMoney.mockRejectedValueOnce(new InvalidOperationException(message));
+
+      await expect(lastValueFrom(snackMachineProtoService.unloadMoney({ id: randomUUID() }))).rejects.toMatchObject({
+        code: status.FAILED_PRECONDITION,
+        details: message,
+      });
     });
   });
 });

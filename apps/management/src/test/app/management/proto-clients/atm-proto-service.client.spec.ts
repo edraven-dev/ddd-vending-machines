@@ -1,8 +1,10 @@
+import { status } from '@grpc/grpc-js';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { AtmProtoService } from '@vending-machines/proto';
-import { CoinsAndNotes, LoadMoneyDto } from '@vending-machines/shared';
+import { CoinsAndNotes, InvalidOperationException, LoadMoneyDto } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AtmProtoServiceClient } from '../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('AtmProtoServiceClient', () => {
@@ -31,6 +33,34 @@ describe('AtmProtoServiceClient', () => {
       await protoClient.loadMoney(dto);
 
       expect(service.loadMoney).toHaveBeenCalledWith({ id, money });
+    });
+
+    it('should rethrow FAILED_PRECONDITION as InvalidOperationException', async () => {
+      const details = 'Money components cannot be negative';
+      service.loadMoney.mockReturnValueOnce(throwError(() => ({ code: status.FAILED_PRECONDITION, details })));
+
+      const result = protoClient.loadMoney({ id: randomUUID(), money: [1, 1, 1, 1, 1, 1] });
+
+      await expect(result).rejects.toBeInstanceOf(InvalidOperationException);
+      await expect(result).rejects.toThrow(details);
+    });
+
+    it('should rethrow NOT_FOUND as NotFoundException', async () => {
+      const id = randomUUID();
+      const details = `Atm with id ${id} not found`;
+      service.loadMoney.mockReturnValueOnce(throwError(() => ({ code: status.NOT_FOUND, details })));
+
+      const result = protoClient.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] });
+
+      await expect(result).rejects.toBeInstanceOf(NotFoundException);
+      await expect(result).rejects.toThrow(details);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.loadMoney.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.loadMoney({ id: randomUUID(), money: [1, 1, 1, 1, 1, 1] })).rejects.toBe(error);
     });
   });
 });

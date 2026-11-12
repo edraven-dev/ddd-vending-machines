@@ -2,6 +2,7 @@ import { Global, MiddlewareConsumer, Module, NestModule, Provider } from '@nestj
 import { EventsModule } from '@vending-machines/events';
 import {
   APP_NAME_TOKEN,
+  HttpExceptionFilterProvider,
   InvalidOperationExceptionFilterProvider,
   LoggerMiddleware,
   ValidationProvider,
@@ -14,7 +15,12 @@ const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'ATM' };
 @Global()
 @Module({
   imports: [DatabaseModule, EventsModule, AtmModule],
-  providers: [AppNameProvider, ValidationProvider, InvalidOperationExceptionFilterProvider],
+  providers: [
+    AppNameProvider,
+    ValidationProvider,
+    InvalidOperationExceptionFilterProvider,
+    HttpExceptionFilterProvider,
+  ],
   exports: [AppNameProvider],
 })
 export class AppModule implements NestModule {

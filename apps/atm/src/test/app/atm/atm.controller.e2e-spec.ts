@@ -1,9 +1,15 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
 import type { AtmProtoService } from '@vending-machines/proto';
-import { Money, ValidationProvider } from '@vending-machines/shared';
+import {
+  HttpExceptionFilterProvider,
+  InvalidOperationExceptionFilterProvider,
+  Money,
+  ValidationProvider,
+} from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
@@ -35,6 +41,8 @@ describe('AtmController - e2e', () => {
       controllers: [AtmController],
       providers: [
         ValidationProvider,
+        InvalidOperationExceptionFilterProvider,
+        HttpExceptionFilterProvider,
         { provide: QueryBus, useValue: queryBusMock },
         { provide: CommandBus, useValue: commandBusMock },
         { provide: AtmService, useValue: atmServiceMock },
@@ -131,12 +139,28 @@ describe('AtmController - e2e', () => {
       expect(atmServiceMock.loadMoney).toHaveBeenCalledWith(id, new Money(1, 1, 1, 1, 1, 1));
     });
 
-    it('should reject the payload when id is not a valid uuid', async () => {
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
       await expect(
         lastValueFrom(atmProtoService.loadMoney({ id: 'not-valid-uuid', money: [1, 1, 1, 1, 1, 1] })),
-      ).rejects.toThrow('Internal server error');
+      ).rejects.toMatchObject({ code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' });
 
       expect(atmServiceMock.loadMoney).not.toHaveBeenCalledWith('not-valid-uuid', expect.anything());
+    });
+
+    it('should fail with NOT_FOUND when the ATM does not exist', async () => {
+      const id = randomUUID();
+      atmServiceMock.loadMoney.mockRejectedValueOnce(new NotFoundException(`Atm with id ${id} not found`));
+
+      await expect(lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }))).rejects.toMatchObject({
+        code: status.NOT_FOUND,
+        details: `Atm with id ${id} not found`,
+      });
+    });
+
+    it('should fail with FAILED_PRECONDITION when the domain rejects the money', async () => {
+      await expect(
+        lastValueFrom(atmProtoService.loadMoney({ id: randomUUID(), money: [-1, 0, 0, 0, 0, 0] })),
+      ).rejects.toMatchObject({ code: status.FAILED_PRECONDITION, details: 'Money components cannot be negative' });
     });
   });
 });
