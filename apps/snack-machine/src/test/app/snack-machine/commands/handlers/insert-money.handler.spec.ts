@@ -1,15 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import { InsertMoneyHandler } from '../../../../../app/snack-machine/commands/handlers/insert-money.handler';
+import { InsertMoneyCommand } from '../../../../../app/snack-machine/commands/impl/insert-money.command';
 import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('InsertMoneyHandler', () => {
   const snackMachine = {
-    id: randomUUID(),
+    id: Id.generate(),
     insertMoney: vi.fn<SnackMachine['insertMoney']>(),
     commit: vi.fn<SnackMachine['commit']>(),
   };
@@ -39,7 +39,7 @@ describe('InsertMoneyHandler', () => {
       const id = snackMachine.id;
       const money = Money.Dollar;
 
-      await handler.execute({ id, money });
+      await handler.execute(new InsertMoneyCommand(id, money));
 
       expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
@@ -49,14 +49,14 @@ describe('InsertMoneyHandler', () => {
       const id = snackMachine.id;
       const money = Money.Dollar;
 
-      await expect(handler.execute({ id, money })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new InsertMoneyCommand(id, money))).rejects.toThrow(NotFoundException);
     });
 
     it('should call snackMachine.insertMoney', async () => {
       const id = snackMachine.id;
       const money = Money.Dollar;
 
-      await handler.execute({ id, money });
+      await handler.execute(new InsertMoneyCommand(id, money));
 
       expect(snackMachine.insertMoney).toHaveBeenCalled();
     });
@@ -65,7 +65,7 @@ describe('InsertMoneyHandler', () => {
       const id = snackMachine.id;
       const money = Money.Dollar;
 
-      await handler.execute({ id, money });
+      await handler.execute(new InsertMoneyCommand(id, money));
 
       expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
@@ -74,7 +74,7 @@ describe('InsertMoneyHandler', () => {
       const id = snackMachine.id;
       const money = Money.Dollar;
 
-      await handler.execute({ id, money });
+      await handler.execute(new InsertMoneyCommand(id, money));
 
       expect(snackMachine.commit).toHaveBeenCalled();
     });

@@ -2,7 +2,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
-import { UnloadMoneyDto } from '@vending-machines/shared';
+import type { Id, UnloadMoneyDto } from '@vending-machines/shared';
 import { SnackMachineRepository } from './snack-machine.repository.interface';
 
 @Injectable()
@@ -14,10 +14,10 @@ export class SnackMachineService {
   ) {}
 
   @CreateRequestContext()
-  async unloadMoney(id: string): Promise<UnloadMoneyDto> {
+  async unloadMoney(id: Id): Promise<UnloadMoneyDto> {
     const existingSnackMachine = await this.snackMachineRepository.findOne(id);
     if (!existingSnackMachine) {
-      throw new NotFoundException(`Snack machine with id ${id} not found`);
+      throw new NotFoundException(`Snack machine with id ${id.value} not found`);
     }
 
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);

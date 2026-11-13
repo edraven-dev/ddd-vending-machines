@@ -82,6 +82,10 @@ describe('Snack Pile', () => {
 
       expect(result).not.toBe(snackPile);
     });
+
+    it('should throw when the pile has no snack', () => {
+      expect(() => SnackPile.Empty.addQuantity(5)).toThrow('Cannot add quantity to an empty snack pile');
+    });
   });
 
   describe('#equals', () => {

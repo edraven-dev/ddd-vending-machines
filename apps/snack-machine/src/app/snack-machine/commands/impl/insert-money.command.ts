@@ -1,8 +1,11 @@
-import { Money } from '@vending-machines/shared';
+import { Command } from '@nestjs/cqrs';
+import type { Id, Money } from '@vending-machines/shared';
 
-export class InsertMoneyCommand {
+export class InsertMoneyCommand extends Command<void> {
   constructor(
-    public readonly id: string,
+    public readonly id: Id,
     public readonly money: Money,
-  ) {}
+  ) {
+    super();
+  }
 }

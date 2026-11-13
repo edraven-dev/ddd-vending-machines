@@ -1,21 +1,20 @@
-import { EntityDTO } from '@mikro-orm/core';
 import { Snack } from '../../snack/snack';
-import SnackEntity from './snack.entity';
+import type SnackEntity from './snack.entity';
 
 export class SnackMapper {
   // oxlint-disable-next-line no-empty-function
   private constructor() {}
 
-  static toDomain(entity: EntityDTO<SnackEntity>): Snack {
+  static toDomain(entity: Pick<SnackEntity, 'id'>): Snack {
     switch (entity.id) {
-      case Snack.Chocolate.id:
+      case Snack.Chocolate.id.value:
         return Snack.Chocolate;
-      case Snack.Soda.id:
+      case Snack.Soda.id.value:
         return Snack.Soda;
-      case Snack.Gum.id:
+      case Snack.Gum.id.value:
         return Snack.Gum;
       default:
-        return Snack.None;
+        throw new Error(`Unknown snack ${entity.id}`);
     }
   }
 }

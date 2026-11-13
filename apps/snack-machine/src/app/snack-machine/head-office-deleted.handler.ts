@@ -3,6 +3,7 @@ import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Logger } from '@nestjs/common';
 import { EventPublisher, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { HeadOfficeDeletedEvent } from '@vending-machines/events';
+import { Id } from '@vending-machines/shared';
 import { SnackMachineRepository } from './snack-machine.repository.interface';
 
 @EventsHandler(HeadOfficeDeletedEvent)
@@ -15,7 +16,7 @@ export class HeadOfficeDeletedHandler implements IEventHandler<HeadOfficeDeleted
 
   @CreateRequestContext()
   async handle(event: HeadOfficeDeletedEvent) {
-    const existingSnackMachine = await this.snackMachineRepository.findOne(event.aggregateId);
+    const existingSnackMachine = await this.snackMachineRepository.findOne(Id.from(event.aggregateId));
     if (!existingSnackMachine) {
       Logger.error(`Head office with id ${event.aggregateId} not found`, this.constructor.name);
       return;

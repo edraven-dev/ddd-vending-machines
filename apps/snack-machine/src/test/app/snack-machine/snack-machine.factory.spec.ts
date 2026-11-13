@@ -1,8 +1,7 @@
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SnackMachineCreatedEvent } from '@vending-machines/events';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineFactory } from '../../../app/snack-machine/snack-machine.factory';
@@ -29,7 +28,7 @@ describe('SnackMachineFactory', () => {
   describe('#create', () => {
     it('should apply SnackMachineCreatedEvent', () => {
       const spy = vi.spyOn(SnackMachine.prototype, 'apply');
-      const id = randomUUID();
+      const id = Id.generate();
 
       factory.create(id);
 
@@ -37,7 +36,7 @@ describe('SnackMachineFactory', () => {
     });
 
     it('should return SnackMachine with proper id', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const snackMachine = factory.create(id);
 
@@ -45,7 +44,7 @@ describe('SnackMachineFactory', () => {
     });
 
     it('should return SnackMachine with proper money inside', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const snackMachine = factory.create(id);
 
@@ -53,7 +52,7 @@ describe('SnackMachineFactory', () => {
     });
 
     it('should return SnackMachine with proper money in transaction', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const snackMachine = factory.create(id);
 

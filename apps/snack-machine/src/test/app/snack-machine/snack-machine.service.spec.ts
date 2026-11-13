@@ -2,15 +2,14 @@ import { MikroORM } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import type { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
 import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
 
 describe('SnackMachineService', () => {
   const snackMachine = {
-    id: randomUUID(),
+    id: Id.generate(),
     unloadMoney: vi.fn<SnackMachine['unloadMoney']>(() => Money.TwentyDollar),
     commit: vi.fn<SnackMachine['commit']>(),
   };
