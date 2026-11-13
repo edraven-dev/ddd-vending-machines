@@ -16,7 +16,15 @@ describe('BalanceChangedHandler', () => {
     save: vi.fn<HeadOfficeRepository['save']>(),
   };
   const inbox = { tryRecord: vi.fn<Inbox['tryRecord']>(async () => true) };
-  const transactional = vi.fn<(callback: () => Promise<unknown>) => Promise<unknown>>((callback) => callback());
+  let inTransaction = false;
+  const transactional = vi.fn<(callback: () => Promise<unknown>) => Promise<unknown>>(async (callback) => {
+    inTransaction = true;
+    try {
+      return await callback();
+    } finally {
+      inTransaction = false;
+    }
+  });
   let handler: BalanceChangedHandler;
 
   beforeAll(async () => {
@@ -39,7 +47,19 @@ describe('BalanceChangedHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should record the event in the inbox under the handler name, inside a transaction', async () => {
+    it('should record the event under the handler name, then load and save the head office, all in one transaction', async () => {
+      const calls: { call: string; inTransaction: boolean }[] = [];
+      inbox.tryRecord.mockImplementationOnce(async () => {
+        calls.push({ call: 'tryRecord', inTransaction });
+        return true;
+      });
+      repository.findOne.mockImplementationOnce(async () => {
+        calls.push({ call: 'findOne', inTransaction });
+        return headOffice;
+      });
+      repository.save.mockImplementationOnce(async () => {
+        calls.push({ call: 'save', inTransaction });
+      });
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -50,6 +70,11 @@ describe('BalanceChangedHandler', () => {
 
       expect(transactional).toHaveBeenCalledOnce();
       expect(inbox.tryRecord).toHaveBeenCalledWith('BalanceChangedHandler', event.eventId);
+      expect(calls).toEqual([
+        { call: 'tryRecord', inTransaction: true },
+        { call: 'findOne', inTransaction: true },
+        { call: 'save', inTransaction: true },
+      ]);
     });
 
     it('should skip an event that was already processed', async () => {

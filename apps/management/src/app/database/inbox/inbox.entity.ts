@@ -1,4 +1,4 @@
-import { PrimaryKeyProp } from '@mikro-orm/core';
+import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'inbox' })
@@ -12,5 +12,5 @@ export default class InboxEntity {
   eventId!: string;
 
   @Property({ type: 'timestamptz', defaultRaw: 'current_timestamp' })
-  processedAt?: Date;
+  processedAt!: Opt<Date>;
 }
