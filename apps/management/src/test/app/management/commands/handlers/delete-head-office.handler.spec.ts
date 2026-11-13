@@ -12,7 +12,14 @@ import { AtmProtoServiceClient } from '../../../../../app/management/proto-clien
 import { SnackMachineProtoServiceClient } from '../../../../../app/management/proto-clients/snack-machine-proto-service.client';
 
 describe('DeleteHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+  const headOffice = new HeadOffice(
+    Id.generate(),
+    [Id.generate(), Id.generate()],
+    [Id.generate(), Id.generate()],
+    new Date(),
+  );
+  const [firstAtmId, secondAtmId] = headOffice.atmIds;
+  const [firstSnackMachineId, secondSnackMachineId] = headOffice.snackMachineIds;
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
     delete: vi.fn<HeadOfficeRepository['delete']>(),
@@ -23,6 +30,11 @@ describe('DeleteHeadOfficeHandler', () => {
   const atmClient = { deleteAtm: vi.fn<AtmProtoServiceClient['deleteAtm']>(async () => undefined) };
   const snackMachineClient = {
     deleteSnackMachine: vi.fn<SnackMachineProtoServiceClient['deleteSnackMachine']>(async () => undefined),
+  };
+  const failingFor = (failingId: Id, error: Error) => async (id: string) => {
+    if (id === failingId.value) {
+      throw error;
+    }
   };
   let handler: DeleteHeadOfficeHandler;
 
@@ -43,6 +55,7 @@ describe('DeleteHeadOfficeHandler', () => {
   });
 
   afterEach(() => {
+    vi.resetAllMocks();
     vi.restoreAllMocks();
   });
 
@@ -64,42 +77,53 @@ describe('DeleteHeadOfficeHandler', () => {
       expect(repository.delete).not.toHaveBeenCalled();
     });
 
-    it('should delete the ATM and the snack machine, then apply HeadOfficeDeletedEvent, delete the head office and commit', async () => {
+    it('should delete every ATM and every snack machine, then apply HeadOfficeDeletedEvent, delete the head office and commit', async () => {
       const apply = vi.spyOn(headOffice, 'apply');
       const commit = vi.spyOn(headOffice, 'commit').mockResolvedValue();
 
       await handler.execute(new DeleteHeadOfficeCommand(headOffice.id));
 
-      expect(atmClient.deleteAtm).toHaveBeenCalledWith(headOffice.atmId.value);
-      expect(snackMachineClient.deleteSnackMachine).toHaveBeenCalledWith(headOffice.snackMachineId.value);
+      expect(atmClient.deleteAtm.mock.calls).toStrictEqual([[firstAtmId.value], [secondAtmId.value]]);
+      expect(snackMachineClient.deleteSnackMachine.mock.calls).toStrictEqual([
+        [firstSnackMachineId.value],
+        [secondSnackMachineId.value],
+      ]);
       expect(apply).toHaveBeenCalledWith(expect.any(HeadOfficeDeletedEvent));
       expect(repository.delete).toHaveBeenCalledWith(headOffice.id);
       expect(repository.delete.mock.invocationCallOrder[0]).toBeLessThan(commit.mock.invocationCallOrder[0]);
     });
 
-    it('should rethrow an ATM delete failure and keep the head office, after still deleting the snack machine', async () => {
+    it('should rethrow a failed ATM delete and keep the head office, after still deleting every other machine', async () => {
       const error = new ServiceUnavailableException();
-      atmClient.deleteAtm.mockRejectedValueOnce(error);
+      atmClient.deleteAtm.mockImplementation(failingFor(firstAtmId, error));
       const commit = vi.spyOn(headOffice, 'commit').mockResolvedValue();
 
       await expect(handler.execute(new DeleteHeadOfficeCommand(headOffice.id))).rejects.toBe(error);
-      expect(snackMachineClient.deleteSnackMachine).toHaveBeenCalledWith(headOffice.snackMachineId.value);
+      expect(atmClient.deleteAtm.mock.calls).toStrictEqual([[firstAtmId.value], [secondAtmId.value]]);
+      expect(snackMachineClient.deleteSnackMachine.mock.calls).toStrictEqual([
+        [firstSnackMachineId.value],
+        [secondSnackMachineId.value],
+      ]);
       expect(repository.delete).not.toHaveBeenCalled();
       expect(commit).not.toHaveBeenCalled();
     });
 
-    it('should rethrow a snack machine delete failure and keep the head office, after still deleting the ATM', async () => {
+    it('should rethrow a failed snack machine delete and keep the head office, after still deleting every other machine', async () => {
       const error = new GatewayTimeoutException();
-      snackMachineClient.deleteSnackMachine.mockRejectedValueOnce(error);
+      snackMachineClient.deleteSnackMachine.mockImplementation(failingFor(secondSnackMachineId, error));
       const commit = vi.spyOn(headOffice, 'commit').mockResolvedValue();
 
       await expect(handler.execute(new DeleteHeadOfficeCommand(headOffice.id))).rejects.toBe(error);
-      expect(atmClient.deleteAtm).toHaveBeenCalledWith(headOffice.atmId.value);
+      expect(atmClient.deleteAtm.mock.calls).toStrictEqual([[firstAtmId.value], [secondAtmId.value]]);
+      expect(snackMachineClient.deleteSnackMachine.mock.calls).toStrictEqual([
+        [firstSnackMachineId.value],
+        [secondSnackMachineId.value],
+      ]);
       expect(repository.delete).not.toHaveBeenCalled();
       expect(commit).not.toHaveBeenCalled();
     });
 
-    it('should wait for both machine deletes before failing', async () => {
+    it('should wait for every machine delete before failing', async () => {
       const error = new ServiceUnavailableException();
       atmClient.deleteAtm.mockRejectedValueOnce(error);
       let finishSnackMachineDelete: () => void = () => undefined;
@@ -121,10 +145,12 @@ describe('DeleteHeadOfficeHandler', () => {
       await expect(execution).resolves.toBe(error);
     });
 
-    it('should rethrow the ATM failure if both machine deletes fail', async () => {
+    it('should rethrow the first failure in machine order, ATMs first, if several machine deletes fail', async () => {
       const atmError = new ServiceUnavailableException();
-      atmClient.deleteAtm.mockRejectedValueOnce(atmError);
-      snackMachineClient.deleteSnackMachine.mockRejectedValueOnce(new GatewayTimeoutException());
+      atmClient.deleteAtm.mockImplementation(failingFor(secondAtmId, atmError));
+      snackMachineClient.deleteSnackMachine.mockImplementation(
+        failingFor(firstSnackMachineId, new GatewayTimeoutException()),
+      );
       const commit = vi.spyOn(headOffice, 'commit').mockResolvedValue();
 
       await expect(handler.execute(new DeleteHeadOfficeCommand(headOffice.id))).rejects.toBe(atmError);

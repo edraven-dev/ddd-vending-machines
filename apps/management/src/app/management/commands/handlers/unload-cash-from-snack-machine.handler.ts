@@ -12,14 +12,17 @@ export class UnloadCashFromSnackMachineHandler implements ICommandHandler<Unload
     private readonly snackMachineProtoServiceClient: SnackMachineProtoServiceClient,
   ) {}
 
-  async execute({ id }: UnloadCashFromSnackMachineCommand) {
+  async execute({ id, snackMachineId }: UnloadCashFromSnackMachineCommand) {
     const headOffice = await this.headOfficeRepository.findOne(id);
 
     if (!headOffice) {
       throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
+    if (!headOffice.hasSnackMachine(snackMachineId)) {
+      throw new NotFoundException(`Snack machine with id ${snackMachineId.value} not found in head office ${id.value}`);
+    }
 
-    const cash = await this.snackMachineProtoServiceClient.unloadMoney(headOffice.snackMachineId.value);
+    const cash = await this.snackMachineProtoServiceClient.unloadMoney(snackMachineId.value);
     headOffice.loadCash(new Money(...cash.money));
     await this.headOfficeRepository.save(headOffice);
   }

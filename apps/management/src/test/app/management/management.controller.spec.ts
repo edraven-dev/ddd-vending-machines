@@ -58,38 +58,44 @@ describe('ManagementController', () => {
   });
 
   describe('#loadCashToAtm', () => {
-    it('should execute LoadCashToAtmCommand', async () => {
+    it('should execute LoadCashToAtmCommand with the head office id and the ATM id', async () => {
       const id = Id.generate();
+      const atmId = Id.generate();
 
-      await controller.loadCashToAtm(id);
+      await controller.loadCashToAtm(id, atmId);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(new LoadCashToAtmCommand(id));
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([new LoadCashToAtmCommand(id, atmId)]);
     });
 
-    it('should execute GetHeadOfficeQuery', async () => {
+    it('should execute GetHeadOfficeQuery after the command', async () => {
       const id = Id.generate();
 
-      await controller.loadCashToAtm(id);
+      await controller.loadCashToAtm(id, Id.generate());
 
-      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
+      expect(queryBus.execute.mock.lastCall).toStrictEqual([new GetHeadOfficeQuery(id)]);
+      expect(commandBus.execute.mock.invocationCallOrder[0]).toBeLessThan(queryBus.execute.mock.invocationCallOrder[0]);
     });
   });
 
-  describe('#unloadCashFromSnackMachineCommand', () => {
-    it('should execute UnloadCashFromSnackMachineCommand', async () => {
+  describe('#unloadCashFromSnackMachine', () => {
+    it('should execute UnloadCashFromSnackMachineCommand with the head office id and the snack machine id', async () => {
       const id = Id.generate();
+      const snackMachineId = Id.generate();
 
-      await controller.unloadCashFromSnackMachine(id);
+      await controller.unloadCashFromSnackMachine(id, snackMachineId);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(new UnloadCashFromSnackMachineCommand(id));
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([
+        new UnloadCashFromSnackMachineCommand(id, snackMachineId),
+      ]);
     });
 
-    it('should execute GetHeadOfficeQuery', async () => {
+    it('should execute GetHeadOfficeQuery after the command', async () => {
       const id = Id.generate();
 
-      await controller.unloadCashFromSnackMachine(id);
+      await controller.unloadCashFromSnackMachine(id, Id.generate());
 
-      expect(queryBus.execute).toHaveBeenCalledWith(new GetHeadOfficeQuery(id));
+      expect(queryBus.execute.mock.lastCall).toStrictEqual([new GetHeadOfficeQuery(id)]);
+      expect(commandBus.execute.mock.invocationCallOrder[0]).toBeLessThan(queryBus.execute.mock.invocationCallOrder[0]);
     });
   });
 });

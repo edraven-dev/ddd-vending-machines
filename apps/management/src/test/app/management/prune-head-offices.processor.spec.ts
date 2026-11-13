@@ -11,8 +11,8 @@ import { PruneHeadOfficesProcessor } from '../../../app/management/prune-head-of
 
 describe('PruneHeadOfficesProcessor', () => {
   const expiredHeadOffices = [
-    new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date()),
-    new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date()),
+    new HeadOffice(Id.generate(), [Id.generate()], [Id.generate()], new Date()),
+    new HeadOffice(Id.generate(), [Id.generate()], [Id.generate()], new Date()),
   ];
   const commandBus = { execute: vi.fn<CommandBus['execute']>() };
   const repository = { findExpired: vi.fn<HeadOfficeRepository['findExpired']>(() => expiredHeadOffices) };

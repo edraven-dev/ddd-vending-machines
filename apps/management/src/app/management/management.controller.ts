@@ -41,25 +41,31 @@ export class ManagementController {
     return this.queryBus.execute(new GetHeadOfficeQuery(requestDto.id));
   }
 
-  @Post(':id/load-cash-to-atm')
+  @Post(':id/load-cash-to-atm/:atmId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Load cash to ATM', description: 'Loads cash to ATM' })
   @ApiOkResponse({ type: HeadOfficeDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  @ApiNotFoundResponse({ description: 'Head office not found' })
-  async loadCashToAtm(@Param('id', { schema: idSchema }) id: Id): Promise<HeadOfficeDto> {
-    await this.commandBus.execute(new LoadCashToAtmCommand(id));
+  @ApiNotFoundResponse({ description: 'Head office or ATM not found' })
+  async loadCashToAtm(
+    @Param('id', { schema: idSchema }) id: Id,
+    @Param('atmId', { schema: idSchema }) atmId: Id,
+  ): Promise<HeadOfficeDto> {
+    await this.commandBus.execute(new LoadCashToAtmCommand(id, atmId));
     return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 
-  @Post(':id/unload-cash-from-snack-machine')
+  @Post(':id/unload-cash-from-snack-machine/:snackMachineId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Unload cash from snack machine', description: 'Unloads cash from snack machine' })
   @ApiOkResponse({ type: HeadOfficeDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  @ApiNotFoundResponse({ description: 'Head office not found' })
-  async unloadCashFromSnackMachine(@Param('id', { schema: idSchema }) id: Id): Promise<HeadOfficeDto> {
-    await this.commandBus.execute(new UnloadCashFromSnackMachineCommand(id));
+  @ApiNotFoundResponse({ description: 'Head office or snack machine not found' })
+  async unloadCashFromSnackMachine(
+    @Param('id', { schema: idSchema }) id: Id,
+    @Param('snackMachineId', { schema: idSchema }) snackMachineId: Id,
+  ): Promise<HeadOfficeDto> {
+    await this.commandBus.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId));
     return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 }

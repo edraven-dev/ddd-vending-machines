@@ -1,25 +1,44 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { Test } from '@nestjs/testing';
 import { Id, Money } from '@vending-machines/shared';
+import HeadOfficeAtmEntity from '../../../../app/database/management/head-office-atm.entity';
+import HeadOfficeSnackMachineEntity from '../../../../app/database/management/head-office-snack-machine.entity';
 import HeadOfficeEntity from '../../../../app/database/management/head-office.entity';
+import { HeadOfficeMapper } from '../../../../app/database/management/head-office.mapper';
 import { MikroOrmHeadOfficeRepository } from '../../../../app/database/management/head-office.repository';
 import { HeadOffice } from '../../../../app/management/head-office';
 
-const createHeadOfficeEntity = (id: Id, atmId: Id, snackMachineId: Id, expiresAt: Date): HeadOfficeEntity => {
-  const headOfficeEntity = new HeadOfficeEntity();
-  headOfficeEntity.id = id.value;
-  headOfficeEntity.atmId = atmId.value;
-  headOfficeEntity.snackMachineId = snackMachineId.value;
-  headOfficeEntity.cash = Money.Dollar;
-  headOfficeEntity.expiresAt = expiresAt;
-  return headOfficeEntity;
-};
+const orm = new MikroORM({
+  dbName: 'unused',
+  metadataProvider: ReflectMetadataProvider,
+  entities: [HeadOfficeEntity, HeadOfficeAtmEntity, HeadOfficeSnackMachineEntity],
+});
+
+const createHeadOfficeEntity = (id: Id, atmIds: Id[], snackMachineIds: Id[], expiresAt: Date): HeadOfficeEntity =>
+  orm.em.fork().create(HeadOfficeEntity, {
+    id: id.value,
+    atms: atmIds.map((atmId) => ({ atmId: atmId.value })),
+    snackMachines: snackMachineIds.map((snackMachineId) => ({ snackMachineId: snackMachineId.value })),
+    balance: 0,
+    cash: {
+      oneCentCount: 0,
+      tenCentCount: 0,
+      quarterCount: 0,
+      oneDollarCount: 1,
+      fiveDollarCount: 0,
+      twentyDollarCount: 0,
+    },
+    expiresAt,
+  });
 
 describe('MikroOrmHeadOfficeRepository', () => {
   const id = Id.generate();
   const atmId = Id.generate();
-  const snackMachineId = Id.generate();
+  const atmIds = [Id.generate(), atmId];
+  const snackMachineIds = [Id.generate(), Id.generate()];
   const expiresAt = new Date('2026-11-14T12:00:00.000Z');
   const entityManager = {
     flush: vi.fn<EntityManager['flush']>(),
@@ -54,13 +73,12 @@ describe('MikroOrmHeadOfficeRepository', () => {
   });
 
   describe('#findOne', () => {
-    it('should call ormRepository.findOne with any id', async () => {
-      const headOfficeEntity = createHeadOfficeEntity(id, atmId, snackMachineId, expiresAt);
-      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+    it('should call ormRepository.findOne with proper id and populated machines', async () => {
+      const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
 
       await repository.findOne(id);
 
-      expect(findOne).toHaveBeenCalledWith({ id: headOfficeEntity.id });
+      expect(findOne).toHaveBeenCalledWith({ id: id.value }, { populate: ['atms', 'snackMachines'] });
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
@@ -71,7 +89,7 @@ describe('MikroOrmHeadOfficeRepository', () => {
     });
 
     it('should return HeadOffice if ormRepository.findOne returns HeadOfficeEntity', async () => {
-      const headOfficeEntity = createHeadOfficeEntity(id, atmId, snackMachineId, expiresAt);
+      const headOfficeEntity = createHeadOfficeEntity(id, atmIds, snackMachineIds, expiresAt);
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
 
       const result = await repository.findOne(id);
@@ -83,12 +101,12 @@ describe('MikroOrmHeadOfficeRepository', () => {
   });
 
   describe('#findByAtmId', () => {
-    it('should call ormRepository.findOne with the atm id', async () => {
+    it('should call ormRepository.findOne with the atm id among the atms and populated machines', async () => {
       const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
 
       await repository.findByAtmId(atmId);
 
-      expect(findOne).toHaveBeenCalledWith({ atmId: atmId.value });
+      expect(findOne).toHaveBeenCalledWith({ atms: { atmId: atmId.value } }, { populate: ['atms', 'snackMachines'] });
     });
 
     it('should return null if ormRepository.findOne returns null', async () => {
@@ -99,34 +117,34 @@ describe('MikroOrmHeadOfficeRepository', () => {
       expect(result).toBeNull();
     });
 
-    it('should return HeadOffice with its references if ormRepository.findOne returns HeadOfficeEntity', async () => {
-      const headOfficeEntity = createHeadOfficeEntity(id, atmId, snackMachineId, expiresAt);
+    it('should return HeadOffice with all its machines if ormRepository.findOne returns HeadOfficeEntity', async () => {
+      const headOfficeEntity = createHeadOfficeEntity(id, atmIds, snackMachineIds, expiresAt);
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
 
       const result = await repository.findByAtmId(atmId);
 
       assert(result instanceof HeadOffice, 'result should be an instance of HeadOffice');
       expect(result.id).toEqual(id);
-      expect(result.atmId).toEqual(atmId);
-      expect(result.snackMachineId).toEqual(snackMachineId);
+      expect(result.atmIds).toEqual(atmIds);
+      expect(result.snackMachineIds).toEqual(snackMachineIds);
       expect(result.expiresAt).toEqual(expiresAt);
     });
   });
 
   describe('#findExpired', () => {
-    it('should call ormRepository.find with head offices expiring at or before now', async () => {
+    it('should call ormRepository.find with head offices expiring at or before now and populated machines', async () => {
       const now = new Date();
       const find = vi.spyOn(ormRepository, 'find').mockImplementation(async () => []);
 
       await repository.findExpired(now);
 
-      expect(find).toHaveBeenCalledWith({ expiresAt: { $lte: now } });
+      expect(find).toHaveBeenCalledWith({ expiresAt: { $lte: now } }, { populate: ['atms', 'snackMachines'] });
     });
 
     it('should return a HeadOffice for every HeadOfficeEntity returned by ormRepository.find', async () => {
       const headOfficeEntities = [
-        createHeadOfficeEntity(Id.generate(), Id.generate(), Id.generate(), expiresAt),
-        createHeadOfficeEntity(Id.generate(), Id.generate(), Id.generate(), expiresAt),
+        createHeadOfficeEntity(Id.generate(), [Id.generate()], [Id.generate()], expiresAt),
+        createHeadOfficeEntity(Id.generate(), [Id.generate()], [Id.generate()], expiresAt),
       ];
       vi.spyOn(ormRepository, 'find').mockImplementation(async () => headOfficeEntities);
 
@@ -137,36 +155,46 @@ describe('MikroOrmHeadOfficeRepository', () => {
   });
 
   describe('#save', () => {
-    it('should call ormRepository.findOne with proper id', async () => {
-      const headOfficeEntity = createHeadOfficeEntity(id, atmId, snackMachineId, expiresAt);
+    it('should call ormRepository.findOne with proper id and populated machines', async () => {
+      const headOfficeEntity = createHeadOfficeEntity(id, atmIds, snackMachineIds, expiresAt);
       vi.spyOn(headOfficeEntity, 'assign').mockReturnThis();
       const findOne = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
-      const headOffice = new HeadOffice(id, atmId, snackMachineId, expiresAt);
+      const headOffice = new HeadOffice(id, atmIds, snackMachineIds, expiresAt);
       headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);
 
-      expect(findOne).toHaveBeenCalledWith({ id: id.value });
+      expect(findOne).toHaveBeenCalledWith({ id: id.value }, { populate: ['atms', 'snackMachines'] });
     });
 
-    it('should call ormRepository.create with the head office data if ormRepository.findOne returns null', async () => {
-      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
-      const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new HeadOfficeEntity());
-      const headOffice = new HeadOffice(id, atmId, snackMachineId, expiresAt);
+    it('should assign the mapped data to the existing HeadOfficeEntity', async () => {
+      const headOfficeEntity = createHeadOfficeEntity(id, atmIds, snackMachineIds, expiresAt);
+      const assign = vi.spyOn(headOfficeEntity, 'assign').mockReturnThis();
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
+      const headOffice = new HeadOffice(id, atmIds, snackMachineIds, expiresAt);
       headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);
 
-      expect(create).toHaveBeenCalledWith(
-        expect.objectContaining({ id: id.value, atmId: atmId.value, snackMachineId: snackMachineId.value, expiresAt }),
-      );
+      expect(assign).toHaveBeenCalledWith(HeadOfficeMapper.toPersistence(headOffice));
+    });
+
+    it('should call ormRepository.create with the mapped data if ormRepository.findOne returns null', async () => {
+      vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
+      const create = vi.spyOn(ormRepository, 'create').mockImplementation(() => new HeadOfficeEntity());
+      const headOffice = new HeadOffice(id, atmIds, snackMachineIds, expiresAt);
+      headOffice.cash = Money.Dollar;
+
+      await repository.save(headOffice);
+
+      expect(create).toHaveBeenCalledWith(HeadOfficeMapper.toPersistence(headOffice));
     });
 
     it('should call entityManager.flush', async () => {
-      const headOfficeEntity = createHeadOfficeEntity(id, atmId, snackMachineId, expiresAt);
+      const headOfficeEntity = createHeadOfficeEntity(id, atmIds, snackMachineIds, expiresAt);
       vi.spyOn(headOfficeEntity, 'assign').mockReturnThis();
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => headOfficeEntity);
-      const headOffice = new HeadOffice(id, atmId, snackMachineId, expiresAt);
+      const headOffice = new HeadOffice(id, atmIds, snackMachineIds, expiresAt);
       headOffice.cash = Money.Dollar;
 
       await repository.save(headOffice);

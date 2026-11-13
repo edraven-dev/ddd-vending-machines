@@ -16,7 +16,10 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
   ) {}
 
   async findOne(id: Id): Promise<HeadOffice | null> {
-    const headOfficeEntity = await this.headOfficeRepository.findOne({ id: id.value });
+    const headOfficeEntity = await this.headOfficeRepository.findOne(
+      { id: id.value },
+      { populate: ['atms', 'snackMachines'] },
+    );
 
     if (!headOfficeEntity) {
       return null;
@@ -26,7 +29,10 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
   }
 
   async findByAtmId(atmId: Id): Promise<HeadOffice | null> {
-    const headOfficeEntity = await this.headOfficeRepository.findOne({ atmId: atmId.value });
+    const headOfficeEntity = await this.headOfficeRepository.findOne(
+      { atms: { atmId: atmId.value } },
+      { populate: ['atms', 'snackMachines'] },
+    );
 
     if (!headOfficeEntity) {
       return null;
@@ -36,13 +42,19 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
   }
 
   async findExpired(now: Date): Promise<HeadOffice[]> {
-    const headOfficeEntities = await this.headOfficeRepository.find({ expiresAt: { $lte: now } });
+    const headOfficeEntities = await this.headOfficeRepository.find(
+      { expiresAt: { $lte: now } },
+      { populate: ['atms', 'snackMachines'] },
+    );
 
     return headOfficeEntities.map((headOfficeEntity) => HeadOfficeMapper.toDomain(headOfficeEntity));
   }
 
   async save(headOffice: HeadOffice): Promise<void> {
-    const existingEntity = await this.headOfficeRepository.findOne({ id: headOffice.id.value });
+    const existingEntity = await this.headOfficeRepository.findOne(
+      { id: headOffice.id.value },
+      { populate: ['atms', 'snackMachines'] },
+    );
 
     if (existingEntity) {
       existingEntity.assign(HeadOfficeMapper.toPersistence(headOffice));

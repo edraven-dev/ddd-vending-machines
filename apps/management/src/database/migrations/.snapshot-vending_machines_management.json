@@ -8,23 +8,6 @@
       "name": "head_office",
       "schema": "public",
       "columns": {
-        "atm_id": {
-          "name": "atm_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
-        },
         "balance": {
           "name": "balance",
           "type": "numeric(18,2)",
@@ -177,36 +160,9 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "uuid"
-        },
-        "snack_machine_id": {
-          "name": "snack_machine_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
         }
       },
       "indexes": [
-        {
-          "columnNames": [
-            "atm_id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "head_office_atm_id_unique",
-          "primary": false,
-          "unique": true
-        },
         {
           "columnNames": [
             "expires_at"
@@ -226,6 +182,141 @@
           "keyName": "head_office_pkey",
           "primary": true,
           "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
+      "comment": null
+    },
+    {
+      "name": "head_office_atm",
+      "schema": "public",
+      "columns": {
+        "atm_id": {
+          "name": "atm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "head_office_id": {
+          "name": "head_office_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "head_office_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "head_office_atm_head_office_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "atm_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "head_office_atm_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "head_office_atm_head_office_id_foreign": {
+          "columnNames": [
+            "head_office_id"
+          ],
+          "constraintName": "head_office_atm_head_office_id_foreign",
+          "localTableName": "public.head_office_atm",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.head_office",
+          "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "head_office_snack_machine",
+      "schema": "public",
+      "columns": {
+        "head_office_id": {
+          "name": "head_office_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "snack_machine_id": {
+          "name": "snack_machine_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "head_office_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "head_office_snack_machine_head_office_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [
@@ -233,14 +324,27 @@
           ],
           "composite": false,
           "constraint": true,
-          "keyName": "head_office_snack_machine_id_unique",
-          "primary": false,
+          "keyName": "head_office_snack_machine_pkey",
+          "primary": true,
           "unique": true
         }
       ],
       "checks": [],
       "triggers": [],
-      "foreignKeys": {},
+      "foreignKeys": {
+        "head_office_snack_machine_head_office_id_foreign": {
+          "columnNames": [
+            "head_office_id"
+          ],
+          "constraintName": "head_office_snack_machine_head_office_id_foreign",
+          "localTableName": "public.head_office_snack_machine",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.head_office",
+          "deleteRule": "cascade"
+        }
+      },
       "comment": null
     },
     {

@@ -11,8 +11,8 @@ export class HeadOfficeMapper {
   static toDomain(entity: HeadOfficeEntity): HeadOffice {
     const headOffice = new HeadOffice(
       Id.from(entity.id),
-      Id.from(entity.atmId),
-      Id.from(entity.snackMachineId),
+      entity.atms.map((atm) => Id.from(atm.atmId)),
+      entity.snackMachines.map((snackMachine) => Id.from(snackMachine.snackMachineId)),
       entity.expiresAt,
     );
     headOffice.balance = new Currency(entity.balance);
@@ -30,8 +30,8 @@ export class HeadOfficeMapper {
   static toPersistence(headOffice: HeadOffice): RequiredEntityData<HeadOfficeEntity> {
     return {
       id: headOffice.id.value,
-      atmId: headOffice.atmId.value,
-      snackMachineId: headOffice.snackMachineId.value,
+      atms: headOffice.atmIds.map((atmId) => ({ atmId: atmId.value })),
+      snackMachines: headOffice.snackMachineIds.map((snackMachineId) => ({ snackMachineId: snackMachineId.value })),
       expiresAt: headOffice.expiresAt,
       balance: headOffice.balance.value,
       cash: {

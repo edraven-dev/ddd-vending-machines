@@ -10,9 +10,9 @@ const LIFETIME_IN_MS = 24 * 60 * 60 * 1000;
 export class HeadOfficeFactory {
   constructor(private readonly eventPublisher: EventPublisher) {}
 
-  create(id: Id, atmId: Id, snackMachineId: Id): HeadOffice {
+  create(id: Id, atmIds: readonly Id[], snackMachineIds: readonly Id[]): HeadOffice {
     const expiresAt = new Date(Date.now() + LIFETIME_IN_MS);
-    const headOffice = this.eventPublisher.mergeObjectContext(new HeadOffice(id, atmId, snackMachineId, expiresAt));
+    const headOffice = this.eventPublisher.mergeObjectContext(new HeadOffice(id, atmIds, snackMachineIds, expiresAt));
     headOffice.apply(
       new HeadOfficeCreatedEvent({
         aggregateId: headOffice.id,

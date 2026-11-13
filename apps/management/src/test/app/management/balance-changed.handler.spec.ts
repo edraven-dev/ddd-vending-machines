@@ -11,7 +11,7 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 import { Inbox } from '../../../app/management/inbox.interface';
 
 describe('BalanceChangedHandler', () => {
-  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+  const headOffice = new HeadOffice(Id.generate(), [Id.generate()], [Id.generate()], new Date());
   const repository = {
     findByAtmId: vi.fn<HeadOfficeRepository['findByAtmId']>(async () => headOffice),
     save: vi.fn<HeadOfficeRepository['save']>(),
