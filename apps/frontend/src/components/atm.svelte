@@ -3,11 +3,10 @@
   import currency from 'currency.js';
   import { failure, success } from '../utils/actions';
 
-  const id = localStorage.getItem('id');
-  axios.defaults.headers.common['Content-Type'] = 'application/json';
-  axios.defaults.baseURL = `/api/atm/${id}`;
-
   export let atm: any; // oxlint-disable-line typescript/no-explicit-any
+
+  axios.defaults.headers.common['Content-Type'] = 'application/json';
+  axios.defaults.baseURL = `/api/atm/${atm.id}`;
   let amount: number;
 
   const callApi = async (method: Method, url: string, data?: Record<string, unknown>): Promise<void> => {
