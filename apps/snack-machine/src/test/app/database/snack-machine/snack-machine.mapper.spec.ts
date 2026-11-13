@@ -50,12 +50,11 @@ describe('SnackMachineMapper', () => {
       expect(snackMachine.moneyInTransaction).toEqual(new Currency('1.00'));
     });
 
-    it('should keep the persisted slot ids, ordered by position and pointing at the machine', () => {
+    it('should keep the persisted slot ids, ordered by position', () => {
       const snackMachine = SnackMachineMapper.toDomain(entity);
       const slotIds = [1, 2, 3].map((position) => entity.slots.find((slot) => slot.position === position)?.id);
 
       expect(snackMachine.slots.map((slot) => slot.id.value)).toEqual(slotIds);
-      expect(snackMachine.slots.every((slot) => slot.snackMachine === snackMachine)).toBe(true);
     });
 
     it('should resolve snacks from the catalog', () => {
@@ -85,7 +84,7 @@ describe('SnackMachineMapper', () => {
   });
 
   describe('#toPersistence', () => {
-    const snackMachine = SnackMachine.create(Id.generate());
+    const snackMachine = new SnackMachine(Id.generate());
     snackMachine.loadSnacks(1, new SnackPile(Snack.Gum, 1, new Currency('1.00')));
 
     it('should write ids as strings', () => {

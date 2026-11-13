@@ -9,7 +9,7 @@ export class SnackMachineFactory {
   constructor(private readonly eventPublisher: EventPublisher) {}
 
   create(id: Id): SnackMachine {
-    const snackMachine = this.eventPublisher.mergeObjectContext(SnackMachine.create(id));
+    const snackMachine = this.eventPublisher.mergeObjectContext(new SnackMachine(id));
     snackMachine.apply(
       new SnackMachineCreatedEvent({
         aggregateId: snackMachine.id,

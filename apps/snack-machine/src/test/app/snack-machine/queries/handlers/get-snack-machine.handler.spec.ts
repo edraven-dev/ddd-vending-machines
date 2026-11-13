@@ -8,7 +8,7 @@ import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('GetSnackMachineHandler', () => {
-  const snackMachine = SnackMachine.create(Id.generate());
+  const snackMachine = new SnackMachine(Id.generate());
   const repositoryMock = { findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine) };
   let handler: GetSnackMachineHandler;
 
