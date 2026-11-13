@@ -6,6 +6,7 @@ import { throwError } from 'rxjs';
 const GRPC_STATUS_BY_HTTP_STATUS: Partial<Record<number, status>> = {
   [HttpStatus.BAD_REQUEST]: status.INVALID_ARGUMENT,
   [HttpStatus.NOT_FOUND]: status.NOT_FOUND,
+  [HttpStatus.CONFLICT]: status.ALREADY_EXISTS,
 };
 
 @Catch(HttpException)

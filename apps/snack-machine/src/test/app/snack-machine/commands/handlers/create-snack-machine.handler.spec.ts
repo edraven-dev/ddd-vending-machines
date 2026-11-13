@@ -1,3 +1,5 @@
+import { MikroORM } from '@mikro-orm/core';
+import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Id, Money } from '@vending-machines/shared';
 import { CreateSnackMachineHandler } from '../../../../../app/snack-machine/commands/handlers/create-snack-machine.handler';
@@ -9,13 +11,27 @@ import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-m
 describe('CreateSnackMachineHandler', () => {
   const snackMachine = new SnackMachine(Id.generate());
   const factoryMock = { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) };
-  const repositoryMock = { save: vi.fn<SnackMachineRepository['save']>() };
+  const repositoryMock = {
+    findOne: vi.fn<SnackMachineRepository['findOne']>(async () => null),
+    save: vi.fn<SnackMachineRepository['save']>(),
+  };
+  let inTransaction = false;
+  const transactional = vi.fn<(callback: () => Promise<unknown>) => Promise<unknown>>(async (callback) => {
+    inTransaction = true;
+    try {
+      return await callback();
+    } finally {
+      inTransaction = false;
+    }
+  });
   let handler: CreateSnackMachineHandler;
 
   beforeAll(async () => {
+    const orm = Object.setPrototypeOf({ em: { name: 'default', fork: () => ({}), transactional } }, MikroORM.prototype);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateSnackMachineHandler,
+        { provide: MikroORM, useValue: orm },
         { provide: SnackMachineFactory, useValue: factoryMock },
         { provide: SnackMachineRepository, useValue: repositoryMock },
       ],
@@ -73,6 +89,34 @@ describe('CreateSnackMachineHandler', () => {
       await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException and save nothing if the Snack Machine already exists', async () => {
+      repositoryMock.findOne.mockResolvedValueOnce(new SnackMachine(snackMachine.id));
+      const commit = vi.spyOn(SnackMachine.prototype, 'commit');
+
+      await expect(handler.execute(new CreateSnackMachineCommand(snackMachine.id))).rejects.toThrow(
+        new ConflictException(`Snack machine with id ${snackMachine.id.value} already exists`),
+      );
+
+      expect(factoryMock.create).not.toHaveBeenCalled();
+      expect(repositoryMock.save).not.toHaveBeenCalled();
+      expect(commit).not.toHaveBeenCalled();
+    });
+
+    it('should look for the Snack Machine and save it in one transaction', async () => {
+      const inTransactionAt: boolean[] = [];
+      repositoryMock.findOne.mockImplementationOnce(async () => {
+        inTransactionAt.push(inTransaction);
+        return null;
+      });
+      repositoryMock.save.mockImplementationOnce(async () => {
+        inTransactionAt.push(inTransaction);
+      });
+
+      await handler.execute(new CreateSnackMachineCommand(snackMachine.id));
+
+      expect(inTransactionAt).toEqual([true, true]);
     });
   });
 });
