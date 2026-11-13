@@ -1,6 +1,20 @@
-import { UnloadMoneyDto } from '@vending-machines/shared';
-import { Observable } from 'rxjs';
+import type { UnloadMoneyDto } from '@vending-machines/shared';
+import type { Observable } from 'rxjs';
+
+export interface UnloadMoneyRequest {
+  id: string;
+}
+
+export interface CreateSnackMachineRequest {
+  id: string;
+}
+
+export interface DeleteSnackMachineRequest {
+  id: string;
+}
 
 export interface SnackMachineProtoService {
-  unloadMoney({ id }: { id: string }): Observable<UnloadMoneyDto>;
+  unloadMoney(request: UnloadMoneyRequest): Observable<UnloadMoneyDto>;
+  createSnackMachine(request: CreateSnackMachineRequest): Observable<void>;
+  deleteSnackMachine(request: DeleteSnackMachineRequest): Observable<void>;
 }

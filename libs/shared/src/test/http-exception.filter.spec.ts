@@ -3,6 +3,7 @@ import {
   ArgumentsHost,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpServer,
   HttpStatus,
@@ -34,10 +35,17 @@ describe('HttpExceptionFilter', () => {
     });
   });
 
+  it('should fail with ALREADY_EXISTS over gRPC', async () => {
+    await expect(catchOverGrpc(new ConflictException('Atm already exists'))).rejects.toEqual({
+      code: status.ALREADY_EXISTS,
+      message: 'Atm already exists',
+    });
+  });
+
   it('should fail with UNKNOWN over gRPC for other HTTP exceptions', async () => {
-    await expect(catchOverGrpc(new ConflictException('Already exists'))).rejects.toEqual({
+    await expect(catchOverGrpc(new ForbiddenException('Not allowed'))).rejects.toEqual({
       code: status.UNKNOWN,
-      message: 'Already exists',
+      message: 'Not allowed',
     });
   });
 

@@ -15,6 +15,10 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
     private readonly em: EntityManager,
   ) {}
 
+  async exists(id: Id): Promise<boolean> {
+    return (await this.snackMachineRepository.count({ id: id.value })) > 0;
+  }
+
   async findOne(id: Id): Promise<SnackMachine | null> {
     const snackMachineEntity = await this.snackMachineRepository.findOne(
       { id: id.value },

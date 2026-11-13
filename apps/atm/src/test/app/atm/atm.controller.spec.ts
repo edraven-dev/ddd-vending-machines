@@ -5,6 +5,7 @@ import Currency from 'currency.js';
 import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
 import { CreateAtmCommand } from '../../../app/atm/commands/impl/create-atm.command';
+import { DeleteAtmCommand } from '../../../app/atm/commands/impl/delete-atm.command';
 import { TakeMoneyCommand } from '../../../app/atm/commands/impl/take-money.command';
 import type { LoadMoneyDto } from '../../../app/atm/dto/load-money.dto';
 import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
@@ -77,6 +78,22 @@ describe('AtmController', () => {
       await controller.loadMoney(dto);
 
       expect(service.loadMoney).toHaveBeenCalledWith(id, new Money(...dto.money));
+    });
+  });
+
+  describe('#createAtm', () => {
+    it('should execute CreateAtmCommand', async () => {
+      await controller.createAtm({ id });
+
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([new CreateAtmCommand(id)]);
+    });
+  });
+
+  describe('#deleteAtm', () => {
+    it('should execute DeleteAtmCommand', async () => {
+      await controller.deleteAtm({ id });
+
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([new DeleteAtmCommand(id)]);
     });
   });
 });

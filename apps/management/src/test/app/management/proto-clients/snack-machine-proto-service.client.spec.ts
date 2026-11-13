@@ -9,7 +9,11 @@ import { SnackMachineProtoServiceClient } from '../../../../app/management/proto
 
 describe('SnackMachineProtoServiceClient', () => {
   const dto: UnloadMoneyDto = { money: [1, 1, 1, 1, 1, 1] };
-  const service = { unloadMoney: vi.fn<SnackMachineProtoService['unloadMoney']>(() => of(dto)) };
+  const service = {
+    unloadMoney: vi.fn<SnackMachineProtoService['unloadMoney']>(() => of(dto)),
+    createSnackMachine: vi.fn<SnackMachineProtoService['createSnackMachine']>(),
+    deleteSnackMachine: vi.fn<SnackMachineProtoService['deleteSnackMachine']>(),
+  };
   let protoClient: SnackMachineProtoServiceClient;
 
   beforeAll(async () => {

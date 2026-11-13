@@ -3,6 +3,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -12,11 +13,13 @@ import {
 import { Id, idSchema, Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
+import { DeleteSnackMachineCommand } from './commands/impl/delete-snack-machine.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
 import { LoadSnacksCommand } from './commands/impl/load-snacks.command';
 import { ReturnMoneyCommand } from './commands/impl/return-money.command';
 import { type BuySnackDto, buySnackSchema } from './dto/buy-snack.dto';
 import { type CreateSnackMachineDto, createSnackMachineSchema } from './dto/create-snack-machine.dto';
+import { type DeleteSnackMachineDto, deleteSnackMachineSchema } from './dto/delete-snack-machine.dto';
 import { type InsertMoneyDto, insertMoneySchema } from './dto/insert-money.dto';
 import { type LoadSnacksDto, loadSnacksSchema } from './dto/load-snacks.dto';
 import { MoneyInMachineDto } from './dto/money-in-machine.dto';
@@ -48,6 +51,7 @@ export class SnackMachineController {
   @ApiOperation({ summary: 'Create snack machine', description: 'Creates snack machine' })
   @ApiCreatedResponse({ type: SnackMachineDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
+  @ApiConflictResponse({ description: 'Snack machine already exists' })
   async create(
     @Body({ schema: createSnackMachineSchema }) requestDto: CreateSnackMachineDto,
   ): Promise<SnackMachineDto> {
@@ -119,5 +123,15 @@ export class SnackMachineController {
   @GrpcMethod('SnackMachineProtoService', 'UnloadMoney')
   unloadMoney(@Payload({ schema: unloadMoneyRequestSchema }) { id }: UnloadMoneyRequestDto): Promise<UnloadMoneyDto> {
     return this.snackMachineService.unloadMoney(id);
+  }
+
+  @GrpcMethod('SnackMachineProtoService', 'CreateSnackMachine')
+  createSnackMachine(@Payload({ schema: createSnackMachineSchema }) { id }: CreateSnackMachineDto): Promise<void> {
+    return this.commandBus.execute(new CreateSnackMachineCommand(id));
+  }
+
+  @GrpcMethod('SnackMachineProtoService', 'DeleteSnackMachine')
+  deleteSnackMachine(@Payload({ schema: deleteSnackMachineSchema }) { id }: DeleteSnackMachineDto): Promise<void> {
+    return this.commandBus.execute(new DeleteSnackMachineCommand(id));
   }
 }

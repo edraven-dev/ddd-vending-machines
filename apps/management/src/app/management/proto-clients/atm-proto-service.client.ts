@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AtmProtoService } from '@vending-machines/proto';
-import { LoadMoneyDto } from '@vending-machines/shared';
+import type { AtmProtoService, LoadMoneyRequest } from '@vending-machines/proto';
 import { lastValueFrom } from 'rxjs';
 import { mapGrpcErrors } from './map-grpc-errors';
 
@@ -12,7 +11,7 @@ export class AtmProtoServiceClient {
     this.service = service;
   }
 
-  loadMoney(dto: LoadMoneyDto): Promise<void> {
-    return lastValueFrom(this.service.loadMoney(dto).pipe(mapGrpcErrors));
+  loadMoney(request: LoadMoneyRequest): Promise<void> {
+    return lastValueFrom(this.service.loadMoney(request).pipe(mapGrpcErrors));
   }
 }

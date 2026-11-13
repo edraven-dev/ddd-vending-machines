@@ -1,5 +1,5 @@
 import { status } from '@grpc/grpc-js';
-import { HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
@@ -16,6 +16,8 @@ import { dirname, join } from 'node:path';
 import { lastValueFrom } from 'rxjs';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
+import { DeleteSnackMachineCommand } from '../../../app/snack-machine/commands/impl/delete-snack-machine.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
 import { SnackMachineController } from '../../../app/snack-machine/snack-machine.controller';
 import { SnackMachineService } from '../../../app/snack-machine/snack-machine.service';
@@ -419,6 +421,52 @@ describe('SnackMachineController - e2e', () => {
         code: status.FAILED_PRECONDITION,
         details: message,
       });
+    });
+  });
+
+  describe('gRPC CreateSnackMachine', () => {
+    it('should execute CreateSnackMachineCommand', async () => {
+      const id = Id.generate();
+
+      await lastValueFrom(snackMachineProtoService.createSnackMachine({ id: id.value }));
+
+      expect(commandBusMock.execute.mock.lastCall).toStrictEqual([new CreateSnackMachineCommand(id)]);
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(
+        lastValueFrom(snackMachineProtoService.createSnackMachine({ id: 'not-valid-uuid' })),
+      ).rejects.toMatchObject({ code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' });
+
+      expect(commandBusMock.execute).not.toHaveBeenCalled();
+    });
+
+    it('should fail with ALREADY_EXISTS when the snack machine already exists', async () => {
+      const id = Id.generate().value;
+      commandBusMock.execute.mockRejectedValueOnce(new ConflictException(`Snack machine with id ${id} already exists`));
+
+      await expect(lastValueFrom(snackMachineProtoService.createSnackMachine({ id }))).rejects.toMatchObject({
+        code: status.ALREADY_EXISTS,
+        details: `Snack machine with id ${id} already exists`,
+      });
+    });
+  });
+
+  describe('gRPC DeleteSnackMachine', () => {
+    it('should execute DeleteSnackMachineCommand', async () => {
+      const id = Id.generate();
+
+      await lastValueFrom(snackMachineProtoService.deleteSnackMachine({ id: id.value }));
+
+      expect(commandBusMock.execute.mock.lastCall).toStrictEqual([new DeleteSnackMachineCommand(id)]);
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(
+        lastValueFrom(snackMachineProtoService.deleteSnackMachine({ id: 'not-valid-uuid' })),
+      ).rejects.toMatchObject({ code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' });
+
+      expect(commandBusMock.execute).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,14 +1,18 @@
 import { status } from '@grpc/grpc-js';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import type { AtmProtoService } from '@vending-machines/proto';
-import { CoinsAndNotes, InvalidOperationException, LoadMoneyDto } from '@vending-machines/shared';
+import type { AtmProtoService, LoadMoneyRequest } from '@vending-machines/proto';
+import { CoinsAndNotes, InvalidOperationException } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { of, throwError } from 'rxjs';
 import { AtmProtoServiceClient } from '../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('AtmProtoServiceClient', () => {
-  const service = { loadMoney: vi.fn<AtmProtoService['loadMoney']>(() => of(void 0)) };
+  const service = {
+    loadMoney: vi.fn<AtmProtoService['loadMoney']>(() => of(void 0)),
+    createAtm: vi.fn<AtmProtoService['createAtm']>(),
+    deleteAtm: vi.fn<AtmProtoService['deleteAtm']>(),
+  };
   let protoClient: AtmProtoServiceClient;
 
   beforeAll(async () => {
@@ -28,7 +32,7 @@ describe('AtmProtoServiceClient', () => {
     it('should call grpc client with correct data', async () => {
       const id = randomUUID();
       const money: CoinsAndNotes = [1, 1, 1, 1, 1, 1];
-      const dto: LoadMoneyDto = { id, money };
+      const dto: LoadMoneyRequest = { id, money };
 
       await protoClient.loadMoney(dto);
 

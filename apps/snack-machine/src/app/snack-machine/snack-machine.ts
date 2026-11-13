@@ -152,7 +152,7 @@ export class SnackMachine extends AggregateRoot {
     return slot;
   }
 
-  markAsDeleted(): void {
+  delete(): void {
     this.apply(
       new SnackMachineDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.SnackMachine, payload: {} }),
     );

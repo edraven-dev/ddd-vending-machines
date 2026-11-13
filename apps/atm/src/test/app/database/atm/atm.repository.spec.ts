@@ -37,6 +37,28 @@ describe('MikroOrmAtmRepository', () => {
     vi.restoreAllMocks();
   });
 
+  describe('#exists', () => {
+    it('should count by id', async () => {
+      const count = vi.spyOn(ormRepository, 'count').mockResolvedValue(0);
+
+      await repository.exists(id);
+
+      expect(count).toHaveBeenCalledWith({ id: id.value });
+    });
+
+    it('should return true if an entity with the id exists', async () => {
+      vi.spyOn(ormRepository, 'count').mockResolvedValue(1);
+
+      await expect(repository.exists(id)).resolves.toBe(true);
+    });
+
+    it('should return false if no entity with the id exists', async () => {
+      vi.spyOn(ormRepository, 'count').mockResolvedValue(0);
+
+      await expect(repository.exists(id)).resolves.toBe(false);
+    });
+  });
+
   describe('#findOne', () => {
     it('should call ormRepository.findOne with any id', async () => {
       const atmEntity = new AtmEntity();

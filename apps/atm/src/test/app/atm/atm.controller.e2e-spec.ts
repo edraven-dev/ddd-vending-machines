@@ -1,5 +1,5 @@
 import { status } from '@grpc/grpc-js';
-import { HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, INestApplication, NotFoundException } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ClientGrpcProxy, ClientProxyFactory, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
@@ -18,6 +18,8 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
+import { CreateAtmCommand } from '../../../app/atm/commands/impl/create-atm.command';
+import { DeleteAtmCommand } from '../../../app/atm/commands/impl/delete-atm.command';
 import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
 
 describe('AtmController - e2e', () => {
@@ -178,6 +180,54 @@ describe('AtmController - e2e', () => {
       await expect(
         lastValueFrom(atmProtoService.loadMoney({ id: Id.generate().value, money: [-1, 0, 0, 0, 0, 0] })),
       ).rejects.toMatchObject({ code: status.FAILED_PRECONDITION, details: 'Money components cannot be negative' });
+    });
+  });
+
+  describe('gRPC CreateAtm', () => {
+    it('should execute CreateAtmCommand', async () => {
+      const id = Id.generate();
+
+      await lastValueFrom(atmProtoService.createAtm({ id: id.value }));
+
+      expect(commandBusMock.execute.mock.lastCall).toStrictEqual([new CreateAtmCommand(id)]);
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(lastValueFrom(atmProtoService.createAtm({ id: 'not-valid-uuid' }))).rejects.toMatchObject({
+        code: status.INVALID_ARGUMENT,
+        details: 'id: Invalid UUID',
+      });
+
+      expect(commandBusMock.execute).not.toHaveBeenCalled();
+    });
+
+    it('should fail with ALREADY_EXISTS when the ATM already exists', async () => {
+      const id = Id.generate().value;
+      commandBusMock.execute.mockRejectedValueOnce(new ConflictException(`Atm with id ${id} already exists`));
+
+      await expect(lastValueFrom(atmProtoService.createAtm({ id }))).rejects.toMatchObject({
+        code: status.ALREADY_EXISTS,
+        details: `Atm with id ${id} already exists`,
+      });
+    });
+  });
+
+  describe('gRPC DeleteAtm', () => {
+    it('should execute DeleteAtmCommand', async () => {
+      const id = Id.generate();
+
+      await lastValueFrom(atmProtoService.deleteAtm({ id: id.value }));
+
+      expect(commandBusMock.execute.mock.lastCall).toStrictEqual([new DeleteAtmCommand(id)]);
+    });
+
+    it('should fail with INVALID_ARGUMENT when id is not a valid uuid', async () => {
+      await expect(lastValueFrom(atmProtoService.deleteAtm({ id: 'not-valid-uuid' }))).rejects.toMatchObject({
+        code: status.INVALID_ARGUMENT,
+        details: 'id: Invalid UUID',
+      });
+
+      expect(commandBusMock.execute).not.toHaveBeenCalled();
     });
   });
 });

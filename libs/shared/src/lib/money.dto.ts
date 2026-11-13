@@ -16,9 +16,3 @@ export const unloadMoneySchema = z.object({
 });
 
 export type UnloadMoneyDto = z.infer<typeof unloadMoneySchema>;
-
-export const loadMoneySchema = unloadMoneySchema.extend({
-  id: z.uuidv4(),
-});
-
-export type LoadMoneyDto = z.infer<typeof loadMoneySchema>;

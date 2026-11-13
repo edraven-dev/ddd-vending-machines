@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CoinsAndNotes, Id, Money } from '@vending-machines/shared';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
+import { DeleteSnackMachineCommand } from '../../../app/snack-machine/commands/impl/delete-snack-machine.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
 import { LoadSnacksCommand } from '../../../app/snack-machine/commands/impl/load-snacks.command';
 import { ReturnMoneyCommand } from '../../../app/snack-machine/commands/impl/return-money.command';
@@ -158,6 +159,26 @@ describe('SnackMachineController', () => {
       await controller.unloadMoney({ id });
 
       expect(service.unloadMoney).toHaveBeenCalledWith(id);
+    });
+  });
+
+  describe('#createSnackMachine', () => {
+    it('should execute CreateSnackMachineCommand', async () => {
+      const id = Id.generate();
+
+      await controller.createSnackMachine({ id });
+
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([new CreateSnackMachineCommand(id)]);
+    });
+  });
+
+  describe('#deleteSnackMachine', () => {
+    it('should execute DeleteSnackMachineCommand', async () => {
+      const id = Id.generate();
+
+      await controller.deleteSnackMachine({ id });
+
+      expect(commandBus.execute.mock.lastCall).toStrictEqual([new DeleteSnackMachineCommand(id)]);
     });
   });
 });

@@ -64,7 +64,7 @@ export class Atm extends AggregateRoot {
     return amount.add(commission);
   }
 
-  markAsDeleted(): void {
+  delete(): void {
     this.apply(new AtmDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.Atm, payload: {} }));
   }
 }

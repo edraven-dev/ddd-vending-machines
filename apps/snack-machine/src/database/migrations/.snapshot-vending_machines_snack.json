@@ -136,7 +136,8 @@
             "id"
           ],
           "referencedTableName": "public.snack_machine",
-          "updateRule": "cascade"
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
         },
         "slot_snack_pile_snack_id_foreign": {
           "columnNames": [

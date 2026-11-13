@@ -294,12 +294,12 @@ describe('SnackMachine', () => {
     });
   });
 
-  describe('#markAsDeleted', () => {
+  describe('#delete', () => {
     it('should apply HeadOfficeDeletedEvent when marking as deleted', () => {
       const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
-      snackMachine.markAsDeleted();
+      snackMachine.delete();
 
       expect(spy).toHaveBeenCalledWith(expect.any(SnackMachineDeletedEvent));
       expect(spy).toHaveBeenCalledWith(
