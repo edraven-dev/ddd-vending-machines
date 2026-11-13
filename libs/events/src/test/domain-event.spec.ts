@@ -1,21 +1,15 @@
 import { Id } from '@vending-machines/shared';
-import { randomUUID } from 'node:crypto';
 import { BalanceChangedEvent } from '../event-declarations';
+import { AggregateType } from '../lib/aggregate-type';
 
 describe('DomainEvent', () => {
-  const anEvent = (aggregateId: Id | string = Id.generate()) =>
-    new BalanceChangedEvent({ aggregateId, aggregateType: 'Atm', payload: { delta: '0.01' } });
+  const anEvent = (aggregateId = Id.generate()) =>
+    new BalanceChangedEvent({ aggregateId, aggregateType: AggregateType.Atm, payload: { delta: '0.01' } });
 
   it("should carry an aggregate's Id as its UUID string", () => {
     const aggregateId = Id.generate();
 
     expect(anEvent(aggregateId).aggregateId).toBe(aggregateId.value);
-  });
-
-  it('should keep a string aggregate id', () => {
-    const aggregateId = randomUUID();
-
-    expect(anEvent(aggregateId).aggregateId).toBe(aggregateId);
   });
 
   it('should get a unique version 7 event id', () => {

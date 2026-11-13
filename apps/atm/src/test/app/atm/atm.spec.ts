@@ -1,4 +1,4 @@
-import { AtmDeletedEvent, MoneyLoadedEvent } from '@vending-machines/events';
+import { AggregateType, AtmDeletedEvent, MoneyLoadedEvent } from '@vending-machines/events';
 import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
@@ -25,7 +25,7 @@ describe('Atm', () => {
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
           aggregateId: atm.id.value,
-          aggregateType: atm.constructor.name,
+          aggregateType: AggregateType.Atm,
           payload: { loadedMoney: Money.add(Money.Dollar, Money.Dollar).toCoinsAndNotes() },
         }),
       );
@@ -109,7 +109,7 @@ describe('Atm', () => {
           eventType: 'BalanceChangedEvent',
           timestamp: expect.any(Date),
           aggregateId: atm.id.value,
-          aggregateType: 'Atm',
+          aggregateType: AggregateType.Atm,
           payload: { delta: '0.01' },
         },
       ]);
@@ -127,7 +127,7 @@ describe('Atm', () => {
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
           aggregateId: atm.id.value,
-          aggregateType: atm.constructor.name,
+          aggregateType: AggregateType.Atm,
         }),
       );
     });

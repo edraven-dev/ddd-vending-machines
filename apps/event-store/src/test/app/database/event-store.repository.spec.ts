@@ -2,7 +2,8 @@ import type { RequiredEntityData } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { Test } from '@nestjs/testing';
-import { randomUUID } from 'crypto';
+import { AggregateType } from '@vending-machines/events';
+import { randomUUIDv7 } from 'node:crypto';
 import EventStoreEntity from '../../../app/database/event-store/event-store.entity';
 import { MikroOrmEventStoreRepository } from '../../../app/database/event-store/event-store.repository';
 
@@ -19,11 +20,11 @@ describe('MikroOrmEventStoreRepository', () => {
   let repository: MikroOrmEventStoreRepository;
 
   const anEvent = () => ({
-    eventId: randomUUID(),
+    eventId: randomUUIDv7(),
     eventType: 'AtmCreatedEvent',
     timestamp: new Date(),
-    aggregateId: randomUUID(),
-    aggregateType: 'Atm',
+    aggregateId: randomUUIDv7(),
+    aggregateType: AggregateType.Atm,
     payload: {},
   });
 

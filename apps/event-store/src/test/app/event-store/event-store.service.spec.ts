@@ -2,8 +2,9 @@ import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Test } from '@nestjs/testing';
+import { AggregateType } from '@vending-machines/events';
 import { EJSON } from 'bson';
-import { randomUUID } from 'crypto';
+import { randomUUIDv7 } from 'node:crypto';
 import { AmqpService } from '../../../app/amqp/amqp.service';
 import { EXCHANGE_NAME } from '../../../app/constants';
 import EventStoreEntity from '../../../app/database/event-store/event-store.entity';
@@ -23,11 +24,11 @@ describe('EventStoreService', () => {
   let deliver: (message: string) => Promise<void>;
 
   const anEvent = () => ({
-    eventId: randomUUID(),
+    eventId: randomUUIDv7(),
     eventType: 'AtmCreatedEvent',
     timestamp: new Date(),
-    aggregateId: randomUUID(),
-    aggregateType: 'Atm',
+    aggregateId: randomUUIDv7(),
+    aggregateType: AggregateType.Atm,
     payload: {},
   });
 

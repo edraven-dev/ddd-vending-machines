@@ -9,8 +9,8 @@ class OtherEntity extends Entity {}
 class TestAggregate extends AggregateRoot {}
 class OtherAggregate extends AggregateRoot {}
 
-const uuid = 'ad277203-e35d-4ffe-a03f-6630ea3302cc';
-const otherUuid = '2551785a-6b0d-4069-bf51-e60fc76588fd';
+const uuid = '019a7f3e-8c41-7d2a-b5e6-3f9d1c2b4a60';
+const otherUuid = '019a7f3e-8c41-7d2a-b5e6-3f9d1c2b4a61';
 
 describe('Entity', () => {
   it('should equal itself', () => {
