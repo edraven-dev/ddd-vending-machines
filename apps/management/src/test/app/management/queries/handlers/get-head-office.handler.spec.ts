@@ -1,15 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { HeadOfficeDto } from '../../../../../app/management/dto/head-office.dto';
 import { HeadOffice } from '../../../../../app/management/head-office';
 import { HeadOfficeRepository } from '../../../../../app/management/head-office.repository.interface';
 import { GetHeadOfficeHandler } from '../../../../../app/management/queries/handlers/get-head-office.handler';
+import { GetHeadOfficeQuery } from '../../../../../app/management/queries/impl/get-head-office.query';
 
 describe('GetHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice(randomUUID());
+  const headOffice = new HeadOffice(Id.generate());
   const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
 
@@ -25,7 +25,7 @@ describe('GetHeadOfficeHandler', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       const id = headOffice.id;
 
-      await handler.execute({ id });
+      await handler.execute(new GetHeadOfficeQuery(id));
 
       expect(repository.findOne).toHaveBeenCalledWith(id);
     });
@@ -34,7 +34,7 @@ describe('GetHeadOfficeHandler', () => {
       repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
-      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new GetHeadOfficeQuery(id))).rejects.toThrow(NotFoundException);
     });
 
     it('should return HeadOfficeDto with correct data', async () => {
@@ -42,10 +42,10 @@ describe('GetHeadOfficeHandler', () => {
       headOffice.changeBalance(new Currency('5.00'));
       const id = headOffice.id;
 
-      const result = await handler.execute({ id });
+      const result = await handler.execute(new GetHeadOfficeQuery(id));
 
       expect(result).toBeInstanceOf(HeadOfficeDto);
-      expect(result.id).toBe(id);
+      expect(result.id).toBe(id.value);
       expect(result.cash.amount).toBe('$5.00');
       expect(result.balance.amount).toBe('$5.00');
     });

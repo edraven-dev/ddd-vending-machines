@@ -1,14 +1,10 @@
-import { HeadOfficeDeletedEvent } from '@vending-machines/events';
-import { AggregateRoot, DEFAULT_ID, Money } from '@vending-machines/shared';
+import { AggregateType, HeadOfficeDeletedEvent } from '@vending-machines/events';
+import { AggregateRoot, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
-export class HeadOffice extends AggregateRoot<string> {
+export class HeadOffice extends AggregateRoot {
   balance: Currency = new Currency(0);
   cash: Money = Money.None;
-
-  constructor(id: string = DEFAULT_ID) {
-    super(id);
-  }
 
   changeBalance(delta: Currency): void {
     this.balance = this.balance.add(delta);
@@ -25,6 +21,8 @@ export class HeadOffice extends AggregateRoot<string> {
   }
 
   markAsDeleted(): void {
-    this.apply(new HeadOfficeDeletedEvent({ aggregateId: this.id, aggregateType: this.constructor.name, payload: {} }));
+    this.apply(
+      new HeadOfficeDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.HeadOffice, payload: {} }),
+    );
   }
 }

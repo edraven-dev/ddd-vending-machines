@@ -16,10 +16,10 @@ export class UnloadCashFromSnackMachineHandler implements ICommandHandler<Unload
     const headOffice = await this.headOfficeRepository.findOne(id);
 
     if (!headOffice) {
-      throw new NotFoundException(`Head office with id ${id} not found`);
+      throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
 
-    const cash = await this.snackMachineProtoServiceClient.unloadMoney(id);
+    const cash = await this.snackMachineProtoServiceClient.unloadMoney(id.value);
     headOffice.loadCash(new Money(...cash.money));
     await this.headOfficeRepository.save(headOffice);
   }

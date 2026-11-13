@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { randomUUID } from 'crypto';
+import { Id } from '@vending-machines/shared';
 import { CreateHeadOfficeCommand } from '../../../app/management/commands/impl/create-head-office.command';
 import { LoadCashToAtmCommand } from '../../../app/management/commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from '../../../app/management/commands/impl/unload-cash-from-snack-machine.command';
@@ -31,7 +31,7 @@ describe('ManagementController', () => {
 
   describe('#getById', () => {
     it('should execute GetHeadOfficeQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.getById(id);
 
@@ -41,7 +41,7 @@ describe('ManagementController', () => {
 
   describe('#create', () => {
     it('should execute CreateHeadOfficeCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.create({ id });
 
@@ -49,7 +49,7 @@ describe('ManagementController', () => {
     });
 
     it('should execute GetHeadOfficeQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.create({ id });
 
@@ -59,7 +59,7 @@ describe('ManagementController', () => {
 
   describe('#loadCashToAtm', () => {
     it('should execute LoadCashToAtmCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.loadCashToAtm(id);
 
@@ -67,7 +67,7 @@ describe('ManagementController', () => {
     });
 
     it('should execute GetHeadOfficeQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.loadCashToAtm(id);
 
@@ -77,7 +77,7 @@ describe('ManagementController', () => {
 
   describe('#unloadCashFromSnackMachineCommand', () => {
     it('should execute UnloadCashFromSnackMachineCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.unloadCashFromSnackMachine(id);
 
@@ -85,7 +85,7 @@ describe('ManagementController', () => {
     });
 
     it('should execute GetHeadOfficeQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.unloadCashFromSnackMachine(id);
 

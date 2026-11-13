@@ -1,6 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ManagementController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`ManagementController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
+
+exports[`ManagementController - e2e > GET /:id > should return 400 BAD REQUEST when id is the nil uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`ManagementController - e2e > POST / > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
 [
@@ -8,6 +18,14 @@ exports[`ManagementController - e2e > POST / > should return 400 BAD REQUEST whe
 ]
 `;
 
-exports[`ManagementController - e2e > POST /:id/load-cash-to-atm > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`ManagementController - e2e > POST /:id/load-cash-to-atm > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
-exports[`ManagementController - e2e > POST /:id/unload-cash-from-snack-machine > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`ManagementController - e2e > POST /:id/unload-cash-from-snack-machine > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;

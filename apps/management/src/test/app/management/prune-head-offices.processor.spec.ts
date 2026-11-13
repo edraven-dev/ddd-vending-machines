@@ -2,6 +2,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Id } from '@vending-machines/shared';
 import { Job } from 'bullmq';
 import { DeleteHeadOfficeCommand } from '../../../app/management/commands/impl/delete-head-office.command';
 import { HeadOffice } from '../../../app/management/head-office';
@@ -9,7 +10,7 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 import { PruneHeadOfficesProcessor } from '../../../app/management/prune-head-offices.processor';
 
 describe('PruneHeadOfficesProcessor', () => {
-  const headOffices = [new HeadOffice(), new HeadOffice()];
+  const headOffices = [new HeadOffice(Id.generate()), new HeadOffice(Id.generate())];
   const commandBus = { execute: vi.fn<CommandBus['execute']>() };
   const repository = { findAll: vi.fn<HeadOfficeRepository['findAll']>(() => headOffices) };
   let processor: PruneHeadOfficesProcessor;

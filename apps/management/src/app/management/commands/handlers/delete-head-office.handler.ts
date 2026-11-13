@@ -13,7 +13,7 @@ export class DeleteHeadOfficeHandler implements ICommandHandler<DeleteHeadOffice
   async execute({ id }: DeleteHeadOfficeCommand) {
     const existingHeadOffice = await this.headOfficeRepository.findOne(id);
     if (!existingHeadOffice) {
-      throw new NotFoundException(`Head office with id ${id} not found`);
+      throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
 
     const headOffice = this.eventPublisher.mergeObjectContext(existingHeadOffice);

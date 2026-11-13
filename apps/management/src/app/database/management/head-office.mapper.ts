@@ -1,5 +1,5 @@
 import { RequiredEntityData } from '@mikro-orm/core';
-import { Money } from '@vending-machines/shared';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { HeadOffice } from '../../management/head-office';
 import HeadOfficeEntity from './head-office.entity';
@@ -9,7 +9,7 @@ export class HeadOfficeMapper {
   private constructor() {}
 
   static toDomain(entity: HeadOfficeEntity): HeadOffice {
-    const headOffice = new HeadOffice(entity.id);
+    const headOffice = new HeadOffice(Id.from(entity.id));
     headOffice.balance = new Currency(entity.balance);
     headOffice.cash = new Money(
       entity.cash.oneCentCount,
@@ -24,7 +24,7 @@ export class HeadOfficeMapper {
 
   static toPersistence(headOffice: HeadOffice): RequiredEntityData<HeadOfficeEntity> {
     return {
-      id: headOffice.id,
+      id: headOffice.id.value,
       balance: headOffice.balance.value,
       cash: {
         oneCentCount: headOffice.cash.oneCentCount,

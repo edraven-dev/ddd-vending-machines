@@ -1,7 +1,7 @@
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HeadOfficeCreatedEvent } from '@vending-machines/events';
-import { randomUUID } from 'node:crypto';
+import { Id } from '@vending-machines/shared';
 import { HeadOffice } from '../../../app/management/head-office';
 import { HeadOfficeFactory } from '../../../app/management/head-office.factory';
 
@@ -27,7 +27,7 @@ describe('HeadOfficeFactory', () => {
   describe('#create', () => {
     it('should apply HeadOfficeCreatedEvent', () => {
       const apply = vi.spyOn(HeadOffice.prototype, 'apply');
-      const id = randomUUID();
+      const id = Id.generate();
 
       factory.create(id);
 
@@ -35,7 +35,7 @@ describe('HeadOfficeFactory', () => {
     });
 
     it('should return HeadOffice with proper id', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const headOffice = factory.create(id);
 

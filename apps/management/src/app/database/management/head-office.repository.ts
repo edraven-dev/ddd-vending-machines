@@ -1,6 +1,7 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
+import type { Id } from '@vending-machines/shared';
 import { HeadOffice } from '../../management/head-office';
 import { HeadOfficeRepository } from '../../management/head-office.repository.interface';
 import HeadOfficeEntity from './head-office.entity';
@@ -20,8 +21,8 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     return headOfficeEntities.map((headOfficeEntity) => HeadOfficeMapper.toDomain(headOfficeEntity));
   }
 
-  async findOne(id: string): Promise<HeadOffice | null> {
-    const headOfficeEntity = await this.headOfficeRepository.findOne({ id });
+  async findOne(id: Id): Promise<HeadOffice | null> {
+    const headOfficeEntity = await this.headOfficeRepository.findOne({ id: id.value });
 
     if (!headOfficeEntity) {
       return null;
@@ -31,7 +32,7 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
   }
 
   async save(headOffice: HeadOffice): Promise<void> {
-    const existingEntity = await this.headOfficeRepository.findOne({ id: headOffice.id });
+    const existingEntity = await this.headOfficeRepository.findOne({ id: headOffice.id.value });
 
     if (existingEntity) {
       existingEntity.assign(HeadOfficeMapper.toPersistence(headOffice));
@@ -42,8 +43,8 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     await this.em.flush();
   }
 
-  async delete(id: string): Promise<void> {
-    const headOfficeRef = this.em.getReference(HeadOfficeEntity, id);
+  async delete(id: Id): Promise<void> {
+    const headOfficeRef = this.em.getReference(HeadOfficeEntity, id.value);
     await this.em.remove(headOfficeRef).flush();
   }
 }

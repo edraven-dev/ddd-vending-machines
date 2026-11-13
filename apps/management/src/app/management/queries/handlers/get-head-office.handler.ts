@@ -13,9 +13,13 @@ export class GetHeadOfficeHandler implements IQueryHandler<GetHeadOfficeQuery, H
     const headOffice = await this.headOfficeRepository.findOne(id);
 
     if (!headOffice) {
-      throw new NotFoundException(`Head office with id ${id} not found`);
+      throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
 
-    return new HeadOfficeDto(headOffice.id, new MoneyDto(headOffice.balance), new MoneyDto(headOffice.cash.amount));
+    return new HeadOfficeDto(
+      headOffice.id.value,
+      new MoneyDto(headOffice.balance),
+      new MoneyDto(headOffice.cash.amount),
+    );
   }
 }
