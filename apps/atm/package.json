@@ -50,8 +50,8 @@
     "@vending-machines/shared": "workspace:*",
     "amqp-connection-manager": "catalog:",
     "amqplib": "catalog:",
+    "bson": "catalog:",
     "currency.js": "catalog:",
-    "ejson": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"

@@ -2,7 +2,7 @@ import { Inject, Injectable, OnApplicationBootstrap, Type } from '@nestjs/common
 import { ModuleRef } from '@nestjs/core';
 import { IEvent, IEventHandler } from '@nestjs/cqrs';
 import { APP_NAME_TOKEN } from '@vending-machines/shared';
-import EJSON from 'ejson';
+import { EJSON } from 'bson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
 import { ExplorerService } from './services/explorer.service';

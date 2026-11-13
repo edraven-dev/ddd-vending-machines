@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventBus, IEvent, IEventPublisher } from '@nestjs/cqrs';
-import EJSON from 'ejson';
+import { EJSON } from 'bson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
 

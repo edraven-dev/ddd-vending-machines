@@ -20,12 +20,12 @@
     "@vending-machines/shared": "workspace:*",
     "amqp-connection-manager": "catalog:",
     "amqplib": "catalog:",
-    "ejson": "catalog:",
+    "bson": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:"
   },
   "devDependencies": {
-    "@types/ejson": "catalog:",
+    "@nestjs/testing": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "oxlint": "catalog:",
