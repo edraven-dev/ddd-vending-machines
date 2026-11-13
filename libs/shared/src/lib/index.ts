@@ -1,6 +1,7 @@
 export * from './aggregate-root';
 export * from './constants';
 export * from './entity';
+export * from './id';
 export * from './invalid-operation.exception';
 export * from './logger.middleware';
 export * from './money';

@@ -1,6 +1,6 @@
 import { CqrsModule, type IEvent, EventPublisher as NestEventPublisher } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { AggregateRoot } from '@vending-machines/shared';
+import { AggregateRoot, Id } from '@vending-machines/shared';
 import { randomUUID } from 'node:crypto';
 import { BalanceChangedEvent } from '../event-declarations';
 import { AmqpService } from '../lib/amqp/amqp.service';
@@ -81,7 +81,7 @@ describe('EventPublisher', () => {
           releaseFirst = resolve;
         }),
     );
-    const aggregate = nestEventPublisher.mergeObjectContext(new TestAggregate(randomUUID()));
+    const aggregate = nestEventPublisher.mergeObjectContext(new TestAggregate(Id.generate()));
     aggregate.apply(anEvent());
     aggregate.apply(anEvent());
 

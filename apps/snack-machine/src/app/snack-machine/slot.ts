@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { SnackMachine } from './snack-machine';
 import { SnackPile } from './snack-pile';
 
-export class Slot extends Entity {
+export class Slot extends Entity<string> {
   readonly snackMachine: SnackMachine;
   readonly position: number;
   snackPile: SnackPile;

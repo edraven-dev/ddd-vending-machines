@@ -24,6 +24,7 @@
     "currency.js": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
+    "tiny-types": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
