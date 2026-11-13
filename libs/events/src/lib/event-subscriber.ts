@@ -5,7 +5,14 @@ import { APP_NAME_TOKEN } from '@vending-machines/shared';
 import { EJSON } from 'bson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
+import { DomainEvent } from './domain-event';
+import type { EventType } from './event-type';
 import { ExplorerService } from './services/explorer.service';
+
+type DomainEventClass = Type<DomainEvent<Record<string, unknown>>> & { readonly eventType: EventType };
+
+const isDomainEventClass = (eventClass: Type<IEvent>): eventClass is DomainEventClass =>
+  eventClass.prototype instanceof DomainEvent;
 
 @Injectable()
 export class EventSubscriber implements OnApplicationBootstrap {
@@ -17,20 +24,30 @@ export class EventSubscriber implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap() {
-    const events = this.explorerService.exploreEvents();
-    events.forEach(this.subscribe.bind(this));
+    const subscribed = new Set<EventType>();
+    for (const [eventClass, handlerClass] of this.explorerService.exploreEvents()) {
+      if (!isDomainEventClass(eventClass)) {
+        throw new Error(`${eventClass.name} is not a domain event`);
+      }
+      if (subscribed.has(eventClass.eventType)) {
+        throw new Error(`${this.appName} has more than one handler for ${eventClass.eventType}`);
+      }
+      subscribed.add(eventClass.eventType);
+      this.subscribe(eventClass, handlerClass);
+    }
   }
 
-  private subscribe([moduleName, EventType, EventHandler]: [string, Type<IEvent>, Type<IEventHandler>]): void {
+  private subscribe(eventClass: DomainEventClass, handlerClass: Type<IEventHandler>): void {
+    const { eventType } = eventClass;
     void this.amqpService.addSubscriber(
       EXCHANGE_NAME,
-      `#.${EventType.name}.#`,
-      `q.${this.appName}.${moduleName}.${EventType.name}.${EventHandler.name}`,
+      `event.${eventType}`,
+      `q.${this.appName}.${eventType}`,
       async (msg) => {
         const decodedMessage = EJSON.parse(msg.toString('utf-8'));
-        if (EventType.name === decodedMessage.eventType) {
-          const eventInstance = Object.create(EventType.prototype, Object.getOwnPropertyDescriptors(decodedMessage));
-          await this.moduleRef.get(EventHandler, { strict: false }).handle(eventInstance);
+        if (decodedMessage.eventType === eventType) {
+          const event = Object.create(eventClass.prototype, Object.getOwnPropertyDescriptors(decodedMessage));
+          await this.moduleRef.get(handlerClass, { strict: false }).handle(event);
         }
       },
     );

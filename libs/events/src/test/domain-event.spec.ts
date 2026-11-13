@@ -1,6 +1,8 @@
 import { Id } from '@vending-machines/shared';
+import * as eventDeclarations from '../event-declarations';
 import { BalanceChangedEvent } from '../event-declarations';
 import { AggregateType } from '../lib/aggregate-type';
+import { EventType } from '../lib/event-type';
 
 describe('DomainEvent', () => {
   const anEvent = (aggregateId = Id.generate()) =>
@@ -20,10 +22,17 @@ describe('DomainEvent', () => {
     expect(first.eventId).not.toBe(second.eventId);
   });
 
-  it('should be named after its class and timestamped', () => {
+  it('should carry the event type of its class and a timestamp', () => {
     const event = anEvent();
 
-    expect(event.eventType).toBe('BalanceChangedEvent');
+    expect(event.eventType).toBe(EventType.BalanceChanged);
     expect(event.timestamp).toBeInstanceOf(Date);
+  });
+
+  it('should give every event declaration its own event type', () => {
+    const eventTypes = Object.values(eventDeclarations).map((eventClass) => eventClass.eventType);
+
+    expect(new Set(eventTypes)).toStrictEqual(new Set(Object.values(EventType)));
+    expect(eventTypes).toHaveLength(Object.values(EventType).length);
   });
 });

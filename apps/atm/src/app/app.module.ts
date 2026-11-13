@@ -10,7 +10,7 @@ import {
 import { AtmModule } from './atm/atm.module';
 import { DatabaseModule } from './database/database.module';
 
-const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'ATM' };
+const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'atm' };
 
 @Global()
 @Module({

@@ -1,4 +1,5 @@
 import { DomainEvent } from '../../lib/domain-event';
+import { EventType } from '../../lib/event-type';
 
 type SnackBoughtEventPayload = {
   slotPosition: number;
@@ -7,4 +8,6 @@ type SnackBoughtEventPayload = {
   snackPrice: string;
 };
 
-export class SnackBoughtEvent extends DomainEvent<SnackBoughtEventPayload> {}
+export class SnackBoughtEvent extends DomainEvent<SnackBoughtEventPayload> {
+  static override readonly eventType = EventType.SnackBought;
+}

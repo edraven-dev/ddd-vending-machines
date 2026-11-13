@@ -19,7 +19,7 @@ export class BalanceChangedHandler implements IEventHandler<BalanceChangedEvent>
   @CreateRequestContext()
   @Transactional()
   async handle(event: BalanceChangedEvent) {
-    if (!(await this.inbox.tryRecord(BalanceChangedHandler.name, event.eventId))) {
+    if (!(await this.inbox.tryRecord(BalanceChangedEvent.eventType, event.eventId))) {
       return;
     }
 

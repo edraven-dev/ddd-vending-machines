@@ -19,7 +19,7 @@ export class EventStoreService implements OnApplicationBootstrap {
 
   async storeEvents() {
     const routingKey = 'event.#';
-    const queue = 'q.EventStore';
+    const queue = 'q.event-store';
 
     await this.amqpService.addSubscriber(EXCHANGE_NAME, routingKey, queue, (msg) => this.storeEvent(msg));
   }

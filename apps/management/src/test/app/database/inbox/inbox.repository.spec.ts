@@ -34,10 +34,10 @@ describe('MikroOrmInbox', () => {
       queryBuilder.execute.mockResolvedValueOnce({ affectedRows: 1 });
       const eventId = randomUUID();
 
-      await inbox.tryRecord('BalanceChangedHandler', eventId);
+      await inbox.tryRecord('atm.balance-changed', eventId);
 
       expect(entityManagerMock.createQueryBuilder).toHaveBeenCalledWith(InboxEntity);
-      expect(queryBuilder.insert).toHaveBeenCalledWith({ consumer: 'BalanceChangedHandler', eventId });
+      expect(queryBuilder.insert).toHaveBeenCalledWith({ consumer: 'atm.balance-changed', eventId });
       expect(queryBuilder.onConflict).toHaveBeenCalledWith(['consumer', 'eventId']);
       expect(queryBuilder.ignore).toHaveBeenCalledOnce();
       expect(queryBuilder.execute).toHaveBeenCalledWith('run');
@@ -46,13 +46,13 @@ describe('MikroOrmInbox', () => {
     it('should return true when the event was recorded now', async () => {
       queryBuilder.execute.mockResolvedValueOnce({ affectedRows: 1 });
 
-      await expect(inbox.tryRecord('BalanceChangedHandler', randomUUID())).resolves.toBe(true);
+      await expect(inbox.tryRecord('atm.balance-changed', randomUUID())).resolves.toBe(true);
     });
 
     it('should return false when the event was already recorded', async () => {
       queryBuilder.execute.mockResolvedValueOnce({ affectedRows: 0 });
 
-      await expect(inbox.tryRecord('BalanceChangedHandler', randomUUID())).resolves.toBe(false);
+      await expect(inbox.tryRecord('atm.balance-changed', randomUUID())).resolves.toBe(false);
     });
 
     it('should build an insert that does nothing when the event was already recorded', () => {
@@ -64,7 +64,7 @@ describe('MikroOrmInbox', () => {
 
       const query = orm.em
         .createQueryBuilder(InboxEntity)
-        .insert({ consumer: 'BalanceChangedHandler', eventId: randomUUID() })
+        .insert({ consumer: 'atm.balance-changed', eventId: randomUUID() })
         .onConflict(['consumer', 'eventId'])
         .ignore()
         .getQuery();

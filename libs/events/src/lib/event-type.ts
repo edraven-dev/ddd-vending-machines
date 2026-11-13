@@ -1,0 +1,15 @@
+export enum EventType {
+  AtmCreated = 'atm.created',
+  AtmDeleted = 'atm.deleted',
+  BalanceChanged = 'atm.balance-changed',
+  HeadOfficeCreated = 'head-office.created',
+  HeadOfficeDeleted = 'head-office.deleted',
+  MoneyLoaded = 'money.loaded',
+  MoneyUnloaded = 'money.unloaded',
+  MoneyInserted = 'snack-machine.money-inserted',
+  MoneyReturned = 'snack-machine.money-returned',
+  SnackBought = 'snack-machine.snack-bought',
+  SnackMachineCreated = 'snack-machine.created',
+  SnackMachineDeleted = 'snack-machine.deleted',
+  SnacksLoaded = 'snack-machine.snacks-loaded',
+}

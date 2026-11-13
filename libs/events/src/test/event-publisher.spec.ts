@@ -41,16 +41,15 @@ describe('EventPublisher', () => {
 
       await publisher.publish(event);
 
-      expect(amqpService.publish).toHaveBeenCalledWith(EXCHANGE_NAME, 'event.BalanceChangedEvent', expect.any(String), {
+      expect(amqpService.publish).toHaveBeenCalledWith(EXCHANGE_NAME, 'event.atm.balance-changed', expect.any(String), {
         persistent: true,
         messageId: event.eventId,
       });
     });
 
-    it('should leave the message id to the AMQP service for other events', async () => {
-      await publisher.publish({ type: 'PlainEvent' });
-
-      expect(amqpService.publish.mock.calls[0]?.[3]).toEqual({ persistent: true });
+    it('should refuse to publish an event that is not a domain event', async () => {
+      await expect(publisher.publish({ type: 'PlainEvent' })).rejects.toThrow('Object is not a domain event');
+      expect(amqpService.publish).not.toHaveBeenCalled();
     });
   });
 
