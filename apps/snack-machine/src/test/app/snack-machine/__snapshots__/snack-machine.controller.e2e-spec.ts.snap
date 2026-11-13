@@ -1,8 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SnackMachineController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`SnackMachineController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
-exports[`SnackMachineController - e2e > GET /:id/money-in-machine > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`SnackMachineController - e2e > GET /:id/money-in-machine > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is a non-integer number 1`] = `
 [
@@ -58,7 +66,11 @@ exports[`SnackMachineController - e2e > POST / > should return 400 BAD REQUEST w
 ]
 `;
 
-exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when payload is a non-integer number 1`] = `
 [
@@ -84,9 +96,23 @@ exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 
 ]
 `;
 
-exports[`SnackMachineController - e2e > POST /:id/return-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`SnackMachineController - e2e > POST /:id/return-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
-exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`SnackMachineController - e2e > POST /:id/return-money > should return 400 BAD REQUEST when id is the nil uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
+
+exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`SnackMachineController - e2e > PUT /:id/insert-money > should return 400 BAD REQUEST when payload is an array of non-integer numbers 1`] = `
 [

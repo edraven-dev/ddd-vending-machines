@@ -1,6 +1,7 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
+import type { Id } from '@vending-machines/shared';
 import { SnackMachine } from '../../snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../snack-machine/snack-machine.repository.interface';
 import SnackMachineEntity from './snack-machine.entity';
@@ -14,9 +15,9 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findOne(id: string): Promise<SnackMachine | null> {
+  async findOne(id: Id): Promise<SnackMachine | null> {
     const snackMachineEntity = await this.snackMachineRepository.findOne(
-      { id },
+      { id: id.value },
       { populate: ['slots', 'slots.snackPile', 'slots.snackPile.snack'] },
     );
 
@@ -28,7 +29,10 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
   }
 
   async save(snackMachine: SnackMachine): Promise<void> {
-    const existingEntity = await this.snackMachineRepository.findOne({ id: snackMachine.id }, { populate: ['slots'] });
+    const existingEntity = await this.snackMachineRepository.findOne(
+      { id: snackMachine.id.value },
+      { populate: ['slots'] },
+    );
 
     if (existingEntity) {
       existingEntity.assign(SnackMachineMapper.toPersistence(snackMachine));
@@ -39,8 +43,8 @@ export class MikroOrmSnackMachineRepository implements SnackMachineRepository {
     await this.em.flush();
   }
 
-  async delete(id: string): Promise<void> {
-    const snackMachineRef = this.em.getReference(SnackMachineEntity, id);
+  async delete(id: Id): Promise<void> {
+    const snackMachineRef = this.em.getReference(SnackMachineEntity, id.value);
     await this.em.remove(snackMachineRef).flush();
   }
 }

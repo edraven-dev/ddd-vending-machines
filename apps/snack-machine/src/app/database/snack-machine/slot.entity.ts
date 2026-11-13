@@ -18,7 +18,7 @@ export class SnackPileEmbeddable {
     deleteRule: 'cascade',
     updateRule: 'cascade',
   })
-  snack!: SnackEntity;
+  snack!: SnackEntity | null;
 }
 
 @Entity({ tableName: 'slot' })

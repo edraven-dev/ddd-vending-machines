@@ -1,14 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { randomUUID } from 'crypto';
+import { Id } from '@vending-machines/shared';
 import { BuySnackHandler } from '../../../../../app/snack-machine/commands/handlers/buy-snack.handler';
+import { BuySnackCommand } from '../../../../../app/snack-machine/commands/impl/buy-snack.command';
 import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('BuySnackHandler', () => {
   const snackMachine = {
-    id: randomUUID(),
+    id: Id.generate(),
     buySnack: vi.fn<SnackMachine['buySnack']>(),
     commit: vi.fn<SnackMachine['commit']>(),
   };
@@ -38,7 +39,7 @@ describe('BuySnackHandler', () => {
       const id = snackMachine.id;
       const position = 1;
 
-      await handler.execute({ id, position });
+      await handler.execute(new BuySnackCommand(id, position));
 
       expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
@@ -48,14 +49,14 @@ describe('BuySnackHandler', () => {
       const id = snackMachine.id;
       const position = 1;
 
-      await expect(handler.execute({ id, position })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new BuySnackCommand(id, position))).rejects.toThrow(NotFoundException);
     });
 
     it('should call snackMachine.buySnack', async () => {
       const id = snackMachine.id;
       const position = 1;
 
-      await handler.execute({ id, position });
+      await handler.execute(new BuySnackCommand(id, position));
 
       expect(snackMachine.buySnack).toHaveBeenCalled();
     });
@@ -64,7 +65,7 @@ describe('BuySnackHandler', () => {
       const id = snackMachine.id;
       const position = 1;
 
-      await handler.execute({ id, position });
+      await handler.execute(new BuySnackCommand(id, position));
 
       expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
@@ -73,7 +74,7 @@ describe('BuySnackHandler', () => {
       const id = snackMachine.id;
       const position = 1;
 
-      await handler.execute({ id, position });
+      await handler.execute(new BuySnackCommand(id, position));
 
       expect(snackMachine.commit).toHaveBeenCalled();
     });

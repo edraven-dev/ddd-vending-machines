@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import {
@@ -9,7 +9,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Money, UnloadMoneyDto } from '@vending-machines/shared';
+import { Id, idSchema, Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from './commands/impl/insert-money.command';
@@ -40,7 +40,7 @@ export class SnackMachineController {
   @ApiOkResponse({ type: SnackMachineDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
-  getById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
+  getById(@Param('id', { schema: idSchema }) id: Id): Promise<SnackMachineDto> {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
 
@@ -60,7 +60,7 @@ export class SnackMachineController {
   @ApiOkResponse({ type: MoneyInMachineDto })
   @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
-  getMoneyInMachine(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MoneyInMachineDto> {
+  getMoneyInMachine(@Param('id', { schema: idSchema }) id: Id): Promise<MoneyInMachineDto> {
     return this.queryBus.execute(new GetMoneyInMachineQuery(id));
   }
 
@@ -71,7 +71,7 @@ export class SnackMachineController {
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async insertMoney(
     @Body({ schema: insertMoneySchema }) requestDto: InsertMoneyDto,
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', { schema: idSchema }) id: Id,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new InsertMoneyCommand(id, new Money(...requestDto.money)));
     return this.queryBus.execute(new GetSnackMachineQuery(id));
@@ -85,7 +85,7 @@ export class SnackMachineController {
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async buySnack(
     @Body({ schema: buySnackSchema }) buySnackDto: BuySnackDto,
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', { schema: idSchema }) id: Id,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new BuySnackCommand(id, buySnackDto.position));
     return this.queryBus.execute(new GetSnackMachineQuery(id));
@@ -97,7 +97,7 @@ export class SnackMachineController {
   @ApiOkResponse({ type: SnackMachineDto })
   @ApiBadRequestResponse({ description: 'Validation errors' })
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
-  async returnMoney(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<SnackMachineDto> {
+  async returnMoney(@Param('id', { schema: idSchema }) id: Id): Promise<SnackMachineDto> {
     await this.commandBus.execute(new ReturnMoneyCommand(id));
     return this.queryBus.execute(new GetSnackMachineQuery(id));
   }
@@ -110,7 +110,7 @@ export class SnackMachineController {
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   async loadSnacks(
     @Body({ schema: loadSnacksSchema }) requestDto: LoadSnacksDto,
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', { schema: idSchema }) id: Id,
   ): Promise<SnackMachineDto> {
     await this.commandBus.execute(new LoadSnacksCommand(id, requestDto.position, requestDto.quantity));
     return this.queryBus.execute(new GetSnackMachineQuery(id));

@@ -1,5 +1,4 @@
 import { Migration } from '@mikro-orm/migrations';
-import { Snack } from '../../app/snack/snack';
 
 export class Migration20230810210603_AddSlotAndSnackEntities extends Migration {
 
@@ -12,9 +11,9 @@ export class Migration20230810210603_AddSlotAndSnackEntities extends Migration {
     this.addSql('alter table "slot" add constraint "slot_snack_machine_id_foreign" foreign key ("snack_machine_id") references "snack_machine" ("id") on update cascade;');
     this.addSql('alter table "slot" add constraint "slot_snack_pile_snack_id_foreign" foreign key ("snack_pile_snack_id") references "snack" ("id") on update cascade;');
 
-    this.addSql(`insert into "snack" ("id", "name") values ('${Snack.Chocolate.id}', '${Snack.Chocolate.name}');`);
-    this.addSql(`insert into "snack" ("id", "name") values ('${Snack.Soda.id}', '${Snack.Soda.name}');`);
-    this.addSql(`insert into "snack" ("id", "name") values ('${Snack.Gum.id}', '${Snack.Gum.name}');`);
+    this.addSql(`insert into "snack" ("id", "name") values ('ad277203-e35d-4ffe-a03f-6630ea3302cc', 'Chocolate');`);
+    this.addSql(`insert into "snack" ("id", "name") values ('2551785a-6b0d-4069-bf51-e60fc76588fd', 'Soda');`);
+    this.addSql(`insert into "snack" ("id", "name") values ('31ca7cbd-4635-4f2e-9a19-6e6f7d4bdad1', 'Gum');`);
   }
 
   async down(): Promise<void> {

@@ -1,14 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { MoneyInMachineDto } from '../../../../../app/snack-machine/dto/money-in-machine.dto';
 import { GetMoneyInMachineHandler } from '../../../../../app/snack-machine/queries/handlers/get-money-in-machine.handler';
+import { GetMoneyInMachineQuery } from '../../../../../app/snack-machine/queries/impl/get-money-in-machine.query';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('GetMoneyInMachineHandler', () => {
-  const snackMachine = new SnackMachine();
+  const snackMachine = SnackMachine.create(Id.generate());
   const repositoryMock = { findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine) };
   let handler: GetMoneyInMachineHandler;
 
@@ -28,7 +29,7 @@ describe('GetMoneyInMachineHandler', () => {
     it('should call SnackMachineRepository.findOne with correct id', async () => {
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new GetMoneyInMachineQuery(id));
 
       expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
@@ -37,13 +38,13 @@ describe('GetMoneyInMachineHandler', () => {
       repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = snackMachine.id;
 
-      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new GetMoneyInMachineQuery(id))).rejects.toThrow(NotFoundException);
     });
 
     it('should return the money in transaction and money inside the snack machine', async () => {
       const id = snackMachine.id;
 
-      const result = await handler.execute({ id });
+      const result = await handler.execute(new GetMoneyInMachineQuery(id));
 
       const dto = new MoneyInMachineDto(new Currency('0.00'), new Currency('0.00'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);
@@ -54,7 +55,7 @@ describe('GetMoneyInMachineHandler', () => {
       const id = snackMachine.id;
       snackMachine.insertMoney(Money.Cent);
 
-      const result = await handler.execute({ id });
+      const result = await handler.execute(new GetMoneyInMachineQuery(id));
 
       const dto = new MoneyInMachineDto(new Currency('0.01'), new Currency('0.01'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);
@@ -65,7 +66,7 @@ describe('GetMoneyInMachineHandler', () => {
       const id = snackMachine.id;
       snackMachine.insertMoney(Money.Dollar);
 
-      const result = await handler.execute({ id });
+      const result = await handler.execute(new GetMoneyInMachineQuery(id));
 
       const dto = new MoneyInMachineDto(new Currency('1.00'), new Currency('1.00'));
       expect(result).toBeInstanceOf(MoneyInMachineDto);

@@ -12,7 +12,7 @@ export class GetMoneyInMachineHandler implements IQueryHandler<GetMoneyInMachine
     const snackMachine = await this.snackMachineRepository.findOne(id);
 
     if (!snackMachine) {
-      throw new NotFoundException(`Snack machine with id ${id} not found`);
+      throw new NotFoundException(`Snack machine with id ${id.value} not found`);
     }
 
     return new MoneyInMachineDto(snackMachine.moneyInTransaction, snackMachine.moneyInside.amount);

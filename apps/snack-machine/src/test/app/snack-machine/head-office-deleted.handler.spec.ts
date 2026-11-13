@@ -6,10 +6,11 @@ import { HeadOfficeDeletedEvent } from '@vending-machines/events';
 import { randomUUID } from 'crypto';
 import { HeadOfficeDeletedHandler } from '../../../app/snack-machine/head-office-deleted.handler';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
+import { Id } from '@vending-machines/shared';
 import { SnackMachineRepository } from '../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('HeadOfficeDeletedHandler', () => {
-  const snackMachine = new SnackMachine();
+  const snackMachine = SnackMachine.create(Id.generate());
   const repositoryMock = {
     findOne: vi.fn<SnackMachineRepository['findOne']>(async () => snackMachine),
     delete: vi.fn<SnackMachineRepository['delete']>(),
@@ -37,7 +38,7 @@ describe('HeadOfficeDeletedHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call atmRepository.findOne', async () => {
+    it('should call snackMachineRepository.findOne with the parsed id', async () => {
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -46,7 +47,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(repositoryMock.findOne).toHaveBeenCalled();
+      expect(repositoryMock.findOne).toHaveBeenCalledWith(Id.from(event.aggregateId));
     });
 
     it('should log and return early if Atm not found', async () => {

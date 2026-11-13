@@ -1,4 +1,5 @@
 import {
+  AggregateType,
   MoneyInsertedEvent,
   MoneyLoadedEvent,
   MoneyReturnedEvent,
@@ -7,18 +8,41 @@ import {
   SnackMachineDeletedEvent,
   SnacksLoadedEvent,
 } from '@vending-machines/events';
-import { AggregateRoot, DEFAULT_ID, InvalidOperationException, Money } from '@vending-machines/shared';
+import { AggregateRoot, Id, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Slot } from './slot';
 import { SnackPile } from './snack-pile';
 
-export class SnackMachine extends AggregateRoot<string> {
-  moneyInside: Money = Money.None;
-  moneyInTransaction: Currency = new Currency(0);
-  readonly slots: Slot[] = [new Slot(this, 1), new Slot(this, 2), new Slot(this, 3)];
+const SLOT_POSITIONS = [1, 2, 3];
 
-  constructor(id: string = DEFAULT_ID) {
+type SlotState = Pick<Slot, 'id' | 'position' | 'snackPile'>;
+
+export class SnackMachine extends AggregateRoot {
+  moneyInside: Money;
+  moneyInTransaction: Currency;
+  readonly slots: readonly Slot[];
+
+  private constructor(id: Id, slots: readonly SlotState[], moneyInside: Money, moneyInTransaction: Currency) {
     super(id);
+    this.slots = slots.map((slot) => new Slot(slot.id, this, slot.position, slot.snackPile));
+    this.moneyInside = moneyInside;
+    this.moneyInTransaction = moneyInTransaction;
+  }
+
+  static create(id: Id): SnackMachine {
+    const slots = SLOT_POSITIONS.map((position) => ({ id: Id.generate(), position, snackPile: SnackPile.Empty }));
+    return new SnackMachine(id, slots, Money.None, new Currency(0));
+  }
+
+  static restore(id: Id, slots: readonly SlotState[], moneyInside: Money, moneyInTransaction: Currency): SnackMachine {
+    const sorted = slots.toSorted((a, b) => a.position - b.position);
+    if (
+      sorted.length !== SLOT_POSITIONS.length ||
+      sorted.some((slot, index) => slot.position !== SLOT_POSITIONS[index])
+    ) {
+      throw new Error(`Snack machine ${id.value} must have one slot at each position ${SLOT_POSITIONS.join(', ')}`);
+    }
+    return new SnackMachine(id, sorted, moneyInside, moneyInTransaction);
   }
 
   insertMoney(money: Money): void {
@@ -32,7 +56,7 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new MoneyInsertedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: { insertedMoney: money.toCoinsAndNotes() },
       }),
     );
@@ -45,7 +69,7 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new MoneyReturnedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: { returnedMoney: moneyToReturn.toCoinsAndNotes() },
       }),
     );
@@ -84,10 +108,10 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new SnackBoughtEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: {
           slotPosition: position,
-          snackId: slot.snackPile.snack.id,
+          snackId: slot.snackPile.snack.id.value,
           snackPrice: slot.snackPile.price.format({ symbol: '' }),
           snackPileQuantity: slot.snackPile.quantity,
         },
@@ -104,10 +128,10 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new SnacksLoadedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: {
           slotPosition: position,
-          snackId: snackPile.snack.id,
+          snackId: snackPile.snack.id.value,
           snackPileQuantity: snackPile.quantity,
           snackPrice: snackPile.price.format({ symbol: '' }),
         },
@@ -120,7 +144,7 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new MoneyLoadedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: { loadedMoney: this.moneyInside.toCoinsAndNotes() },
       }),
     );
@@ -135,7 +159,7 @@ export class SnackMachine extends AggregateRoot<string> {
     this.apply(
       new MoneyUnloadedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.SnackMachine,
         payload: { unloadedMoney: moneyToReturn.toCoinsAndNotes() },
       }),
     );
@@ -152,7 +176,7 @@ export class SnackMachine extends AggregateRoot<string> {
 
   markAsDeleted(): void {
     this.apply(
-      new SnackMachineDeletedEvent({ aggregateId: this.id, aggregateType: this.constructor.name, payload: {} }),
+      new SnackMachineDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.SnackMachine, payload: {} }),
     );
   }
 }

@@ -30,6 +30,9 @@ export class SnackPile extends ValueObject {
   }
 
   addQuantity(quantity: number): SnackPile {
+    if (this.snack.equals(Snack.None)) {
+      throw new InvalidOperationException('Cannot add quantity to an empty snack pile');
+    }
     return new SnackPile(this.snack, this.quantity + quantity, this.price);
   }
 

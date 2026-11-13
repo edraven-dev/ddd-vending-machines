@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import { CreateSnackMachineHandler } from '../../../../../app/snack-machine/commands/handlers/create-snack-machine.handler';
+import { CreateSnackMachineCommand } from '../../../../../app/snack-machine/commands/impl/create-snack-machine.command';
 import { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineFactory } from '../../../../../app/snack-machine/snack-machine.factory';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('CreateSnackMachineHandler', () => {
-  const snackMachine = new SnackMachine(randomUUID());
+  const snackMachine = SnackMachine.create(Id.generate());
   const factoryMock = { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) };
   const repositoryMock = { save: vi.fn<SnackMachineRepository['save']>() };
   let handler: CreateSnackMachineHandler;
@@ -33,7 +33,7 @@ describe('CreateSnackMachineHandler', () => {
     it('should create Snack Machine entity', async () => {
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(factoryMock.create).toHaveBeenCalledWith(id);
     });
@@ -42,7 +42,7 @@ describe('CreateSnackMachineHandler', () => {
       const spy = vi.spyOn(SnackMachine.prototype, 'loadMoney');
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(spy).toHaveBeenCalledWith(new Money(10, 10, 10, 10, 10, 10));
     });
@@ -51,7 +51,7 @@ describe('CreateSnackMachineHandler', () => {
       const spy = vi.spyOn(SnackMachine.prototype, 'loadSnacks');
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(spy).toHaveBeenCalledTimes(3);
     });
@@ -60,7 +60,7 @@ describe('CreateSnackMachineHandler', () => {
       vi.spyOn(SnackMachine.prototype, 'loadSnacks').mockImplementationOnce(vi.fn());
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(repositoryMock.save).toHaveBeenCalledTimes(1);
       expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
@@ -70,7 +70,7 @@ describe('CreateSnackMachineHandler', () => {
       const spy = vi.spyOn(SnackMachine.prototype, 'commit');
       const id = snackMachine.id;
 
-      await handler.execute({ id });
+      await handler.execute(new CreateSnackMachineCommand(id));
 
       expect(spy).toHaveBeenCalled();
     });

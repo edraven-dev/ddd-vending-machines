@@ -1,8 +1,9 @@
+import { idSchema } from '@vending-machines/shared';
 import { z } from 'zod';
 
 export const createSnackMachineSchema = z
   .object({
-    id: z.uuidv4(),
+    id: idSchema,
   })
   .meta({ id: 'CreateSnackMachineDto' });
 

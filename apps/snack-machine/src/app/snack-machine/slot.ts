@@ -1,17 +1,16 @@
-import { Entity } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
-import { SnackMachine } from './snack-machine';
+import { Entity, type Id } from '@vending-machines/shared';
+import type { SnackMachine } from './snack-machine';
 import { SnackPile } from './snack-pile';
 
-export class Slot extends Entity<string> {
+export class Slot extends Entity {
   readonly snackMachine: SnackMachine;
   readonly position: number;
   snackPile: SnackPile;
 
-  constructor(snackMachine: SnackMachine, position: number) {
-    super(randomUUID());
+  constructor(id: Id, snackMachine: SnackMachine, position: number, snackPile: SnackPile = SnackPile.Empty) {
+    super(id);
     this.snackMachine = snackMachine;
     this.position = position;
-    this.snackPile = SnackPile.Empty;
+    this.snackPile = snackPile;
   }
 }

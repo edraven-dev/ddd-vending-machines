@@ -1,7 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CoinsAndNotes, Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { CoinsAndNotes, Id, Money } from '@vending-machines/shared';
 import { BuySnackCommand } from '../../../app/snack-machine/commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from '../../../app/snack-machine/commands/impl/create-snack-machine.command';
 import { InsertMoneyCommand } from '../../../app/snack-machine/commands/impl/insert-money.command';
@@ -38,7 +37,7 @@ describe('SnackMachineController', () => {
 
   describe('#getById', () => {
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.create({ id });
 
@@ -48,7 +47,7 @@ describe('SnackMachineController', () => {
 
   describe('#create', () => {
     it('should execute CreateSnackMachineCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.create({ id });
 
@@ -56,7 +55,7 @@ describe('SnackMachineController', () => {
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.create({ id });
 
@@ -66,7 +65,7 @@ describe('SnackMachineController', () => {
 
   describe('#insertMoney', () => {
     it('should execute InsertMoneyCommand with proper data', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
       const money: CoinsAndNotes = [1, 0, 0, 0, 0, 0];
 
       await controller.insertMoney({ money }, id);
@@ -75,7 +74,7 @@ describe('SnackMachineController', () => {
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
       const money: CoinsAndNotes = [1, 0, 0, 0, 0, 0];
 
       await controller.insertMoney({ money }, id);
@@ -86,7 +85,7 @@ describe('SnackMachineController', () => {
 
   describe('#buySnack', () => {
     it('should execute BuySnackCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.buySnack({ position: 1 }, id);
 
@@ -94,7 +93,7 @@ describe('SnackMachineController', () => {
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.buySnack({ position: 1 }, id);
 
@@ -104,7 +103,7 @@ describe('SnackMachineController', () => {
 
   describe('#returnMoney', () => {
     it('should execute ReturnMoneyCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.returnMoney(id);
 
@@ -112,7 +111,7 @@ describe('SnackMachineController', () => {
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.returnMoney(id);
 
@@ -122,7 +121,7 @@ describe('SnackMachineController', () => {
 
   describe('#getMoneyInMachine', () => {
     it('should execute GetMoneyInMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.getMoneyInMachine(id);
 
@@ -132,7 +131,7 @@ describe('SnackMachineController', () => {
 
   describe('#loadSnacks', () => {
     it('should execute LoadSnacksCommand', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
       const position = 1;
       const quantity = 10;
 
@@ -142,7 +141,7 @@ describe('SnackMachineController', () => {
     });
 
     it('should execute GetSnackMachineQuery', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
       const position = 1;
       const quantity = 10;
 
@@ -154,11 +153,11 @@ describe('SnackMachineController', () => {
 
   describe('#unloadMoney', () => {
     it('should execute SnackMachineService.unloadMoney', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       await controller.unloadMoney({ id });
 
-      expect(service.unloadMoney).toHaveBeenCalled();
+      expect(service.unloadMoney).toHaveBeenCalledWith(id);
     });
   });
 });

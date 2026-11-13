@@ -16,20 +16,20 @@ export class GetSnackMachineHandler implements IQueryHandler<GetSnackMachineQuer
     const snackMachine = await this.snackMachineRepository.findOne(id);
 
     if (!snackMachine) {
-      throw new NotFoundException(`Snack machine with id ${id} not found`);
+      throw new NotFoundException(`Snack machine with id ${id.value} not found`);
     }
 
     return new SnackMachineDto(
-      snackMachine.id,
+      snackMachine.id.value,
       new MoneyDto(snackMachine.moneyInside.amount),
       new MoneyDto(snackMachine.moneyInTransaction),
       snackMachine.slots.map(
         (slot) =>
           new SlotDto(
-            slot.id,
+            slot.id.value,
             slot.position,
             new SnackPileDto(
-              new SnackDto(slot.snackPile.snack.id, slot.snackPile.snack.name),
+              new SnackDto(slot.snackPile.snack.id.value, slot.snackPile.snack.name),
               slot.snackPile.quantity,
               slot.snackPile.price.format(),
             ),

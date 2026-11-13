@@ -1,9 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { randomUUID } from 'crypto';
+import { Id } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { LoadSnacksHandler } from '../../../../../app/snack-machine/commands/handlers/load-snacks.handler';
+import { LoadSnacksCommand } from '../../../../../app/snack-machine/commands/impl/load-snacks.command';
 import type { SnackMachine } from '../../../../../app/snack-machine/snack-machine';
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 import { SnackPile } from '../../../../../app/snack-machine/snack-pile';
@@ -12,7 +13,7 @@ import { Snack } from '../../../../../app/snack/snack';
 describe('LoadSnacksHandler', () => {
   const snackPile = new SnackPile(Snack.Chocolate, 10, new Currency(1));
   const snackMachine = {
-    id: randomUUID(),
+    id: Id.generate(),
     getSnackPile: vi.fn<SnackMachine['getSnackPile']>(() => snackPile),
     loadSnacks: vi.fn<SnackMachine['loadSnacks']>(),
     commit: vi.fn<SnackMachine['commit']>(),
@@ -44,7 +45,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
@@ -55,7 +56,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await expect(handler.execute({ id, position, quantity })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new LoadSnacksCommand(id, position, quantity))).rejects.toThrow(NotFoundException);
     });
 
     it('should get snack pile at correct position', async () => {
@@ -63,7 +64,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(snackMachine.getSnackPile).toHaveBeenCalledWith(position);
     });
@@ -74,7 +75,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(spy).toHaveBeenCalledWith(quantity);
     });
@@ -85,7 +86,7 @@ describe('LoadSnacksHandler', () => {
       const quantity = 10;
       const snackPileWithAddedQuantity = snackPile.addQuantity(quantity);
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(snackMachine.loadSnacks).toHaveBeenCalledWith(position, snackPileWithAddedQuantity);
     });
@@ -95,7 +96,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(repositoryMock.save).toHaveBeenCalledWith(snackMachine);
     });
@@ -105,7 +106,7 @@ describe('LoadSnacksHandler', () => {
       const position = 1;
       const quantity = 10;
 
-      await handler.execute({ id, position, quantity });
+      await handler.execute(new LoadSnacksCommand(id, position, quantity));
 
       expect(snackMachine.commit).toHaveBeenCalled();
     });

@@ -13,7 +13,7 @@ export class ReturnMoneyHandler implements ICommandHandler<ReturnMoneyCommand, v
   async execute({ id }: ReturnMoneyCommand) {
     const existingSnackMachine = await this.snackMachineRepository.findOne(id);
     if (!existingSnackMachine) {
-      throw new NotFoundException(`Snack machine with id ${id} not found`);
+      throw new NotFoundException(`Snack machine with id ${id.value} not found`);
     }
 
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);

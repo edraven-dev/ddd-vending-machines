@@ -1,7 +1,8 @@
+import { idSchema } from '@vending-machines/shared';
 import { z } from 'zod';
 
 export const unloadMoneyRequestSchema = z.object({
-  id: z.uuidv4(),
+  id: idSchema,
 });
 
 export type UnloadMoneyRequestDto = z.infer<typeof unloadMoneyRequestSchema>;
