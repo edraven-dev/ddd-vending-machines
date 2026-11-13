@@ -17,7 +17,7 @@ export class DeleteHeadOfficeHandler implements ICommandHandler<DeleteHeadOffice
     }
 
     const headOffice = this.eventPublisher.mergeObjectContext(existingHeadOffice);
-    headOffice.markAsDeleted();
+    headOffice.delete();
     await this.headOfficeRepository.delete(id);
     await headOffice.commit();
   }

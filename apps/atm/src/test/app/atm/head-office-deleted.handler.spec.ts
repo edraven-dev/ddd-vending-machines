@@ -52,7 +52,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
     it('should log and return early if Atm not found', async () => {
       const error = vi.spyOn(Logger, 'error').mockImplementation(vi.fn());
-      const markAsDeleted = vi.spyOn(atm, 'markAsDeleted');
+      const deleteSpy = vi.spyOn(atm, 'delete');
       repository.findOne.mockResolvedValueOnce(undefined);
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
@@ -62,7 +62,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(markAsDeleted).not.toHaveBeenCalled();
+      expect(deleteSpy).not.toHaveBeenCalled();
       expect(error).toHaveBeenCalled();
     });
 
@@ -78,8 +78,8 @@ describe('HeadOfficeDeletedHandler', () => {
       expect(eventPublisher.mergeObjectContext).toHaveBeenCalled();
     });
 
-    it('should call atm.markAsDeleted', async () => {
-      const markAsDeleted = vi.spyOn(atm, 'markAsDeleted');
+    it('should call atm.delete', async () => {
+      const deleteSpy = vi.spyOn(atm, 'delete');
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -88,7 +88,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(markAsDeleted).toHaveBeenCalled();
+      expect(deleteSpy).toHaveBeenCalled();
     });
 
     it('should call headOfficeRepository.delete', async () => {

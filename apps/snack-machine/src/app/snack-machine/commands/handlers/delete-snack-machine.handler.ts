@@ -20,7 +20,7 @@ export class DeleteSnackMachineHandler implements ICommandHandler<DeleteSnackMac
     }
 
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
-    snackMachine.markAsDeleted();
+    snackMachine.delete();
     await this.snackMachineRepository.delete(id);
     await snackMachine.commit();
   }

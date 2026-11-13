@@ -116,12 +116,12 @@ describe('Atm', () => {
     });
   });
 
-  describe('#markAsDeleted', () => {
+  describe('#delete', () => {
     it('should apply AtmDeletedEvent', () => {
       const atm = new Atm(Id.generate());
       const spy = vi.spyOn(atm, 'apply');
 
-      atm.markAsDeleted();
+      atm.delete();
 
       expect(spy).toHaveBeenCalledWith(expect.any(AtmDeletedEvent));
       expect(spy).toHaveBeenCalledWith(

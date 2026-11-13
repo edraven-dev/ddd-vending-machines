@@ -20,7 +20,7 @@ export class HeadOffice extends AggregateRoot {
     return moneyToReturn;
   }
 
-  markAsDeleted(): void {
+  delete(): void {
     this.apply(
       new HeadOfficeDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.HeadOffice, payload: {} }),
     );

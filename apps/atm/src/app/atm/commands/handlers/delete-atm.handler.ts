@@ -20,7 +20,7 @@ export class DeleteAtmHandler implements ICommandHandler<DeleteAtmCommand, void>
     }
 
     const atm = this.eventPublisher.mergeObjectContext(existingAtm);
-    atm.markAsDeleted();
+    atm.delete();
     await this.atmRepository.delete(id);
     await atm.commit();
   }
