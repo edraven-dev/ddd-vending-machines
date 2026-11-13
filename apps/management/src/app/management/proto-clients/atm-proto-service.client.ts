@@ -15,6 +15,10 @@ export class AtmProtoServiceClient {
     return lastValueFrom(this.service.loadMoney(request).pipe(mapGrpcErrors));
   }
 
+  createAtm(id: string): Promise<void> {
+    return lastValueFrom(this.service.createAtm({ id }).pipe(mapGrpcErrors));
+  }
+
   deleteAtm(id: string): Promise<void> {
     return lastValueFrom(this.service.deleteAtm({ id }).pipe(mapGrpcErrors));
   }

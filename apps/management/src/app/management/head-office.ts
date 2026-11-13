@@ -7,7 +7,7 @@ export class HeadOffice extends AggregateRoot {
   cash: Money = Money.None;
   readonly atmIds: readonly Id[];
   readonly snackMachineIds: readonly Id[];
-  readonly expiresAt: Date;
+  expiresAt: Date;
 
   constructor(id: Id, atmIds: readonly Id[], snackMachineIds: readonly Id[], expiresAt: Date) {
     super(id);
@@ -22,6 +22,10 @@ export class HeadOffice extends AggregateRoot {
 
   hasSnackMachine(snackMachineId: Id): boolean {
     return this.snackMachineIds.some((id) => id.equals(snackMachineId));
+  }
+
+  expire(): void {
+    this.expiresAt = new Date();
   }
 
   changeBalance(delta: Currency): void {

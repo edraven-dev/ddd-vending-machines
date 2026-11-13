@@ -8,8 +8,12 @@ describe('HeadOffice', () => {
   const secondAtmId = Id.generate();
   const firstSnackMachineId = Id.generate();
   const secondSnackMachineId = Id.generate();
-  const aHeadOffice = () =>
-    new HeadOffice(Id.generate(), [firstAtmId, secondAtmId], [firstSnackMachineId, secondSnackMachineId], new Date());
+  const aHeadOffice = (expiresAt = new Date()) =>
+    new HeadOffice(Id.generate(), [firstAtmId, secondAtmId], [firstSnackMachineId, secondSnackMachineId], expiresAt);
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   describe('#hasAtm', () => {
     it('should return true for each owned atm id, given as a separate but equal Id', () => {
@@ -40,6 +44,19 @@ describe('HeadOffice', () => {
 
       expect(headOffice.hasSnackMachine(Id.generate())).toBe(false);
       expect(headOffice.hasSnackMachine(firstAtmId)).toBe(false);
+    });
+  });
+
+  describe('#expire', () => {
+    it('should set expiresAt to the current time', () => {
+      const now = new Date('2026-11-13T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      const headOffice = aHeadOffice(new Date('2026-11-14T12:00:00.000Z'));
+
+      headOffice.expire();
+
+      expect(headOffice.expiresAt).toStrictEqual(now);
     });
   });
 

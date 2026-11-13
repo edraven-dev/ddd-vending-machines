@@ -1,8 +1,18 @@
-export const load = async (loadEvent) => {
-  const { fetch } = loadEvent;
+import { error, redirect } from '@sveltejs/kit';
+import { loadSession } from '../../lib/session';
 
-  const id = localStorage.getItem('id');
-  const response = await fetch(`/api/snack-machine/${id}`);
-  const snackMachine = await response.json();
-  return { snackMachine };
+export const load = async ({ fetch }) => {
+  const session = loadSession();
+  if (!session) {
+    redirect(307, '/');
+  }
+
+  const response = await fetch(`/api/snack-machine/${session.snackMachineId}`);
+  if (response.status === 404) {
+    redirect(307, '/');
+  }
+  if (!response.ok) {
+    error(response.status, 'Could not load the snack machine');
+  }
+  return { snackMachine: await response.json() };
 };

@@ -22,6 +22,7 @@ export class GetHeadOfficeHandler implements IQueryHandler<GetHeadOfficeQuery, H
       new MoneyDto(headOffice.cash.amount),
       headOffice.atmIds.map((atmId) => atmId.value),
       headOffice.snackMachineIds.map((snackMachineId) => snackMachineId.value),
+      headOffice.expiresAt.toISOString(),
     );
   }
 }

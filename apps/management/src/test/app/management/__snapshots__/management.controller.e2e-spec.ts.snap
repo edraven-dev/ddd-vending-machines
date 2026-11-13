@@ -12,12 +12,6 @@ exports[`ManagementController - e2e > GET /:id > should return 400 BAD REQUEST w
 ]
 `;
 
-exports[`ManagementController - e2e > POST / > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
-[
-  "id: Invalid UUID",
-]
-`;
-
 exports[`ManagementController - e2e > POST /:id/load-cash-to-atm/:atmId > should return 400 BAD REQUEST when atmId is not a valid uuid 1`] = `
 [
   "Invalid UUID",

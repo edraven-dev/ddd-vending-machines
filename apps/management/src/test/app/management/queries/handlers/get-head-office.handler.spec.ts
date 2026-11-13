@@ -13,7 +13,7 @@ describe('GetHeadOfficeHandler', () => {
     Id.generate(),
     [Id.generate(), Id.generate()],
     [Id.generate(), Id.generate()],
-    new Date(),
+    new Date('2026-11-14T12:00:00.000Z'),
   );
   const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
@@ -57,6 +57,7 @@ describe('GetHeadOfficeHandler', () => {
       expect(result.balance.amount).toBe('$5.00');
       expect(result.atmIds).toStrictEqual([firstAtmId.value, secondAtmId.value]);
       expect(result.snackMachineIds).toStrictEqual([firstSnackMachineId.value, secondSnackMachineId.value]);
+      expect(result.expiresAt).toBe('2026-11-14T12:00:00.000Z');
     });
   });
 });

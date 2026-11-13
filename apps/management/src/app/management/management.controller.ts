@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBadRequestResponse,
@@ -12,7 +12,6 @@ import { Id, idSchema } from '@vending-machines/shared';
 import { CreateHeadOfficeCommand } from './commands/impl/create-head-office.command';
 import { LoadCashToAtmCommand } from './commands/impl/load-cash-to-atm.command';
 import { UnloadCashFromSnackMachineCommand } from './commands/impl/unload-cash-from-snack-machine.command';
-import { type CreateHeadOfficeDto, createHeadOfficeSchema } from './dto/create-head-office.dto';
 import { HeadOfficeDto } from './dto/head-office.dto';
 import { GetHeadOfficeQuery } from './queries/impl/get-head-office.query';
 
@@ -33,12 +32,15 @@ export class ManagementController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create head office', description: 'Creates head office' })
+  @ApiOperation({
+    summary: 'Create head office',
+    description: 'Creates a head office with its own ATM and snack machine',
+  })
   @ApiCreatedResponse({ type: HeadOfficeDto })
-  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  async create(@Body({ schema: createHeadOfficeSchema }) requestDto: CreateHeadOfficeDto): Promise<HeadOfficeDto> {
-    await this.commandBus.execute(new CreateHeadOfficeCommand(requestDto.id));
-    return this.queryBus.execute(new GetHeadOfficeQuery(requestDto.id));
+  async create(): Promise<HeadOfficeDto> {
+    const id = Id.generate();
+    await this.commandBus.execute(new CreateHeadOfficeCommand(id, Id.generate(), Id.generate()));
+    return this.queryBus.execute(new GetHeadOfficeQuery(id));
   }
 
   @Post(':id/load-cash-to-atm/:atmId')
