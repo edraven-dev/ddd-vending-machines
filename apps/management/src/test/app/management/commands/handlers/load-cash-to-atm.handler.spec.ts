@@ -8,7 +8,13 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { AtmProtoServiceClient } from '../../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('LoadCashToAtmHandler', () => {
-  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+  const headOffice = new HeadOffice(
+    Id.generate(),
+    [Id.generate(), Id.generate()],
+    [Id.generate(), Id.generate()],
+    new Date(),
+  );
+  const [, atmId] = headOffice.atmIds;
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(),
     save: vi.fn<HeadOfficeRepository['save']>(),
@@ -42,42 +48,55 @@ describe('LoadCashToAtmHandler', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       const id = headOffice.id;
 
-      await handler.execute(new LoadCashToAtmCommand(id));
+      await handler.execute(new LoadCashToAtmCommand(id, atmId));
 
       expect(repository.findOne).toHaveBeenCalledWith(id);
     });
 
-    it('should throw NotFoundException if HeadOffice not found', async () => {
+    it('should throw NotFoundException and load nothing if HeadOffice not found', async () => {
       repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
-      await expect(handler.execute(new LoadCashToAtmCommand(id))).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new LoadCashToAtmCommand(id, atmId))).rejects.toThrow(
+        new NotFoundException(`Head office with id ${id.value} not found`),
+      );
+      expect(protoClient.loadMoney).not.toHaveBeenCalled();
+      expect(repository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException and load nothing if the ATM is not in the head office', async () => {
+      const id = headOffice.id;
+      const otherAtmId = Id.generate();
+
+      await expect(handler.execute(new LoadCashToAtmCommand(id, otherAtmId))).rejects.toThrow(
+        new NotFoundException(`Atm with id ${otherAtmId.value} not found in head office ${id.value}`),
+      );
+      expect(protoClient.loadMoney).not.toHaveBeenCalled();
+      expect(repository.save).not.toHaveBeenCalled();
     });
 
     it('should call headOffice.unloadCash', async () => {
       const unloadCash = vi.spyOn(headOffice, 'unloadCash');
       const id = headOffice.id;
 
-      await handler.execute(new LoadCashToAtmCommand(id));
+      await handler.execute(new LoadCashToAtmCommand(id, atmId));
 
       expect(unloadCash).toHaveBeenCalledWith();
     });
 
     it('should call protoClient.loadMoney with the ATM id and the unloaded cash', async () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
-      repository.findOne.mockImplementation(async () => headOffice);
       const id = headOffice.id;
 
-      await handler.execute(new LoadCashToAtmCommand(id));
+      await handler.execute(new LoadCashToAtmCommand(id, atmId));
 
-      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: headOffice.atmId.value, money: [1, 1, 1, 1, 1, 1] });
+      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: atmId.value, money: [1, 1, 1, 1, 1, 1] });
     });
 
     it('should call headOfficeRepository.save', async () => {
       const id = headOffice.id;
 
-      await handler.execute(new LoadCashToAtmCommand(id));
+      await handler.execute(new LoadCashToAtmCommand(id, atmId));
 
       expect(repository.save).toHaveBeenCalledWith(headOffice);
     });

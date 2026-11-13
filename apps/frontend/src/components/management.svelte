@@ -16,13 +16,13 @@
 
   const getAtm = async (): Promise<void> => {
     resetData();
-    const response = await axios.get(`/atm/${headOffice.id}`);
+    const response = await axios.get(`/atm/${headOffice.atmIds[0]}`);
     atm = response.data;
   };
 
   const getSnackMachine = async (): Promise<void> => {
     resetData();
-    const response = await axios.get(`/snack-machine/${headOffice.id}`);
+    const response = await axios.get(`/snack-machine/${headOffice.snackMachineIds[0]}`);
     snackMachine = response.data;
   };
 
@@ -32,17 +32,17 @@
   };
 
   const loadCashToAtm = async (): Promise<void> => {
-    await axios.post(`management/${headOffice.id}/load-cash-to-atm`);
+    await axios.post(`management/${headOffice.id}/load-cash-to-atm/${headOffice.atmIds[0]}`);
     await Promise.all([getAtm(), getHeadOffice()]);
   };
 
   const unloadCashFromSnackMachine = async (): Promise<void> => {
-    await axios.post(`management/${headOffice.id}/unload-cash-from-snack-machine`);
+    await axios.post(`management/${headOffice.id}/unload-cash-from-snack-machine/${headOffice.snackMachineIds[0]}`);
     await Promise.all([getSnackMachine(), getHeadOffice()]);
   };
 
   const loadSnacks = async (position: number): Promise<void> => {
-    await axios.patch(`snack-machine/${headOffice.id}/load-snacks`, { position, quantity: 10 });
+    await axios.patch(`snack-machine/${headOffice.snackMachineIds[0]}/load-snacks`, { position, quantity: 10 });
     await getSnackMachine();
   };
 </script>

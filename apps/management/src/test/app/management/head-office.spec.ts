@@ -4,9 +4,48 @@ import Currency from 'currency.js';
 import { HeadOffice } from '../../../app/management/head-office';
 
 describe('HeadOffice', () => {
+  const firstAtmId = Id.generate();
+  const secondAtmId = Id.generate();
+  const firstSnackMachineId = Id.generate();
+  const secondSnackMachineId = Id.generate();
+  const aHeadOffice = () =>
+    new HeadOffice(Id.generate(), [firstAtmId, secondAtmId], [firstSnackMachineId, secondSnackMachineId], new Date());
+
+  describe('#hasAtm', () => {
+    it('should return true for each owned atm id, given as a separate but equal Id', () => {
+      const headOffice = aHeadOffice();
+
+      expect(headOffice.hasAtm(Id.from(firstAtmId.value))).toBe(true);
+      expect(headOffice.hasAtm(Id.from(secondAtmId.value))).toBe(true);
+    });
+
+    it('should return false for an id that is not one of its atms', () => {
+      const headOffice = aHeadOffice();
+
+      expect(headOffice.hasAtm(Id.generate())).toBe(false);
+      expect(headOffice.hasAtm(firstSnackMachineId)).toBe(false);
+    });
+  });
+
+  describe('#hasSnackMachine', () => {
+    it('should return true for each owned snack machine id, given as a separate but equal Id', () => {
+      const headOffice = aHeadOffice();
+
+      expect(headOffice.hasSnackMachine(Id.from(firstSnackMachineId.value))).toBe(true);
+      expect(headOffice.hasSnackMachine(Id.from(secondSnackMachineId.value))).toBe(true);
+    });
+
+    it('should return false for an id that is not one of its snack machines', () => {
+      const headOffice = aHeadOffice();
+
+      expect(headOffice.hasSnackMachine(Id.generate())).toBe(false);
+      expect(headOffice.hasSnackMachine(firstAtmId)).toBe(false);
+    });
+  });
+
   describe('#delete', () => {
     it('should apply HeadOfficeDeletedEvent', () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+      const headOffice = aHeadOffice();
       const apply = vi.spyOn(headOffice, 'apply');
 
       headOffice.delete();
@@ -20,7 +59,7 @@ describe('HeadOffice', () => {
 
   describe('#changeBalance', () => {
     it('should add amount to the balance', () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+      const headOffice = aHeadOffice();
       headOffice.balance = new Currency(10);
 
       headOffice.changeBalance(new Currency(10));
@@ -31,7 +70,7 @@ describe('HeadOffice', () => {
 
   describe('#loadCash', () => {
     it('should add money to cash', () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+      const headOffice = aHeadOffice();
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
 
       headOffice.loadCash(new Money(1, 1, 1, 1, 1, 1));
@@ -42,7 +81,7 @@ describe('HeadOffice', () => {
 
   describe('#unloadCash', () => {
     it('should return cash and set it to None', () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+      const headOffice = aHeadOffice();
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
 
       const result = headOffice.unloadCash();
@@ -52,7 +91,7 @@ describe('HeadOffice', () => {
     });
 
     it('should return None if cash is None', () => {
-      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+      const headOffice = aHeadOffice();
       headOffice.cash = Money.None;
 
       const result = headOffice.unloadCash();

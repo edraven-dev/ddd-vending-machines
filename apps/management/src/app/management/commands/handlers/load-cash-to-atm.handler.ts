@@ -11,16 +11,19 @@ export class LoadCashToAtmHandler implements ICommandHandler<LoadCashToAtmComman
     private readonly atmProtoServiceClient: AtmProtoServiceClient,
   ) {}
 
-  async execute({ id }: LoadCashToAtmCommand) {
+  async execute({ id, atmId }: LoadCashToAtmCommand) {
     const headOffice = await this.headOfficeRepository.findOne(id);
 
     if (!headOffice) {
       throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
+    if (!headOffice.hasAtm(atmId)) {
+      throw new NotFoundException(`Atm with id ${atmId.value} not found in head office ${id.value}`);
+    }
 
     const cash = headOffice.unloadCash();
     await this.atmProtoServiceClient.loadMoney({
-      id: headOffice.atmId.value,
+      id: atmId.value,
       money: [
         cash.oneCentCount,
         cash.tenCentCount,

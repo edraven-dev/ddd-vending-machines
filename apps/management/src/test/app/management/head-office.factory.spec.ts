@@ -30,29 +30,29 @@ describe('HeadOfficeFactory', () => {
       const apply = vi.spyOn(HeadOffice.prototype, 'apply');
       const id = Id.generate();
 
-      factory.create(id, Id.generate(), Id.generate());
+      factory.create(id, [Id.generate(), Id.generate()], [Id.generate(), Id.generate()]);
 
       expect(apply).toHaveBeenCalledWith(expect.any(HeadOfficeCreatedEvent));
       expect(apply).toHaveBeenCalledWith(expect.objectContaining({ aggregateId: id.value }));
     });
 
-    it('should return HeadOffice with proper ids', () => {
+    it('should return HeadOffice with the given id, atm ids and snack machine ids', () => {
       const id = Id.generate();
-      const atmId = Id.generate();
-      const snackMachineId = Id.generate();
+      const atmIds = [Id.generate(), Id.generate()];
+      const snackMachineIds = [Id.generate(), Id.generate()];
 
-      const headOffice = factory.create(id, atmId, snackMachineId);
+      const headOffice = factory.create(id, atmIds, snackMachineIds);
 
       expect(headOffice.id).toEqual(id);
-      expect(headOffice.atmId).toEqual(atmId);
-      expect(headOffice.snackMachineId).toEqual(snackMachineId);
+      expect(headOffice.atmIds).toEqual(atmIds);
+      expect(headOffice.snackMachineIds).toEqual(snackMachineIds);
     });
 
     it('should return HeadOffice expiring 24 hours from now', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date('2026-11-13T12:00:00.000Z'));
 
-      const headOffice = factory.create(Id.generate(), Id.generate(), Id.generate());
+      const headOffice = factory.create(Id.generate(), [Id.generate()], [Id.generate()]);
 
       expect(headOffice.expiresAt).toEqual(new Date('2026-11-14T12:00:00.000Z'));
     });

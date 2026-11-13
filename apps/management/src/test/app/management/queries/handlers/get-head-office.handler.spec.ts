@@ -9,7 +9,12 @@ import { GetHeadOfficeHandler } from '../../../../../app/management/queries/hand
 import { GetHeadOfficeQuery } from '../../../../../app/management/queries/impl/get-head-office.query';
 
 describe('GetHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+  const headOffice = new HeadOffice(
+    Id.generate(),
+    [Id.generate(), Id.generate()],
+    [Id.generate(), Id.generate()],
+    new Date(),
+  );
   const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
 
@@ -41,6 +46,8 @@ describe('GetHeadOfficeHandler', () => {
       headOffice.cash = Money.FiveDollar;
       headOffice.changeBalance(new Currency('5.00'));
       const id = headOffice.id;
+      const [firstAtmId, secondAtmId] = headOffice.atmIds;
+      const [firstSnackMachineId, secondSnackMachineId] = headOffice.snackMachineIds;
 
       const result = await handler.execute(new GetHeadOfficeQuery(id));
 
@@ -48,6 +55,8 @@ describe('GetHeadOfficeHandler', () => {
       expect(result.id).toBe(id.value);
       expect(result.cash.amount).toBe('$5.00');
       expect(result.balance.amount).toBe('$5.00');
+      expect(result.atmIds).toStrictEqual([firstAtmId.value, secondAtmId.value]);
+      expect(result.snackMachineIds).toStrictEqual([firstSnackMachineId.value, secondSnackMachineId.value]);
     });
   });
 });

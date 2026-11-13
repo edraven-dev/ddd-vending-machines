@@ -8,7 +8,13 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { SnackMachineProtoServiceClient } from '../../../../../app/management/proto-clients/snack-machine-proto-service.client';
 
 describe('UnloadCashFromSnackMachineHandler', () => {
-  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
+  const headOffice = new HeadOffice(
+    Id.generate(),
+    [Id.generate(), Id.generate()],
+    [Id.generate(), Id.generate()],
+    new Date(),
+  );
+  const [, snackMachineId] = headOffice.snackMachineIds;
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
     save: vi.fn<HeadOfficeRepository['save']>(),
@@ -39,31 +45,48 @@ describe('UnloadCashFromSnackMachineHandler', () => {
     it('should call HeadOfficeRepository.findOne', async () => {
       const id = headOffice.id;
 
-      await handler.execute(new UnloadCashFromSnackMachineCommand(id));
+      await handler.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId));
 
       expect(repository.findOne).toHaveBeenCalledWith(id);
     });
 
-    it('should throw NotFoundException if HeadOffice not found', async () => {
+    it('should throw NotFoundException and unload nothing if HeadOffice not found', async () => {
       repository.findOne.mockResolvedValueOnce(null);
       const id = headOffice.id;
 
-      await expect(handler.execute(new UnloadCashFromSnackMachineCommand(id))).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId))).rejects.toThrow(
+        new NotFoundException(`Head office with id ${id.value} not found`),
+      );
+      expect(protoClient.unloadMoney).not.toHaveBeenCalled();
+      expect(repository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException and unload nothing if the snack machine is not in the head office', async () => {
+      const id = headOffice.id;
+      const otherSnackMachineId = Id.generate();
+
+      await expect(handler.execute(new UnloadCashFromSnackMachineCommand(id, otherSnackMachineId))).rejects.toThrow(
+        new NotFoundException(
+          `Snack machine with id ${otherSnackMachineId.value} not found in head office ${id.value}`,
+        ),
+      );
+      expect(protoClient.unloadMoney).not.toHaveBeenCalled();
+      expect(repository.save).not.toHaveBeenCalled();
     });
 
     it('should call protoClient.unloadMoney with the snack machine id', async () => {
       const id = headOffice.id;
 
-      await handler.execute(new UnloadCashFromSnackMachineCommand(id));
+      await handler.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId));
 
-      expect(protoClient.unloadMoney).toHaveBeenCalledWith(headOffice.snackMachineId.value);
+      expect(protoClient.unloadMoney).toHaveBeenCalledWith(snackMachineId.value);
     });
 
     it('should call headOffice.loadCash with correct data', async () => {
       const loadCash = vi.spyOn(headOffice, 'loadCash');
       const id = headOffice.id;
 
-      await handler.execute(new UnloadCashFromSnackMachineCommand(id));
+      await handler.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId));
 
       expect(loadCash).toHaveBeenCalledWith(new Money(1, 1, 1, 1, 1, 1));
     });
@@ -71,7 +94,7 @@ describe('UnloadCashFromSnackMachineHandler', () => {
     it('should call headOfficeRepository.save', async () => {
       const id = headOffice.id;
 
-      await handler.execute(new UnloadCashFromSnackMachineCommand(id));
+      await handler.execute(new UnloadCashFromSnackMachineCommand(id, snackMachineId));
 
       expect(repository.save).toHaveBeenCalledWith(headOffice);
     });

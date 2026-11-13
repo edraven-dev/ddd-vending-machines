@@ -26,8 +26,10 @@ export class DeleteHeadOfficeHandler implements ICommandHandler<DeleteHeadOffice
 
     const failure = (
       await Promise.allSettled([
-        this.atmProtoServiceClient.deleteAtm(existingHeadOffice.atmId.value),
-        this.snackMachineProtoServiceClient.deleteSnackMachine(existingHeadOffice.snackMachineId.value),
+        ...existingHeadOffice.atmIds.map((atmId) => this.atmProtoServiceClient.deleteAtm(atmId.value)),
+        ...existingHeadOffice.snackMachineIds.map((snackMachineId) =>
+          this.snackMachineProtoServiceClient.deleteSnackMachine(snackMachineId.value),
+        ),
       ])
     ).find((result) => result.status === 'rejected');
     if (failure) {
