@@ -16,6 +16,10 @@ export class SnackMachineProtoServiceClient {
     return lastValueFrom(this.service.unloadMoney({ id }).pipe(mapGrpcErrors));
   }
 
+  createSnackMachine(id: string): Promise<void> {
+    return lastValueFrom(this.service.createSnackMachine({ id }).pipe(mapGrpcErrors));
+  }
+
   deleteSnackMachine(id: string): Promise<void> {
     return lastValueFrom(this.service.deleteSnackMachine({ id }).pipe(mapGrpcErrors));
   }

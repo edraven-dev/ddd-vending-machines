@@ -11,7 +11,7 @@ describe('SnackMachineProtoServiceClient', () => {
   const dto: UnloadMoneyDto = { money: [1, 1, 1, 1, 1, 1] };
   const service = {
     unloadMoney: vi.fn<SnackMachineProtoService['unloadMoney']>(() => of(dto)),
-    createSnackMachine: vi.fn<SnackMachineProtoService['createSnackMachine']>(),
+    createSnackMachine: vi.fn<SnackMachineProtoService['createSnackMachine']>(() => of(void 0)),
     deleteSnackMachine: vi.fn<SnackMachineProtoService['deleteSnackMachine']>(() => of(void 0)),
   };
   let protoClient: SnackMachineProtoServiceClient;
@@ -72,6 +72,35 @@ describe('SnackMachineProtoServiceClient', () => {
       service.unloadMoney.mockReturnValueOnce(throwError(() => error));
 
       await expect(protoClient.unloadMoney(randomUUID())).rejects.toBe(error);
+    });
+  });
+
+  describe('#createSnackMachine', () => {
+    it('should call grpc client with correct data', async () => {
+      const id = randomUUID();
+
+      await protoClient.createSnackMachine(id);
+
+      expect(service.createSnackMachine).toHaveBeenCalledWith({ id });
+    });
+
+    it('should resolve once the snack machine is created', async () => {
+      await expect(protoClient.createSnackMachine(randomUUID())).resolves.toBeUndefined();
+    });
+
+    it('should rethrow UNAVAILABLE as ServiceUnavailableException', async () => {
+      vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
+      const error = { code: status.UNAVAILABLE, details: 'No connection established' };
+      service.createSnackMachine.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.createSnackMachine(randomUUID())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.createSnackMachine.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.createSnackMachine(randomUUID())).rejects.toBe(error);
     });
   });
 

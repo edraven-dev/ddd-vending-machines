@@ -10,7 +10,7 @@ import { AtmProtoServiceClient } from '../../../../app/management/proto-clients/
 describe('AtmProtoServiceClient', () => {
   const service = {
     loadMoney: vi.fn<AtmProtoService['loadMoney']>(() => of(void 0)),
-    createAtm: vi.fn<AtmProtoService['createAtm']>(),
+    createAtm: vi.fn<AtmProtoService['createAtm']>(() => of(void 0)),
     deleteAtm: vi.fn<AtmProtoService['deleteAtm']>(() => of(void 0)),
   };
   let protoClient: AtmProtoServiceClient;
@@ -65,6 +65,35 @@ describe('AtmProtoServiceClient', () => {
       service.loadMoney.mockReturnValueOnce(throwError(() => error));
 
       await expect(protoClient.loadMoney({ id: randomUUID(), money: [1, 1, 1, 1, 1, 1] })).rejects.toBe(error);
+    });
+  });
+
+  describe('#createAtm', () => {
+    it('should call grpc client with correct data', async () => {
+      const id = randomUUID();
+
+      await protoClient.createAtm(id);
+
+      expect(service.createAtm).toHaveBeenCalledWith({ id });
+    });
+
+    it('should resolve once the atm is created', async () => {
+      await expect(protoClient.createAtm(randomUUID())).resolves.toBeUndefined();
+    });
+
+    it('should rethrow UNAVAILABLE as ServiceUnavailableException', async () => {
+      vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
+      const error = { code: status.UNAVAILABLE, details: 'No connection established' };
+      service.createAtm.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.createAtm(randomUUID())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.createAtm.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.createAtm(randomUUID())).rejects.toBe(error);
     });
   });
 
