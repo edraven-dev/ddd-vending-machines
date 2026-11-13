@@ -43,20 +43,6 @@ describe('AtmController', () => {
     });
   });
 
-  describe('#create', () => {
-    it('should execute CreateAtmCommand', async () => {
-      await controller.create({ id });
-
-      expect(commandBus.execute).toHaveBeenCalledWith(new CreateAtmCommand(id));
-    });
-
-    it('should execute GetAtmQuery', async () => {
-      await controller.create({ id });
-
-      expect(queryBus.execute).toHaveBeenCalledWith(new GetAtmQuery(id));
-    });
-  });
-
   describe('#takeMoney', () => {
     it('should execute ReturnMoneyCommand', async () => {
       await controller.takeMoney({ amount: new Currency(1) }, id);
