@@ -12,7 +12,7 @@ export class ManagementService implements OnModuleInit {
   }
 
   private async schedulePruneHeadOfficesJob(): Promise<void> {
-    const cron = process.env.PRUNE_HEAD_OFFICES_CRON || '0 0 * * *';
+    const cron = process.env.PRUNE_HEAD_OFFICES_CRON || '0 * * * *';
 
     await this.pruneHeadOfficesQueue.upsertJobScheduler(
       'prune-head-offices-job',

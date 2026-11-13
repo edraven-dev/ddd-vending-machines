@@ -9,7 +9,7 @@ import { GetHeadOfficeHandler } from '../../../../../app/management/queries/hand
 import { GetHeadOfficeQuery } from '../../../../../app/management/queries/impl/get-head-office.query';
 
 describe('GetHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice(Id.generate());
+  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
   const repository = { findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice) };
   let handler: GetHeadOfficeHandler;
 

@@ -23,10 +23,10 @@ export class BalanceChangedHandler implements IEventHandler<BalanceChangedEvent>
       return;
     }
 
-    const headOffice = await this.headOfficeRepository.findOne(Id.from(event.aggregateId));
+    const headOffice = await this.headOfficeRepository.findByAtmId(Id.from(event.aggregateId));
 
     if (!headOffice) {
-      Logger.error(`Head office with id ${event.aggregateId} not found`, this.constructor.name);
+      Logger.warn(`Head office for ATM ${event.aggregateId} not found`, this.constructor.name);
       return;
     }
 

@@ -8,7 +8,7 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { AtmProtoServiceClient } from '../../../../../app/management/proto-clients/atm-proto-service.client';
 
 describe('LoadCashToAtmHandler', () => {
-  const headOffice = new HeadOffice(Id.generate());
+  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(),
     save: vi.fn<HeadOfficeRepository['save']>(),
@@ -63,15 +63,15 @@ describe('LoadCashToAtmHandler', () => {
       expect(unloadCash).toHaveBeenCalledWith();
     });
 
-    it('should call protoClient.loadMoney with correct data', async () => {
-      const headOffice = new HeadOffice(Id.generate());
+    it('should call protoClient.loadMoney with the ATM id and the unloaded cash', async () => {
+      const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
       repository.findOne.mockImplementation(async () => headOffice);
       const id = headOffice.id;
 
       await handler.execute(new LoadCashToAtmCommand(id));
 
-      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: id.value, money: [1, 1, 1, 1, 1, 1] });
+      expect(protoClient.loadMoney).toHaveBeenCalledWith({ id: headOffice.atmId.value, money: [1, 1, 1, 1, 1, 1] });
     });
 
     it('should call headOfficeRepository.save', async () => {

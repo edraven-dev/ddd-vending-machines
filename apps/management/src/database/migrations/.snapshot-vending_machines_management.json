@@ -8,6 +8,23 @@
       "name": "head_office",
       "schema": "public",
       "columns": {
+        "atm_id": {
+          "name": "atm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
         "balance": {
           "name": "balance",
           "type": "numeric(18,2)",
@@ -127,6 +144,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -143,9 +177,46 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "uuid"
+        },
+        "snack_machine_id": {
+          "name": "snack_machine_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "atm_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "head_office_atm_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "expires_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "head_office_expires_at_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "id"
@@ -154,6 +225,16 @@
           "constraint": true,
           "keyName": "head_office_pkey",
           "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "snack_machine_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "head_office_snack_machine_id_unique",
+          "primary": false,
           "unique": true
         }
       ],

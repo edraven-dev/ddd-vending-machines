@@ -11,9 +11,9 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 import { Inbox } from '../../../app/management/inbox.interface';
 
 describe('BalanceChangedHandler', () => {
-  const headOffice = new HeadOffice(Id.generate());
+  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
   const repository = {
-    findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
+    findByAtmId: vi.fn<HeadOfficeRepository['findByAtmId']>(async () => headOffice),
     save: vi.fn<HeadOfficeRepository['save']>(),
   };
   const inbox = { tryRecord: vi.fn<Inbox['tryRecord']>(async () => true) };
@@ -54,8 +54,8 @@ describe('BalanceChangedHandler', () => {
         calls.push({ call: 'tryRecord', inTransaction });
         return true;
       });
-      repository.findOne.mockImplementationOnce(async () => {
-        calls.push({ call: 'findOne', inTransaction });
+      repository.findByAtmId.mockImplementationOnce(async () => {
+        calls.push({ call: 'findByAtmId', inTransaction });
         return headOffice;
       });
       repository.save.mockImplementationOnce(async () => {
@@ -73,7 +73,7 @@ describe('BalanceChangedHandler', () => {
       expect(inbox.tryRecord).toHaveBeenCalledWith('BalanceChangedHandler', event.eventId);
       expect(calls).toEqual([
         { call: 'tryRecord', inTransaction: true },
-        { call: 'findOne', inTransaction: true },
+        { call: 'findByAtmId', inTransaction: true },
         { call: 'save', inTransaction: true },
       ]);
     });
@@ -88,11 +88,11 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
-      expect(repository.findOne).not.toHaveBeenCalled();
+      expect(repository.findByAtmId).not.toHaveBeenCalled();
       expect(repository.save).not.toHaveBeenCalled();
     });
 
-    it('should call headOfficeRepository.findOne with the parsed id', async () => {
+    it('should call headOfficeRepository.findByAtmId with the parsed ATM id', async () => {
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -101,13 +101,13 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
-      expect(repository.findOne).toHaveBeenCalledWith(Id.from(event.aggregateId));
+      expect(repository.findByAtmId).toHaveBeenCalledWith(Id.from(event.aggregateId));
     });
 
-    it('should log and return early if HeadOffice not found', async () => {
-      const loggerError = vi.spyOn(Logger, 'error').mockImplementation(() => undefined);
+    it('should warn and skip the save if no head office has the ATM', async () => {
+      const warn = vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
       const changeBalance = vi.spyOn(headOffice, 'changeBalance');
-      repository.findOne.mockResolvedValueOnce(null);
+      repository.findByAtmId.mockResolvedValueOnce(null);
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -116,8 +116,9 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
+      expect(warn).toHaveBeenCalledWith(`Head office for ATM ${event.aggregateId} not found`, 'BalanceChangedHandler');
       expect(changeBalance).not.toHaveBeenCalled();
-      expect(loggerError).toHaveBeenCalled();
+      expect(repository.save).not.toHaveBeenCalled();
     });
 
     it('should call headOffice.changeBalance with correct value', async () => {

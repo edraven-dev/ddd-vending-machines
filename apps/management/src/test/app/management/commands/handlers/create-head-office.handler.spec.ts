@@ -7,7 +7,7 @@ import { HeadOfficeFactory } from '../../../../../app/management/head-office.fac
 import { HeadOfficeRepository } from '../../../../../app/management/head-office.repository.interface';
 
 describe('CreateHeadOfficeHandler', () => {
-  const headOffice = new HeadOffice(Id.generate());
+  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
   const factory = { create: vi.fn<HeadOfficeFactory['create']>(() => headOffice) };
   const repository = { save: vi.fn<HeadOfficeRepository['save']>() };
   let handler: CreateHeadOfficeHandler;
@@ -30,12 +30,12 @@ describe('CreateHeadOfficeHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call headOfficeFactory.create', async () => {
+    it('should call headOfficeFactory.create with the command id for the head office, ATM and snack machine', async () => {
       const id = headOffice.id;
 
       await handler.execute(new CreateHeadOfficeCommand(id));
 
-      expect(factory.create).toHaveBeenCalledWith(id);
+      expect(factory.create).toHaveBeenCalledWith(id, id, id);
     });
 
     it('should call HeadOfficeRepository.save with proper data', async () => {

@@ -22,24 +22,39 @@ describe('HeadOfficeFactory', () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('#create', () => {
-    it('should apply HeadOfficeCreatedEvent', () => {
+    it('should apply HeadOfficeCreatedEvent for the head office', () => {
       const apply = vi.spyOn(HeadOffice.prototype, 'apply');
       const id = Id.generate();
 
-      factory.create(id);
+      factory.create(id, Id.generate(), Id.generate());
 
       expect(apply).toHaveBeenCalledWith(expect.any(HeadOfficeCreatedEvent));
+      expect(apply).toHaveBeenCalledWith(expect.objectContaining({ aggregateId: id.value }));
     });
 
-    it('should return HeadOffice with proper id', () => {
+    it('should return HeadOffice with proper ids', () => {
       const id = Id.generate();
+      const atmId = Id.generate();
+      const snackMachineId = Id.generate();
 
-      const headOffice = factory.create(id);
+      const headOffice = factory.create(id, atmId, snackMachineId);
 
       expect(headOffice.id).toEqual(id);
+      expect(headOffice.atmId).toEqual(atmId);
+      expect(headOffice.snackMachineId).toEqual(snackMachineId);
+    });
+
+    it('should return HeadOffice expiring 24 hours from now', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-11-13T12:00:00.000Z'));
+
+      const headOffice = factory.create(Id.generate(), Id.generate(), Id.generate());
+
+      expect(headOffice.expiresAt).toEqual(new Date('2026-11-14T12:00:00.000Z'));
     });
   });
 });

@@ -36,7 +36,7 @@ describe('ManagementService', () => {
     it('should upsert the prune-head-offices job scheduler with the default cron pattern', async () => {
       vi.stubEnv('PRUNE_HEAD_OFFICES_CRON', undefined);
       const jobSchedulerId = 'prune-head-offices-job';
-      const repeatOptions = { pattern: '0 0 * * *' };
+      const repeatOptions = { pattern: '0 * * * *' };
 
       await service.onModuleInit();
 

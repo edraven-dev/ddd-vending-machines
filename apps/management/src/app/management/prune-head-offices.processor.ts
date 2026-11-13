@@ -21,11 +21,19 @@ export class PruneHeadOfficesProcessor extends WorkerHost {
 
   @CreateRequestContext()
   async process(): Promise<void> {
-    const headOffices = await this.headOfficeRepository.findAll();
-
-    await Promise.allSettled(
+    const headOffices = await this.headOfficeRepository.findExpired(new Date());
+    const results = await Promise.allSettled(
       headOffices.map((headOffice) => this.commandBus.execute(new DeleteHeadOfficeCommand(headOffice.id))),
     );
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        Logger.warn(
+          `Head office ${headOffices[index].id.value} not pruned, retrying on the next run: ${String(result.reason)}`,
+          this.constructor.name,
+        );
+      }
+    });
   }
 
   @OnWorkerEvent('active')

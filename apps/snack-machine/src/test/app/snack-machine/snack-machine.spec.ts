@@ -295,7 +295,7 @@ describe('SnackMachine', () => {
   });
 
   describe('#delete', () => {
-    it('should apply HeadOfficeDeletedEvent when marking as deleted', () => {
+    it('should apply SnackMachineDeletedEvent', () => {
       const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
