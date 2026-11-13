@@ -39,17 +39,15 @@ export class SnackMachineMapper {
       id: snackMachine.id.value,
       money: { oneCentCount, tenCentCount, quarterCount, oneDollarCount, fiveDollarCount, twentyDollarCount },
       moneyInTransaction: snackMachine.moneyInTransaction.format({ symbol: '' }),
-      slots: snackMachine.slots
-        .map((slot) => ({
-          id: slot.id.value,
-          position: slot.position,
-          snackPile: {
-            quantity: slot.snackPile.quantity,
-            price: slot.snackPile.price.format({ symbol: '' }),
-            snack: slot.snackPile.snack.equals(Snack.None) ? null : slot.snackPile.snack.id.value,
-          },
-        }))
-        .sort((a, b) => a.position - b.position),
+      slots: snackMachine.slots.map((slot) => ({
+        id: slot.id.value,
+        position: slot.position,
+        snackPile: {
+          quantity: slot.snackPile.quantity,
+          price: slot.snackPile.price.format({ symbol: '' }),
+          snack: slot.snackPile.snack.equals(Snack.None) ? null : slot.snackPile.snack.id.value,
+        },
+      })),
     } satisfies RequiredEntityData<SnackMachineEntity>;
   }
 
