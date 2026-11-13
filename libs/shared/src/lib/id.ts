@@ -30,7 +30,3 @@ export const idSchema = z
   .toLowerCase()
   .refine((value) => UUID_PATTERN.test(value), 'Invalid UUID')
   .transform((value) => Id.from(value));
-
-export type IdLike = Id | string;
-
-export const toId = (id: IdLike): Id => (typeof id === 'string' ? Id.from(id) : id);

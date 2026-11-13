@@ -6,7 +6,6 @@ import { Id } from '../lib/id';
 
 class TestEntity extends Entity {}
 class OtherEntity extends Entity {}
-class LegacyEntity extends Entity<string> {}
 class TestAggregate extends AggregateRoot {}
 class OtherAggregate extends AggregateRoot {}
 
@@ -41,11 +40,6 @@ describe('Entity', () => {
     ['a plain object with its id', { id: Id.from(uuid) }],
   ])('should not equal %s', (_name, other) => {
     expect(new TestEntity(Id.from(uuid)).equals(other)).toBe(false);
-  });
-
-  it('should compare legacy string ids by value', () => {
-    expect(new LegacyEntity(uuid).equals(new LegacyEntity(uuid))).toBe(true);
-    expect(new LegacyEntity(uuid).equals(new LegacyEntity(otherUuid))).toBe(false);
   });
 });
 

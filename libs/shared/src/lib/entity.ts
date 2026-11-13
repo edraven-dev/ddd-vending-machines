@@ -1,12 +1,9 @@
 import type { Id } from './id';
 
-const sameId = (a: Id | string, b: Id | string): boolean =>
-  typeof a === 'string' || typeof b === 'string' ? a === b : a.equals(b);
+export abstract class Entity {
+  readonly id: Id;
 
-export abstract class Entity<TId extends Id | string = Id> {
-  readonly id: TId;
-
-  constructor(id: TId) {
+  constructor(id: Id) {
     this.id = id;
   }
 
@@ -18,7 +15,7 @@ export abstract class Entity<TId extends Id | string = Id> {
     return (
       other instanceof Entity &&
       Object.getPrototypeOf(other) === Object.getPrototypeOf(this) &&
-      sameId(this.id, other.id)
+      this.id.equals(other.id)
     );
   }
 }
