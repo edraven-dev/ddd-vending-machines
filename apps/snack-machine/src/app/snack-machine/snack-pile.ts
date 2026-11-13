@@ -34,8 +34,6 @@ export class SnackPile extends ValueObject {
   }
 
   protected equalsCore(other: SnackPile): boolean {
-    return (
-      this.snack.id === other.snack.id && this.quantity === other.quantity && this.price.value === other.price.value
-    );
+    return this.snack.equals(other.snack) && this.quantity === other.quantity && this.price.value === other.price.value;
   }
 }

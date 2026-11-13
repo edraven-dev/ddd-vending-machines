@@ -1,19 +1,11 @@
 export abstract class ValueObject {
-  equals(object?: ValueObject): boolean {
-    if (object === null || object === undefined) {
-      return false;
-    }
-
-    if (!(object instanceof ValueObject)) {
-      return false;
-    }
-
-    if (object === this) {
-      return true;
-    }
-
-    return this.equalsCore(object);
+  equals(other: unknown): boolean {
+    return other === this || (this.isSameType(other) && this.equalsCore(other));
   }
 
-  protected abstract equalsCore(other: ValueObject): boolean;
+  protected abstract equalsCore(other: this): boolean;
+
+  private isSameType(other: unknown): other is this {
+    return other instanceof ValueObject && Object.getPrototypeOf(other) === Object.getPrototypeOf(this);
+  }
 }

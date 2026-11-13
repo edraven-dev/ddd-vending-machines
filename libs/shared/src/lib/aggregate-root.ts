@@ -1,14 +1,8 @@
-import { AggregateRoot as NestAggregateRoot } from '@nestjs/cqrs';
-import { DEFAULT_ID } from './constants';
-import { EntityMixin } from './entity';
+import { type IEvent, WithAggregateRoot } from '@nestjs/cqrs';
+import { Entity } from './entity';
 
-class IdentifiableNestAggregateRoot extends NestAggregateRoot {
-  readonly id: string;
-
+export abstract class AggregateRoot<TEvent extends IEvent = IEvent> extends WithAggregateRoot(Entity)<TEvent> {
   constructor(id?: string) {
-    super();
-    this.id = id || DEFAULT_ID;
+    super(id);
   }
 }
-
-export const AggregateRoot = EntityMixin(IdentifiableNestAggregateRoot);
