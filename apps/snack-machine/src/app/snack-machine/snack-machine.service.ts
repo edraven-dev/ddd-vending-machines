@@ -23,7 +23,7 @@ export class SnackMachineService {
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     const money = snackMachine.unloadMoney();
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
 
     return {
       money: [

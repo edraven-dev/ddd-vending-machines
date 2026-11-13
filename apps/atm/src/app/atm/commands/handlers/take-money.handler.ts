@@ -19,6 +19,6 @@ export class TakeMoneyHandler implements ICommandHandler<TakeMoneyCommand, void>
     const atm = this.eventPublisher.mergeObjectContext(existingAtm);
     atm.takeMoney(amount);
     await this.atmRepository.save(atm);
-    atm.commit();
+    await atm.commit();
   }
 }

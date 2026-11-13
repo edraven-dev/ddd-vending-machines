@@ -19,6 +19,6 @@ export class InsertMoneyHandler implements ICommandHandler<InsertMoneyCommand, v
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     snackMachine.insertMoney(money);
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }

@@ -19,6 +19,6 @@ export class BuySnackHandler implements ICommandHandler<BuySnackCommand, void> {
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     snackMachine.buySnack(position);
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }

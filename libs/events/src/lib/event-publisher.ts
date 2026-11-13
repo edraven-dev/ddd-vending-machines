@@ -18,4 +18,11 @@ export class EventPublisher<TEvent extends IEvent> implements IEventPublisher<TE
       persistent: true,
     });
   }
+
+  async publishAll<TEvent extends IEvent>(events: TEvent[]): Promise<void> {
+    const snapshot = [...events];
+    for (const event of snapshot) {
+      await this.publish(event);
+    }
+  }
 }

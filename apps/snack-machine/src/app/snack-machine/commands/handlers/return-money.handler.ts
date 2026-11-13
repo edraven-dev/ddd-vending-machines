@@ -19,6 +19,6 @@ export class ReturnMoneyHandler implements ICommandHandler<ReturnMoneyCommand, v
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     snackMachine.returnMoney();
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }

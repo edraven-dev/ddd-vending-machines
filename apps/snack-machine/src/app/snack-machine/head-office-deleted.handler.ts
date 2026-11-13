@@ -24,6 +24,6 @@ export class HeadOfficeDeletedHandler implements IEventHandler<HeadOfficeDeleted
     const snackMachine = this.eventPublisher.mergeObjectContext(existingSnackMachine);
     snackMachine.markAsDeleted();
     await this.snackMachineRepository.delete(snackMachine.id);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }

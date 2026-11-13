@@ -15,6 +15,6 @@ export class CreateAtmHandler implements ICommandHandler<CreateAtmCommand, void>
     const atm = this.atmFactory.create(id);
     atm.loadMoney(new Money(100, 100, 100, 100, 100, 100));
     await this.atmRepository.save(atm);
-    atm.commit();
+    await atm.commit();
   }
 }

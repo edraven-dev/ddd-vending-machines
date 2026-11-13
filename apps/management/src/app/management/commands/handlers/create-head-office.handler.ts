@@ -13,6 +13,6 @@ export class CreateHeadOfficeHandler implements ICommandHandler<CreateHeadOffice
   async execute({ id }: CreateHeadOfficeCommand) {
     const headOffice = this.headOfficeFactory.create(id);
     await this.headOfficeRepository.save(headOffice);
-    headOffice.commit();
+    await headOffice.commit();
   }
 }

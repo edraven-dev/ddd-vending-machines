@@ -21,6 +21,6 @@ export class CreateSnackMachineHandler implements ICommandHandler<CreateSnackMac
     snackMachine.loadSnacks(3, new SnackPile(Snack.Gum, 10, new Currency('1.00')));
     snackMachine.loadMoney(new Money(10, 10, 10, 10, 10, 10));
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }
