@@ -367,6 +367,15 @@ describe('SnackMachineController - e2e', () => {
 
       expect(response.body.message).toMatchSnapshot();
     });
+
+    it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`${testEndpoint('not-valid-uuid')}/load-snacks`)
+        .send({ position: 1, quantity: 1 })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
   });
 
   describe('gRPC UnloadMoney', () => {

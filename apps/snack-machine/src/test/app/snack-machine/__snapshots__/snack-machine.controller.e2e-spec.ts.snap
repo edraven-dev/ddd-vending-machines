@@ -12,6 +12,12 @@ exports[`SnackMachineController - e2e > GET /:id/money-in-machine > should retur
 ]
 `;
 
+exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
+
 exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 400 BAD REQUEST when position is a non-integer number 1`] = `
 [
   "position: Invalid input: expected int, received number",
