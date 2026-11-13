@@ -3,6 +3,7 @@ import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Logger } from '@nestjs/common';
 import { EventPublisher, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { HeadOfficeDeletedEvent } from '@vending-machines/events';
+import { Id } from '@vending-machines/shared';
 import { AtmRepository } from './atm.repository.interface';
 
 @EventsHandler(HeadOfficeDeletedEvent)
@@ -15,7 +16,7 @@ export class HeadOfficeDeletedHandler implements IEventHandler<HeadOfficeDeleted
 
   @CreateRequestContext()
   async handle(event: HeadOfficeDeletedEvent) {
-    const existingAtm = await this.atmRepository.findOne(event.aggregateId);
+    const existingAtm = await this.atmRepository.findOne(Id.from(event.aggregateId));
     if (!existingAtm) {
       Logger.error(`Head office with id ${event.aggregateId} not found`, this.constructor.name);
       return;

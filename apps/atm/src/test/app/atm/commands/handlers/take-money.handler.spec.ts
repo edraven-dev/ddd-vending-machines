@@ -1,16 +1,17 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { randomUUID } from 'crypto';
+import { Id } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import type { Atm } from '../../../../../app/atm/atm';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
 import { TakeMoneyHandler } from '../../../../../app/atm/commands/handlers/take-money.handler';
+import { TakeMoneyCommand } from '../../../../../app/atm/commands/impl/take-money.command';
 
 describe('TakeMoneyHandler', () => {
-  const atm = { id: randomUUID(), takeMoney: vi.fn<Atm['takeMoney']>(), commit: vi.fn<Atm['commit']>() };
+  const atm = { id: Id.generate(), takeMoney: vi.fn<Atm['takeMoney']>(), commit: vi.fn<Atm['commit']>() };
   const atmRepository = {
-    findOne: vi.fn<(id: string) => Promise<typeof atm | undefined>>(async () => atm),
+    findOne: vi.fn<(id: Id) => Promise<typeof atm | undefined>>(async () => atm),
     save: vi.fn<AtmRepository['save']>(),
   };
   const eventPublisher = { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((atm) => atm) };
@@ -34,7 +35,7 @@ describe('TakeMoneyHandler', () => {
       const id = atm.id;
       const amount = new Currency(1);
 
-      await handler.execute({ id, amount });
+      await handler.execute(new TakeMoneyCommand(id, amount));
 
       expect(spy).toHaveBeenCalledWith(id);
     });
@@ -44,14 +45,14 @@ describe('TakeMoneyHandler', () => {
       const id = atm.id;
       const amount = new Currency(1);
 
-      await expect(handler.execute({ id, amount })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new TakeMoneyCommand(id, amount))).rejects.toThrow(NotFoundException);
     });
 
     it('should call atm.takeMoney', async () => {
       const id = atm.id;
       const amount = new Currency(1);
 
-      await handler.execute({ id, amount });
+      await handler.execute(new TakeMoneyCommand(id, amount));
 
       expect(atm.takeMoney).toHaveBeenCalled();
     });
@@ -60,7 +61,7 @@ describe('TakeMoneyHandler', () => {
       const id = atm.id;
       const amount = new Currency(1);
 
-      await handler.execute({ id, amount });
+      await handler.execute(new TakeMoneyCommand(id, amount));
 
       expect(atmRepository.save).toHaveBeenCalledWith(atm);
     });
@@ -69,7 +70,7 @@ describe('TakeMoneyHandler', () => {
       const id = atm.id;
       const amount = new Currency(1);
 
-      await handler.execute({ id, amount });
+      await handler.execute(new TakeMoneyCommand(id, amount));
 
       expect(atm.commit).toHaveBeenCalled();
     });

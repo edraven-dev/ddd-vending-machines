@@ -1,6 +1,7 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Provider } from '@nestjs/common';
+import type { Id } from '@vending-machines/shared';
 import { Atm } from '../../atm/atm';
 import { AtmRepository } from '../../atm/atm.repository.interface';
 import AtmEntity from './atm.entity';
@@ -14,8 +15,8 @@ export class MikroOrmAtmRepository implements AtmRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findOne(id: string): Promise<Atm | null> {
-    const atmEntity = await this.atmRepository.findOne({ id });
+  async findOne(id: Id): Promise<Atm | null> {
+    const atmEntity = await this.atmRepository.findOne({ id: id.value });
 
     if (!atmEntity) {
       return null;
@@ -25,7 +26,7 @@ export class MikroOrmAtmRepository implements AtmRepository {
   }
 
   async save(atm: Atm): Promise<void> {
-    const existingEntity = await this.atmRepository.findOne({ id: atm.id });
+    const existingEntity = await this.atmRepository.findOne({ id: atm.id.value });
 
     if (existingEntity) {
       existingEntity.assign(AtmMapper.toPersistence(atm));
@@ -36,8 +37,8 @@ export class MikroOrmAtmRepository implements AtmRepository {
     await this.em.flush();
   }
 
-  async delete(id: string): Promise<void> {
-    const atmRef = this.em.getReference(AtmEntity, id);
+  async delete(id: Id): Promise<void> {
+    const atmRef = this.em.getReference(AtmEntity, id.value);
     await this.em.remove(atmRef).flush();
   }
 }

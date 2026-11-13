@@ -3,15 +3,16 @@ import { Logger } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HeadOfficeDeletedEvent } from '@vending-machines/events';
+import { Id } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import { Atm } from '../../../app/atm/atm';
 import { AtmRepository } from '../../../app/atm/atm.repository.interface';
 import { HeadOfficeDeletedHandler } from '../../../app/atm/head-office-deleted.handler';
 
 describe('HeadOfficeDeletedHandler', () => {
-  const atm = new Atm();
+  const atm = new Atm(Id.generate());
   const repository = {
-    findOne: vi.fn<(id: string) => Promise<Atm | undefined>>(async () => atm),
+    findOne: vi.fn<(id: Id) => Promise<Atm | undefined>>(async () => atm),
     delete: vi.fn<AtmRepository['delete']>(),
   };
   const eventPublisher = { mergeObjectContext: vi.fn<() => Atm>(() => atm) };
@@ -37,7 +38,7 @@ describe('HeadOfficeDeletedHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should call atmRepository.findOne', async () => {
+    it('should call atmRepository.findOne with the parsed id', async () => {
       const event = new HeadOfficeDeletedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -46,7 +47,7 @@ describe('HeadOfficeDeletedHandler', () => {
 
       await handler.handle(event);
 
-      expect(repository.findOne).toHaveBeenCalled();
+      expect(repository.findOne).toHaveBeenCalledWith(Id.from(event.aggregateId));
     });
 
     it('should log and return early if Atm not found', async () => {

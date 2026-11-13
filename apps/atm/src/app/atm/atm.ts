@@ -1,22 +1,18 @@
-import { AtmDeletedEvent, BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
-import { AggregateRoot, DEFAULT_ID, InvalidOperationException, Money } from '@vending-machines/shared';
+import { AggregateType, AtmDeletedEvent, BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
+import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
-export class Atm extends AggregateRoot<string> {
+export class Atm extends AggregateRoot {
   moneyInside = Money.None;
   moneyCharged = new Currency(0);
   private readonly commissionRate = new Currency(0.01);
-
-  constructor(id: string = DEFAULT_ID) {
-    super(id);
-  }
 
   loadMoney(money: Money): void {
     this.moneyInside = Money.add(this.moneyInside, money);
     this.apply(
       new MoneyLoadedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.Atm,
         payload: { loadedMoney: this.moneyInside.toCoinsAndNotes() },
       }),
     );
@@ -53,7 +49,7 @@ export class Atm extends AggregateRoot<string> {
     this.apply(
       new BalanceChangedEvent({
         aggregateId: this.id,
-        aggregateType: this.constructor.name,
+        aggregateType: AggregateType.Atm,
         payload: { delta: amountWithCommission.subtract(amount).toString() },
       }),
     );
@@ -69,6 +65,6 @@ export class Atm extends AggregateRoot<string> {
   }
 
   markAsDeleted(): void {
-    this.apply(new AtmDeletedEvent({ aggregateId: this.id, aggregateType: this.constructor.name, payload: {} }));
+    this.apply(new AtmDeletedEvent({ aggregateId: this.id, aggregateType: AggregateType.Atm, payload: {} }));
   }
 }

@@ -1,8 +1,7 @@
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AtmCreatedEvent } from '@vending-machines/events';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'node:crypto';
+import { Id, Money } from '@vending-machines/shared';
 import { Atm } from '../../../app/atm/atm';
 import { AtmFactory } from '../../../app/atm/atm.factory';
 
@@ -26,7 +25,7 @@ describe('AtmFactory', () => {
   describe('#create', () => {
     it('should apply AtmCreatedEvent', () => {
       const apply = vi.spyOn(Atm.prototype, 'apply');
-      const id = randomUUID();
+      const id = Id.generate();
 
       factory.create(id);
 
@@ -34,7 +33,7 @@ describe('AtmFactory', () => {
     });
 
     it('should return Atm with proper id', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const atm = factory.create(id);
 
@@ -42,7 +41,7 @@ describe('AtmFactory', () => {
     });
 
     it('should return Atm with proper money inside', () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
       const atm = factory.create(id);
 
