@@ -1,9 +1,10 @@
 import { CqrsModule, EventsHandler, IEvent, IEventHandler } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { APP_NAME_TOKEN } from '@vending-machines/shared';
+import { APP_NAME_TOKEN, Id } from '@vending-machines/shared';
 import { EJSON } from 'bson';
-import { randomUUID } from 'node:crypto';
+import { randomUUIDv7 } from 'node:crypto';
 import { BalanceChangedEvent, MoneyLoadedEvent } from '../event-declarations';
+import { AggregateType } from '../lib/aggregate-type';
 import { AmqpService } from '../lib/amqp/amqp.service';
 import { EventPublisher } from '../lib/event-publisher';
 import { EventSubscriber } from '../lib/event-subscriber';
@@ -67,8 +68,8 @@ describe('Event round trip', () => {
 
   it('should hand a published event to its handler as an instance of the event class', async () => {
     const event = new BalanceChangedEvent({
-      aggregateId: randomUUID(),
-      aggregateType: 'Atm',
+      aggregateId: Id.generate(),
+      aggregateType: AggregateType.Atm,
       payload: { delta: '0.01' },
     });
 
@@ -83,7 +84,11 @@ describe('Event round trip', () => {
 
   it('should write the timestamp as a relaxed extended JSON date', async () => {
     await publisher.publish(
-      new BalanceChangedEvent({ aggregateId: randomUUID(), aggregateType: 'Atm', payload: { delta: '0.01' } }),
+      new BalanceChangedEvent({
+        aggregateId: Id.generate(),
+        aggregateType: AggregateType.Atm,
+        payload: { delta: '0.01' },
+      }),
     );
 
     expect(publishedContent()).toMatch(/"timestamp":\{"\$date":"\d{4}-\d{2}-\d{2}T[\d:.]+Z"\}/);
@@ -91,10 +96,10 @@ describe('Event round trip', () => {
 
   it('should accept the numeric date format written by the previous ejson serializer', async () => {
     const legacyMessage = JSON.stringify({
-      eventId: randomUUID(),
+      eventId: randomUUIDv7(),
       eventType: 'BalanceChangedEvent',
       timestamp: { $date: 1794574962551 },
-      aggregateId: randomUUID(),
+      aggregateId: randomUUIDv7(),
       aggregateType: 'Atm',
       payload: { delta: '0.01' },
     });
@@ -107,8 +112,8 @@ describe('Event round trip', () => {
 
   it('should ignore events of another type', async () => {
     const otherEvent = new MoneyLoadedEvent({
-      aggregateId: randomUUID(),
-      aggregateType: 'Atm',
+      aggregateId: Id.generate(),
+      aggregateType: AggregateType.Atm,
       payload: { loadedMoney: [1, 0, 0, 0, 0, 0] },
     });
 

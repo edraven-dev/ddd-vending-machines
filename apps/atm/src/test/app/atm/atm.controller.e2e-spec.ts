@@ -11,6 +11,7 @@ import {
   Money,
   ValidationProvider,
 } from '@vending-machines/shared';
+import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { lastValueFrom } from 'rxjs';
@@ -99,6 +100,14 @@ describe('AtmController - e2e', () => {
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when id is not a UUID v7', async () => {
+      const response = await request(app.getHttpServer())
+        .get(testEndpoint(randomUUID()))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toEqual(['Invalid UUID']);
     });
   });
 

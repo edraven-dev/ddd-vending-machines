@@ -1,15 +1,20 @@
 import { randomUUIDv7 } from 'node:crypto';
-import { ensure, isString, matches, TinyType } from 'tiny-types';
+import { ensure, isString, Predicate, TinyType } from 'tiny-types';
 import { z } from 'zod';
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const uuidV7 = z.uuidv7();
+
+const isLowercaseUuidV7 = Predicate.to<string>(
+  'be a lowercase UUID v7',
+  (value) => value === value.toLowerCase() && uuidV7.safeParse(value).success,
+);
 
 export class Id extends TinyType {
   readonly value: string;
 
   private constructor(value: string) {
     super();
-    this.value = ensure(Id.name, value, isString(), matches(UUID_PATTERN));
+    this.value = ensure(Id.name, value, isString(), isLowercaseUuidV7);
   }
 
   static from(value: string): Id {
@@ -25,8 +30,4 @@ export class Id extends TinyType {
   }
 }
 
-export const idSchema = z
-  .uuid({ abort: true })
-  .toLowerCase()
-  .refine((value) => UUID_PATTERN.test(value), 'Invalid UUID')
-  .transform((value) => Id.from(value));
+export const idSchema = uuidV7.toLowerCase().transform((value) => Id.from(value));

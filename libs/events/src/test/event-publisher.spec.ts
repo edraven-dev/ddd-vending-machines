@@ -1,8 +1,8 @@
 import { CqrsModule, type IEvent, EventPublisher as NestEventPublisher } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { AggregateRoot, Id } from '@vending-machines/shared';
-import { randomUUID } from 'node:crypto';
 import { BalanceChangedEvent } from '../event-declarations';
+import { AggregateType } from '../lib/aggregate-type';
 import { AmqpService } from '../lib/amqp/amqp.service';
 import { EXCHANGE_NAME } from '../lib/constants';
 import { EventPublisher } from '../lib/event-publisher';
@@ -15,7 +15,11 @@ describe('EventPublisher', () => {
   let nestEventPublisher: NestEventPublisher;
 
   const anEvent = () =>
-    new BalanceChangedEvent({ aggregateId: randomUUID(), aggregateType: 'Atm', payload: { delta: '0.01' } });
+    new BalanceChangedEvent({
+      aggregateId: Id.generate(),
+      aggregateType: AggregateType.Atm,
+      payload: { delta: '0.01' },
+    });
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
