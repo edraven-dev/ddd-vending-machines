@@ -2,16 +2,15 @@ import { MikroORM } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import type { Atm } from '../../../app/atm/atm';
 import { AtmRepository } from '../../../app/atm/atm.repository.interface';
 import { AtmService } from '../../../app/atm/atm.service';
 
 describe('AtmService', () => {
-  const atm = { id: randomUUID(), loadMoney: vi.fn<Atm['loadMoney']>(), commit: vi.fn<Atm['commit']>() };
+  const atm = { id: Id.generate(), loadMoney: vi.fn<Atm['loadMoney']>(), commit: vi.fn<Atm['commit']>() };
   const repository = {
-    findOne: vi.fn<(id: string) => Promise<typeof atm | null>>(async () => atm),
+    findOne: vi.fn<(id: Id) => Promise<typeof atm | null>>(async () => atm),
     save: vi.fn<AtmRepository['save']>(),
   };
   const eventPublisher = { mergeObjectContext: vi.fn<EventPublisher['mergeObjectContext']>((atm) => atm) };

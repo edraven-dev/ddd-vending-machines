@@ -1,16 +1,16 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoadMoneyDto, Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
 import { CreateAtmCommand } from '../../../app/atm/commands/impl/create-atm.command';
 import { TakeMoneyCommand } from '../../../app/atm/commands/impl/take-money.command';
+import type { LoadMoneyDto } from '../../../app/atm/dto/load-money.dto';
 import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
 
 describe('AtmController', () => {
-  const id = randomUUID();
+  const id = Id.generate();
   const commandBus = { execute: vi.fn<CommandBus['execute']>() };
   const queryBus = { execute: vi.fn<QueryBus['execute']>() };
   const service = { loadMoney: vi.fn<AtmService['loadMoney']>() };

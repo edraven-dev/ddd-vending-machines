@@ -1,15 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../../../app/atm/atm';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
 import { AtmDto } from '../../../../../app/atm/dto/atm.dto';
 import { GetAtmHandler } from '../../../../../app/atm/queries/handlers/get-atm.handler';
+import { GetAtmQuery } from '../../../../../app/atm/queries/impl/get-atm.query';
 
 describe('GetAtmHandler', () => {
-  const atm = new Atm(randomUUID());
+  const atm = new Atm(Id.generate());
   const repositoryMock = { findOne: vi.fn<AtmRepository['findOne']>(async () => atm) };
   let handler: GetAtmHandler;
 
@@ -30,7 +30,7 @@ describe('GetAtmHandler', () => {
     it('should call AtmRepository.findOne with correct id', async () => {
       const id = atm.id;
 
-      await handler.execute({ id });
+      await handler.execute(new GetAtmQuery(id));
 
       expect(repositoryMock.findOne).toHaveBeenCalledWith(id);
     });
@@ -39,7 +39,7 @@ describe('GetAtmHandler', () => {
       repositoryMock.findOne.mockResolvedValueOnce(null);
       const id = atm.id;
 
-      await expect(handler.execute({ id })).rejects.toThrow(NotFoundException);
+      await expect(handler.execute(new GetAtmQuery(id))).rejects.toThrow(NotFoundException);
     });
 
     it('should return AtmDto with correct data', async () => {
@@ -47,10 +47,10 @@ describe('GetAtmHandler', () => {
       atm.takeMoney(new Currency('5.00'));
       const id = atm.id;
 
-      const result = await handler.execute({ id });
+      const result = await handler.execute(new GetAtmQuery(id));
 
       expect(result).toBeInstanceOf(AtmDto);
-      expect(result.id).toBe(id);
+      expect(result.id).toBe(id.value);
       expect(result.moneyCharged.amount).toBe('$5.05');
       expect(result.moneyInside.amount).toBe('$5.00');
     });

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Money } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, Money } from '@vending-machines/shared';
 import { Atm } from '../../../../../app/atm/atm';
 import { AtmFactory } from '../../../../../app/atm/atm.factory';
 import { AtmRepository } from '../../../../../app/atm/atm.repository.interface';
@@ -8,7 +7,7 @@ import { CreateAtmHandler } from '../../../../../app/atm/commands/handlers/creat
 import { CreateAtmCommand } from '../../../../../app/atm/commands/impl/create-atm.command';
 
 describe('CreateAtmHandler', () => {
-  const atm = new Atm(randomUUID());
+  const atm = new Atm(Id.generate());
   const factory = { create: vi.fn<AtmFactory['create']>(() => atm) };
   const atmRepository = { save: vi.fn<AtmRepository['save']>() };
   let handler: CreateAtmHandler;

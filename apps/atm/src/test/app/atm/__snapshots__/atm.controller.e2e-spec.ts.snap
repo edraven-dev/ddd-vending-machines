@@ -1,6 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AtmController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`AtmController - e2e > GET /:id > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
+
+exports[`AtmController - e2e > GET /:id > should return 400 BAD REQUEST when id is the nil uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`AtmController - e2e > POST / > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
 [
@@ -8,7 +18,11 @@ exports[`AtmController - e2e > POST / > should return 400 BAD REQUEST when id is
 ]
 `;
 
-exports[`AtmController - e2e > POST /:id/take-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `"Validation failed (uuid v 4 is expected)"`;
+exports[`AtmController - e2e > POST /:id/take-money > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
+[
+  "Invalid UUID",
+]
+`;
 
 exports[`AtmController - e2e > POST /:id/take-money > should return 400 BAD REQUEST when payload is not a valid currency 1`] = `
 [

@@ -1,5 +1,5 @@
 import { RequiredEntityData } from '@mikro-orm/core';
-import { Money } from '@vending-machines/shared';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../atm/atm';
 import AtmEntity from './atm.entity';
@@ -9,7 +9,7 @@ export class AtmMapper {
   private constructor() {}
 
   static toDomain(entity: AtmEntity): Atm {
-    const atm = new Atm(entity.id);
+    const atm = new Atm(Id.from(entity.id));
     atm.moneyInside = new Money(
       entity.money.oneCentCount,
       entity.money.tenCentCount,
@@ -24,7 +24,7 @@ export class AtmMapper {
 
   static toPersistence(atm: Atm): RequiredEntityData<AtmEntity> {
     return {
-      id: atm.id,
+      id: atm.id.value,
       money: {
         oneCentCount: atm.moneyInside.oneCentCount,
         tenCentCount: atm.moneyInside.tenCentCount,

@@ -1,12 +1,12 @@
 import { AtmDeletedEvent, MoneyLoadedEvent } from '@vending-machines/events';
-import { Money } from '@vending-machines/shared';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
 
 describe('Atm', () => {
   describe('#loadMoney', () => {
     it('should add money to money inside', () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.moneyInside = Money.Dollar;
 
       atm.loadMoney(Money.Dollar);
@@ -15,7 +15,7 @@ describe('Atm', () => {
     });
 
     it('should apply MoneyLoadedEvent', () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.moneyInside = Money.Dollar;
       const spy = vi.spyOn(atm, 'apply');
 
@@ -24,7 +24,7 @@ describe('Atm', () => {
       expect(spy).toHaveBeenCalledWith(expect.any(MoneyLoadedEvent));
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
-          aggregateId: atm.id,
+          aggregateId: atm.id.value,
           aggregateType: atm.constructor.name,
           payload: { loadedMoney: Money.add(Money.Dollar, Money.Dollar).toCoinsAndNotes() },
         }),
@@ -34,7 +34,7 @@ describe('Atm', () => {
 
   describe('#takeMoney', () => {
     it('should exchange money with commission', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.Dollar);
 
       atm.takeMoney(new Currency(1.0));
@@ -44,7 +44,7 @@ describe('Atm', () => {
     });
 
     it('should take at least one cent as commission', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.Cent);
 
       atm.takeMoney(new Currency(0.01));
@@ -53,7 +53,7 @@ describe('Atm', () => {
     });
 
     it('should round commission up to the nearest cent', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.add(Money.Dollar, Money.TenCent));
 
       atm.takeMoney(new Currency(1.1));
@@ -62,7 +62,7 @@ describe('Atm', () => {
     });
 
     it('should correctly calculate fractions modulo', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.TwentyDollar);
 
       atm.takeMoney(new Currency(20));
@@ -71,33 +71,33 @@ describe('Atm', () => {
     });
 
     it('should throw when taking negative amount', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
 
       expect(() => atm.takeMoney(new Currency(-1))).toThrow('Invalid amount');
     });
 
     it('should throw when taking zero amount', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
 
       expect(() => atm.takeMoney(new Currency(0))).toThrow('Invalid amount');
     });
 
     it('should throw when taking more money than inside', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.Dollar);
 
       expect(() => atm.takeMoney(new Currency(2))).toThrow('Not enough money');
     });
 
     it('should throw when taking money that cannot be allocated', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.Dollar);
 
       expect(() => atm.takeMoney(new Currency(0.1))).toThrow('Not enough change');
     });
 
     it('should apply BalanceChangedEvent', async () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       atm.loadMoney(Money.Dollar);
       await atm.commit();
 
@@ -108,7 +108,7 @@ describe('Atm', () => {
           eventId: expect.any(String),
           eventType: 'BalanceChangedEvent',
           timestamp: expect.any(Date),
-          aggregateId: atm.id,
+          aggregateId: atm.id.value,
           aggregateType: 'Atm',
           payload: { delta: '0.01' },
         },
@@ -118,7 +118,7 @@ describe('Atm', () => {
 
   describe('#markAsDeleted', () => {
     it('should apply AtmDeletedEvent', () => {
-      const atm = new Atm();
+      const atm = new Atm(Id.generate());
       const spy = vi.spyOn(atm, 'apply');
 
       atm.markAsDeleted();
@@ -126,7 +126,7 @@ describe('Atm', () => {
       expect(spy).toHaveBeenCalledWith(expect.any(AtmDeletedEvent));
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
-          aggregateId: atm.id,
+          aggregateId: atm.id.value,
           aggregateType: atm.constructor.name,
         }),
       );

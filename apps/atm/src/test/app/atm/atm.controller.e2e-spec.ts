@@ -6,11 +6,11 @@ import { Test } from '@nestjs/testing';
 import type { AtmProtoService } from '@vending-machines/proto';
 import {
   HttpExceptionFilterProvider,
+  Id,
   InvalidOperationExceptionFilterProvider,
   Money,
   ValidationProvider,
 } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { lastValueFrom } from 'rxjs';
@@ -18,6 +18,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AtmController } from '../../../app/atm/atm.controller';
 import { AtmService } from '../../../app/atm/atm.service';
+import { GetAtmQuery } from '../../../app/atm/queries/impl/get-atm.query';
 
 describe('AtmController - e2e', () => {
   const queryBusMock = {
@@ -69,14 +70,30 @@ describe('AtmController - e2e', () => {
   describe('GET /:id', () => {
     it('should return 200 OK', async () => {
       return request(app.getHttpServer())
-        .get(testEndpoint(randomUUID()))
+        .get(testEndpoint(Id.generate().value))
         .expect(HttpStatus.OK)
         .expect(await queryBusMock.execute());
+    });
+
+    it('should lowercase an uppercase id', async () => {
+      const id = Id.generate();
+
+      await request(app.getHttpServer()).get(testEndpoint(id.value.toUpperCase())).expect(HttpStatus.OK);
+
+      expect(queryBusMock.execute).toHaveBeenCalledWith(new GetAtmQuery(id));
     });
 
     it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
       const response = await request(app.getHttpServer())
         .get(testEndpoint('not-valid-uuid'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST when id is the nil uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(testEndpoint('00000000-0000-0000-0000-000000000000'))
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
@@ -87,7 +104,7 @@ describe('AtmController - e2e', () => {
     it('should return 201 CREATED', async () => {
       return request(app.getHttpServer())
         .post(testEndpoint(''))
-        .send({ id: randomUUID() })
+        .send({ id: Id.generate().value })
         .expect(HttpStatus.CREATED)
         .expect(await queryBusMock.execute());
     });
@@ -105,7 +122,7 @@ describe('AtmController - e2e', () => {
   describe('POST /:id/take-money', () => {
     it('should return 200 OK', async () => {
       return request(app.getHttpServer())
-        .post(`${testEndpoint(randomUUID())}/take-money`)
+        .post(`${testEndpoint(Id.generate().value)}/take-money`)
         .send({ amount: '20' })
         .expect(HttpStatus.OK)
         .expect(await queryBusMock.execute());
@@ -122,7 +139,7 @@ describe('AtmController - e2e', () => {
 
     it('should return 400 BAD REQUEST when payload is not a valid currency', async () => {
       const response = await request(app.getHttpServer())
-        .post(`${testEndpoint(randomUUID())}/take-money`)
+        .post(`${testEndpoint(Id.generate().value)}/take-money`)
         .send({ amount: '20.001' })
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -132,9 +149,9 @@ describe('AtmController - e2e', () => {
 
   describe('gRPC LoadMoney', () => {
     it('should load money', async () => {
-      const id = randomUUID();
+      const id = Id.generate();
 
-      await lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }));
+      await lastValueFrom(atmProtoService.loadMoney({ id: id.value, money: [1, 1, 1, 1, 1, 1] }));
 
       expect(atmServiceMock.loadMoney).toHaveBeenCalledWith(id, new Money(1, 1, 1, 1, 1, 1));
     });
@@ -144,11 +161,11 @@ describe('AtmController - e2e', () => {
         lastValueFrom(atmProtoService.loadMoney({ id: 'not-valid-uuid', money: [1, 1, 1, 1, 1, 1] })),
       ).rejects.toMatchObject({ code: status.INVALID_ARGUMENT, details: 'id: Invalid UUID' });
 
-      expect(atmServiceMock.loadMoney).not.toHaveBeenCalledWith('not-valid-uuid', expect.anything());
+      expect(atmServiceMock.loadMoney).not.toHaveBeenCalled();
     });
 
     it('should fail with NOT_FOUND when the ATM does not exist', async () => {
-      const id = randomUUID();
+      const id = Id.generate().value;
       atmServiceMock.loadMoney.mockRejectedValueOnce(new NotFoundException(`Atm with id ${id} not found`));
 
       await expect(lastValueFrom(atmProtoService.loadMoney({ id, money: [1, 1, 1, 1, 1, 1] }))).rejects.toMatchObject({
@@ -159,7 +176,7 @@ describe('AtmController - e2e', () => {
 
     it('should fail with FAILED_PRECONDITION when the domain rejects the money', async () => {
       await expect(
-        lastValueFrom(atmProtoService.loadMoney({ id: randomUUID(), money: [-1, 0, 0, 0, 0, 0] })),
+        lastValueFrom(atmProtoService.loadMoney({ id: Id.generate().value, money: [-1, 0, 0, 0, 0, 0] })),
       ).rejects.toMatchObject({ code: status.FAILED_PRECONDITION, details: 'Money components cannot be negative' });
     });
   });

@@ -13,9 +13,9 @@ export class GetAtmHandler implements IQueryHandler<GetAtmQuery, AtmDto> {
     const atm = await this.atmRepository.findOne(id);
 
     if (!atm) {
-      throw new NotFoundException(`Atm with id ${id} not found`);
+      throw new NotFoundException(`Atm with id ${id.value} not found`);
     }
 
-    return new AtmDto(atm.id, new MoneyDto(atm.moneyInside.amount), new MoneyDto(atm.moneyCharged));
+    return new AtmDto(atm.id.value, new MoneyDto(atm.moneyInside.amount), new MoneyDto(atm.moneyCharged));
   }
 }
