@@ -3,12 +3,22 @@ syntax = "proto3";
 package atm;
 
 service AtmProtoService {
-  rpc LoadMoney (LoadMoneyDto) returns (Empty) {}
+  rpc LoadMoney (LoadMoneyRequest) returns (Empty) {}
+  rpc CreateAtm (CreateAtmRequest) returns (Empty) {}
+  rpc DeleteAtm (DeleteAtmRequest) returns (Empty) {}
 }
 
-message LoadMoneyDto {
+message LoadMoneyRequest {
   string id = 1;
   repeated double money = 2;
+}
+
+message CreateAtmRequest {
+  string id = 1;
+}
+
+message DeleteAtmRequest {
+  string id = 1;
 }
 
 message Empty {}
