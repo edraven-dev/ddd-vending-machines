@@ -15,12 +15,12 @@ export class LoadCashToAtmHandler implements ICommandHandler<LoadCashToAtmComman
     const headOffice = await this.headOfficeRepository.findOne(id);
 
     if (!headOffice) {
-      throw new NotFoundException(`Head office with id ${id} not found`);
+      throw new NotFoundException(`Head office with id ${id.value} not found`);
     }
 
     const cash = headOffice.unloadCash();
     await this.atmProtoServiceClient.loadMoney({
-      id,
+      id: id.value,
       money: [
         cash.oneCentCount,
         cash.tenCentCount,

@@ -3,6 +3,7 @@ import { CreateRequestContext, Transactional } from '@mikro-orm/decorators/legac
 import { Logger } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { BalanceChangedEvent } from '@vending-machines/events';
+import { Id } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { HeadOfficeRepository } from './head-office.repository.interface';
 import { Inbox } from './inbox.interface';
@@ -22,7 +23,7 @@ export class BalanceChangedHandler implements IEventHandler<BalanceChangedEvent>
       return;
     }
 
-    const headOffice = await this.headOfficeRepository.findOne(event.aggregateId);
+    const headOffice = await this.headOfficeRepository.findOne(Id.from(event.aggregateId));
 
     if (!headOffice) {
       Logger.error(`Head office with id ${event.aggregateId} not found`, this.constructor.name);

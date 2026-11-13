@@ -60,7 +60,7 @@ describe('MikroOrmSnackMachineRepository', () => {
 
     it('should return SnackMachine mapped from the found SnackMachineEntity', async () => {
       const snackMachineEntity = new SnackMachineEntity();
-      const snackMachine = SnackMachine.create(id);
+      const snackMachine = new SnackMachine(id);
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
       const toDomain = vi.spyOn(SnackMachineMapper, 'toDomain').mockReturnValue(snackMachine);
 
@@ -76,7 +76,7 @@ describe('MikroOrmSnackMachineRepository', () => {
       const snackMachineEntity = new SnackMachineEntity();
       vi.spyOn(snackMachineEntity, 'assign').mockReturnThis();
       const spy = vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
-      const snackMachine = SnackMachine.create(id);
+      const snackMachine = new SnackMachine(id);
       snackMachine.moneyInside = Money.Dollar;
 
       await repository.save(snackMachine);
@@ -88,7 +88,7 @@ describe('MikroOrmSnackMachineRepository', () => {
       const snackMachineEntity = new SnackMachineEntity();
       const assign = vi.spyOn(snackMachineEntity, 'assign').mockReturnThis();
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
-      const snackMachine = SnackMachine.create(id);
+      const snackMachine = new SnackMachine(id);
 
       await repository.save(snackMachine);
 
@@ -98,7 +98,7 @@ describe('MikroOrmSnackMachineRepository', () => {
     it('should call ormRepository.create if ormRepository.findOne returns null', async () => {
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => null);
       const spy = vi.spyOn(ormRepository, 'create').mockImplementation(() => new SnackMachineEntity());
-      const snackMachine = SnackMachine.create(id);
+      const snackMachine = new SnackMachine(id);
       snackMachine.moneyInside = Money.Dollar;
 
       await repository.save(snackMachine);
@@ -110,7 +110,7 @@ describe('MikroOrmSnackMachineRepository', () => {
       const snackMachineEntity = new SnackMachineEntity();
       vi.spyOn(snackMachineEntity, 'assign').mockReturnThis();
       vi.spyOn(ormRepository, 'findOne').mockImplementation(async () => snackMachineEntity);
-      const snackMachine = SnackMachine.create(id);
+      const snackMachine = new SnackMachine(id);
 
       await repository.save(snackMachine);
 

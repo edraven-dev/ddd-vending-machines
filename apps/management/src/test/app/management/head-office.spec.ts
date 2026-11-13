@@ -1,11 +1,11 @@
-import { Money } from '@vending-machines/shared';
+import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { HeadOffice } from '../../../app/management/head-office';
 
 describe('HeadOffice', () => {
   describe('#changeBalance', () => {
     it('should add amount to the balance', () => {
-      const headOffice = new HeadOffice();
+      const headOffice = new HeadOffice(Id.generate());
       headOffice.balance = new Currency(10);
 
       headOffice.changeBalance(new Currency(10));
@@ -16,7 +16,7 @@ describe('HeadOffice', () => {
 
   describe('#loadCash', () => {
     it('should add money to cash', () => {
-      const headOffice = new HeadOffice();
+      const headOffice = new HeadOffice(Id.generate());
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
 
       headOffice.loadCash(new Money(1, 1, 1, 1, 1, 1));
@@ -27,7 +27,7 @@ describe('HeadOffice', () => {
 
   describe('#unloadCash', () => {
     it('should return cash and set it to None', () => {
-      const headOffice = new HeadOffice();
+      const headOffice = new HeadOffice(Id.generate());
       headOffice.cash = new Money(1, 1, 1, 1, 1, 1);
 
       const result = headOffice.unloadCash();
@@ -37,7 +37,7 @@ describe('HeadOffice', () => {
     });
 
     it('should return None if cash is None', () => {
-      const headOffice = new HeadOffice();
+      const headOffice = new HeadOffice(Id.generate());
       headOffice.cash = Money.None;
 
       const result = headOffice.unloadCash();

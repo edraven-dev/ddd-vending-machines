@@ -9,57 +9,37 @@ import {
 } from '@vending-machines/events';
 import { Id, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import { Slot } from '../../../app/snack-machine/slot';
 import { SnackMachine } from '../../../app/snack-machine/snack-machine';
 import { SnackPile } from '../../../app/snack-machine/snack-pile';
 import { Snack } from '../../../app/snack/snack';
 
 describe('SnackMachine', () => {
-  const slotState = (position: number, snackPile = SnackPile.Empty) => ({ id: Id.generate(), position, snackPile });
-
-  describe('.create', () => {
-    it('should create three empty slots with distinct ids that point at the machine', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+  describe('#constructor', () => {
+    it('should create three empty slots with distinct ids by default', () => {
+      const snackMachine = new SnackMachine(Id.generate());
 
       expect(snackMachine.slots.map((slot) => slot.position)).toEqual([1, 2, 3]);
       expect(snackMachine.slots.every((slot) => slot.snackPile === SnackPile.Empty)).toBe(true);
-      expect(snackMachine.slots.every((slot) => slot.snackMachine === snackMachine)).toBe(true);
       expect(new Set(snackMachine.slots.map((slot) => slot.id.value)).size).toBe(3);
     });
-  });
 
-  describe('.restore', () => {
-    it('should restore the given state with slots ordered by position', () => {
-      const id = Id.generate();
-      const gum = new SnackPile(Snack.Gum, 2, new Currency('1.00'));
-      const slots = [slotState(3), slotState(1, gum), slotState(2)];
+    it('should keep the given slots', () => {
+      const slots = [
+        new Slot(Id.generate(), 1, new SnackPile(Snack.Gum, 2, new Currency('1.00'))),
+        new Slot(Id.generate(), 2),
+        new Slot(Id.generate(), 3),
+      ];
 
-      const snackMachine = SnackMachine.restore(id, slots, Money.Dollar, new Currency('0.25'));
+      const snackMachine = new SnackMachine(Id.generate(), slots);
 
-      expect(snackMachine.id).toBe(id);
-      expect(snackMachine.moneyInside).toEqual(Money.Dollar);
-      expect(snackMachine.moneyInTransaction).toEqual(new Currency('0.25'));
-      expect(snackMachine.slots.map((slot) => slot.id)).toEqual([slots[1].id, slots[2].id, slots[0].id]);
-      expect(snackMachine.getSnackPile(1)).toBe(gum);
-      expect(snackMachine.slots.every((slot) => slot.snackMachine === snackMachine)).toBe(true);
-    });
-
-    it.each([
-      ['a missing slot', [1, 2]],
-      ['a duplicated position', [1, 1, 2]],
-      ['an unknown position', [1, 2, 4]],
-      ['an extra slot', [1, 2, 3, 4]],
-    ])('should throw on %s', (_, positions) => {
-      const slots = positions.map((position) => slotState(position));
-
-      expect(() => SnackMachine.restore(Id.generate(), slots, Money.None, new Currency(0))).toThrow(
-        'must have one slot at each position 1, 2, 3',
-      );
+      expect(snackMachine.slots).toBe(slots);
     });
   });
 
   describe('#returnMoney', () => {
     it('should empties money in transaction when returning money', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.insertMoney(Money.Dollar);
 
       snackMachine.returnMoney();
@@ -68,7 +48,7 @@ describe('SnackMachine', () => {
     });
 
     it('should return money with highest denomination first', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadMoney(Money.Dollar);
 
       snackMachine.insertMoney(Money.Quarter);
@@ -84,7 +64,7 @@ describe('SnackMachine', () => {
 
   describe('#insertMoney', () => {
     it('should add inserted money to money in transaction', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
 
       snackMachine.insertMoney(Money.Cent);
       snackMachine.insertMoney(Money.Dollar);
@@ -93,14 +73,14 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent inserting more than one coin at a time', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       const twoCent = Money.add(Money.Cent, Money.Cent);
 
       expect(() => snackMachine.insertMoney(twoCent)).toThrow('Invalid coin or note');
     });
 
     it('should apply MoneyInsertedEvent when inserting money', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.insertMoney(Money.Dollar);
@@ -118,7 +98,7 @@ describe('SnackMachine', () => {
 
   describe('#buySnack', () => {
     it('should release a snack when buying', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
       snackMachine.insertMoney(Money.Dollar);
 
@@ -130,7 +110,7 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent buying when there is no snack', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 0, new Currency(1.0)));
       snackMachine.insertMoney(Money.Dollar);
 
@@ -138,7 +118,7 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent buying when there is not enough money', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(5.0)));
       snackMachine.insertMoney(Money.Dollar);
 
@@ -146,7 +126,7 @@ describe('SnackMachine', () => {
     });
 
     it('should return change when buying with more money than the item price', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(0.5)));
       snackMachine.loadMoney(Money.multiply(Money.TenCent, 10));
 
@@ -158,7 +138,7 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent buying when there is not enough change', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(0.5)));
       snackMachine.insertMoney(Money.Dollar);
 
@@ -166,13 +146,13 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent buying when the slot at position does not exist', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
 
       expect(() => snackMachine.buySnack(4)).toThrow('Slot at position 4 does not exist');
     });
 
     it('should apply SnackBoughtEvent when buying', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
       snackMachine.insertMoney(Money.Dollar);
       const spy = vi.spyOn(snackMachine, 'apply');
@@ -192,7 +172,7 @@ describe('SnackMachine', () => {
 
   describe('#getSnackPile', () => {
     it('should return snack pile at position', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
 
       const snackPile = snackMachine.getSnackPile(1);
@@ -205,7 +185,7 @@ describe('SnackMachine', () => {
 
   describe('#loadSnacks', () => {
     it('should add snack to slot', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
 
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
 
@@ -213,7 +193,7 @@ describe('SnackMachine', () => {
     });
 
     it('should prevent loading snacks to a slot that does not exist', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
 
       expect(() => snackMachine.loadSnacks(4, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)))).toThrow(
         'Slot at position 4 does not exist',
@@ -221,7 +201,7 @@ describe('SnackMachine', () => {
     });
 
     it('should apply SnacksLoadedEvent when loading snacks', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.loadSnacks(1, new SnackPile(Snack.Chocolate, 10, new Currency(1.0)));
@@ -244,7 +224,7 @@ describe('SnackMachine', () => {
 
   describe('#loadMoney', () => {
     it('should add money to money inside', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
 
       snackMachine.loadMoney(Money.Dollar);
 
@@ -252,7 +232,7 @@ describe('SnackMachine', () => {
     });
 
     it('should apply MoneyLoadedEvent when loading money', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.loadMoney(Money.Dollar);
@@ -270,14 +250,14 @@ describe('SnackMachine', () => {
 
   describe('#unloadMoney', () => {
     it('should throw when unloading money during transaction', async () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.insertMoney(Money.Dollar);
 
       expect(() => snackMachine.unloadMoney()).toThrow(InvalidOperationException);
     });
 
     it('should return money and set it to None', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadMoney(Money.Dollar);
 
       const result = snackMachine.unloadMoney();
@@ -287,7 +267,7 @@ describe('SnackMachine', () => {
     });
 
     it('should return None if money inside is None', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.moneyInside = Money.None;
 
       const result = snackMachine.unloadMoney();
@@ -297,7 +277,7 @@ describe('SnackMachine', () => {
     });
 
     it('should apply MoneyUnloadedEvent when unloading money', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       snackMachine.loadMoney(Money.Dollar);
       const spy = vi.spyOn(snackMachine, 'apply');
 
@@ -316,7 +296,7 @@ describe('SnackMachine', () => {
 
   describe('#markAsDeleted', () => {
     it('should apply HeadOfficeDeletedEvent when marking as deleted', () => {
-      const snackMachine = SnackMachine.create(Id.generate());
+      const snackMachine = new SnackMachine(Id.generate());
       const spy = vi.spyOn(snackMachine, 'apply');
 
       snackMachine.markAsDeleted();

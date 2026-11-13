@@ -1,10 +1,10 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { ValidationProvider } from '@vending-machines/shared';
-import { randomUUID } from 'crypto';
+import { Id, ValidationProvider } from '@vending-machines/shared';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { LoadCashToAtmCommand } from '../../../app/management/commands/impl/load-cash-to-atm.command';
 import { ManagementController } from '../../../app/management/management.controller';
 
 describe('ManagementController - e2e', () => {
@@ -35,7 +35,7 @@ describe('ManagementController - e2e', () => {
   describe('GET /:id', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .get(testEndpoint(randomUUID()))
+        .get(testEndpoint(Id.generate().value))
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });
@@ -47,13 +47,21 @@ describe('ManagementController - e2e', () => {
 
       expect(response.body.message).toMatchSnapshot();
     });
+
+    it('should return 400 BAD REQUEST when id is the nil uuid', async () => {
+      const response = await request(app.getHttpServer())
+        .get(testEndpoint('00000000-0000-0000-0000-000000000000'))
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).toMatchSnapshot();
+    });
   });
 
   describe('POST /', () => {
     it('should return 201 CREATED', () => {
       return request(app.getHttpServer())
         .post(testEndpoint(''))
-        .send({ id: randomUUID() })
+        .send({ id: Id.generate().value })
         .expect(HttpStatus.CREATED)
         .expect(queryBusMock.execute());
     });
@@ -71,9 +79,19 @@ describe('ManagementController - e2e', () => {
   describe('POST /:id/load-cash-to-atm', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .post(testEndpoint(`${randomUUID()}/load-cash-to-atm`))
+        .post(testEndpoint(`${Id.generate().value}/load-cash-to-atm`))
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
+    });
+
+    it('should lowercase an uppercase id', async () => {
+      const id = Id.generate();
+
+      await request(app.getHttpServer())
+        .post(testEndpoint(`${id.value.toUpperCase()}/load-cash-to-atm`))
+        .expect(HttpStatus.OK);
+
+      expect(commandBusMock.execute).toHaveBeenCalledWith(new LoadCashToAtmCommand(id));
     });
 
     it('should return 400 BAD REQUEST when id is not a valid uuid', async () => {
@@ -88,7 +106,7 @@ describe('ManagementController - e2e', () => {
   describe('POST /:id/unload-cash-from-snack-machine', () => {
     it('should return 200 OK', () => {
       return request(app.getHttpServer())
-        .post(testEndpoint(`${randomUUID()}/unload-cash-from-snack-machine`))
+        .post(testEndpoint(`${Id.generate().value}/unload-cash-from-snack-machine`))
         .expect(HttpStatus.OK)
         .expect(queryBusMock.execute());
     });

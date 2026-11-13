@@ -7,7 +7,7 @@ import { SnackMachineFactory } from '../../../../../app/snack-machine/snack-mach
 import { SnackMachineRepository } from '../../../../../app/snack-machine/snack-machine.repository.interface';
 
 describe('CreateSnackMachineHandler', () => {
-  const snackMachine = SnackMachine.create(Id.generate());
+  const snackMachine = new SnackMachine(Id.generate());
   const factoryMock = { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) };
   const repositoryMock = { save: vi.fn<SnackMachineRepository['save']>() };
   let handler: CreateSnackMachineHandler;

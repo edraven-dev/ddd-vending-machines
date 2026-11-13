@@ -1,4 +1,4 @@
-import { Id, idSchema, toId } from '../lib/id';
+import { Id, idSchema } from '../lib/id';
 
 const v4 = 'ad277203-e35d-4ffe-a03f-6630ea3302cc';
 const v7 = '019a7f3e-8c41-7d2a-b5e6-3f9d1c2b4a60';
@@ -74,14 +74,5 @@ describe('idSchema', () => {
       type: 'string',
       format: 'uuid',
     });
-  });
-});
-
-describe('toId', () => {
-  it('should parse a string and keep an Id', () => {
-    const id = Id.from(v7);
-
-    expect(toId(v7)).toEqual(id);
-    expect(toId(id)).toBe(id);
   });
 });

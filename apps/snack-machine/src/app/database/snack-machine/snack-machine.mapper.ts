@@ -1,6 +1,7 @@
 import { RequiredEntityData } from '@mikro-orm/core';
 import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
+import { Slot } from '../../snack-machine/slot';
 import { SnackMachine } from '../../snack-machine/snack-machine';
 import { SnackPile } from '../../snack-machine/snack-pile';
 import { Snack } from '../../snack/snack';
@@ -13,23 +14,22 @@ export class SnackMachineMapper {
   private constructor() {}
 
   static toDomain(entity: SnackMachineEntity): SnackMachine {
-    return SnackMachine.restore(
+    const snackMachine = new SnackMachine(
       Id.from(entity.id),
-      entity.slots.map((slot) => ({
-        id: Id.from(slot.id),
-        position: slot.position,
-        snackPile: SnackMachineMapper.toSnackPile(slot.snackPile),
-      })),
-      new Money(
-        entity.money.oneCentCount,
-        entity.money.tenCentCount,
-        entity.money.quarterCount,
-        entity.money.oneDollarCount,
-        entity.money.fiveDollarCount,
-        entity.money.twentyDollarCount,
-      ),
-      new Currency(entity.moneyInTransaction),
+      entity.slots
+        .map((slot) => new Slot(Id.from(slot.id), slot.position, SnackMachineMapper.toSnackPile(slot.snackPile)))
+        .toSorted((a, b) => a.position - b.position),
     );
+    snackMachine.moneyInside = new Money(
+      entity.money.oneCentCount,
+      entity.money.tenCentCount,
+      entity.money.quarterCount,
+      entity.money.oneDollarCount,
+      entity.money.fiveDollarCount,
+      entity.money.twentyDollarCount,
+    );
+    snackMachine.moneyInTransaction = new Currency(entity.moneyInTransaction);
+    return snackMachine;
   }
 
   static toPersistence(snackMachine: SnackMachine) {

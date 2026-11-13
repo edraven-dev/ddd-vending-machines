@@ -13,36 +13,14 @@ import Currency from 'currency.js';
 import { Slot } from './slot';
 import { SnackPile } from './snack-pile';
 
-const SLOT_POSITIONS = [1, 2, 3];
-
-type SlotState = Pick<Slot, 'id' | 'position' | 'snackPile'>;
-
 export class SnackMachine extends AggregateRoot {
-  moneyInside: Money;
-  moneyInTransaction: Currency;
+  moneyInside: Money = Money.None;
+  moneyInTransaction: Currency = new Currency(0);
   readonly slots: readonly Slot[];
 
-  private constructor(id: Id, slots: readonly SlotState[], moneyInside: Money, moneyInTransaction: Currency) {
+  constructor(id: Id, slots: readonly Slot[] = [1, 2, 3].map((position) => new Slot(Id.generate(), position))) {
     super(id);
-    this.slots = slots.map((slot) => new Slot(slot.id, this, slot.position, slot.snackPile));
-    this.moneyInside = moneyInside;
-    this.moneyInTransaction = moneyInTransaction;
-  }
-
-  static create(id: Id): SnackMachine {
-    const slots = SLOT_POSITIONS.map((position) => ({ id: Id.generate(), position, snackPile: SnackPile.Empty }));
-    return new SnackMachine(id, slots, Money.None, new Currency(0));
-  }
-
-  static restore(id: Id, slots: readonly SlotState[], moneyInside: Money, moneyInTransaction: Currency): SnackMachine {
-    const sorted = slots.toSorted((a, b) => a.position - b.position);
-    if (
-      sorted.length !== SLOT_POSITIONS.length ||
-      sorted.some((slot, index) => slot.position !== SLOT_POSITIONS[index])
-    ) {
-      throw new Error(`Snack machine ${id.value} must have one slot at each position ${SLOT_POSITIONS.join(', ')}`);
-    }
-    return new SnackMachine(id, sorted, moneyInside, moneyInTransaction);
+    this.slots = slots;
   }
 
   insertMoney(money: Money): void {

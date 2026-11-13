@@ -2,6 +2,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BalanceChangedEvent } from '@vending-machines/events';
+import { Id } from '@vending-machines/shared';
 import { randomUUID } from 'crypto';
 import Currency from 'currency.js';
 import { BalanceChangedHandler } from '../../../app/management/balance-changed.handler';
@@ -10,7 +11,7 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 import { Inbox } from '../../../app/management/inbox.interface';
 
 describe('BalanceChangedHandler', () => {
-  const headOffice = new HeadOffice();
+  const headOffice = new HeadOffice(Id.generate());
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
     save: vi.fn<HeadOfficeRepository['save']>(),
@@ -91,7 +92,7 @@ describe('BalanceChangedHandler', () => {
       expect(repository.save).not.toHaveBeenCalled();
     });
 
-    it('should call headOfficeRepository.findOne', async () => {
+    it('should call headOfficeRepository.findOne with the parsed id', async () => {
       const event = new BalanceChangedEvent({
         aggregateId: randomUUID(),
         aggregateType: 'Atm',
@@ -100,7 +101,7 @@ describe('BalanceChangedHandler', () => {
 
       await handler.handle(event);
 
-      expect(repository.findOne).toHaveBeenCalled();
+      expect(repository.findOne).toHaveBeenCalledWith(Id.from(event.aggregateId));
     });
 
     it('should log and return early if HeadOffice not found', async () => {
