@@ -40,25 +40,7 @@ describe('SnackMachineController', () => {
     it('should execute GetSnackMachineQuery', async () => {
       const id = Id.generate();
 
-      await controller.create({ id });
-
-      expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
-    });
-  });
-
-  describe('#create', () => {
-    it('should execute CreateSnackMachineCommand', async () => {
-      const id = Id.generate();
-
-      await controller.create({ id });
-
-      expect(commandBus.execute).toHaveBeenCalledWith(new CreateSnackMachineCommand(id));
-    });
-
-    it('should execute GetSnackMachineQuery', async () => {
-      const id = Id.generate();
-
-      await controller.create({ id });
+      await controller.getById(id);
 
       expect(queryBus.execute).toHaveBeenCalledWith(new GetSnackMachineQuery(id));
     });

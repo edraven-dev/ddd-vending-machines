@@ -1,15 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
-import {
-  ApiBadRequestResponse,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Id, idSchema, Money } from '@vending-machines/shared';
 import { AtmService } from './atm.service';
 import { CreateAtmCommand } from './commands/impl/create-atm.command';
@@ -38,16 +30,6 @@ export class AtmController {
   @ApiNotFoundResponse({ description: 'ATM not found' })
   getById(@Param('id', { schema: idSchema }) id: Id): Promise<AtmDto> {
     return this.queryBus.execute(new GetAtmQuery(id));
-  }
-
-  @Post()
-  @ApiOperation({ summary: 'Create ATM', description: 'Creates ATM' })
-  @ApiCreatedResponse({ type: AtmDto })
-  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  @ApiConflictResponse({ description: 'ATM already exists' })
-  async create(@Body({ schema: createAtmSchema }) requestDto: CreateAtmDto): Promise<AtmDto> {
-    await this.commandBus.execute(new CreateAtmCommand(requestDto.id));
-    return this.queryBus.execute(new GetAtmQuery(requestDto.id));
   }
 
   @Post(':id/take-money')

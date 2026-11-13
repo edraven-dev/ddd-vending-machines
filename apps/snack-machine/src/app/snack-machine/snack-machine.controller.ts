@@ -1,15 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
-import {
-  ApiBadRequestResponse,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Id, idSchema, Money, UnloadMoneyDto } from '@vending-machines/shared';
 import { BuySnackCommand } from './commands/impl/buy-snack.command';
 import { CreateSnackMachineCommand } from './commands/impl/create-snack-machine.command';
@@ -45,18 +37,6 @@ export class SnackMachineController {
   @ApiNotFoundResponse({ description: 'Snack machine not found' })
   getById(@Param('id', { schema: idSchema }) id: Id): Promise<SnackMachineDto> {
     return this.queryBus.execute(new GetSnackMachineQuery(id));
-  }
-
-  @Post()
-  @ApiOperation({ summary: 'Create snack machine', description: 'Creates snack machine' })
-  @ApiCreatedResponse({ type: SnackMachineDto })
-  @ApiBadRequestResponse({ description: 'Invalid UUID provided' })
-  @ApiConflictResponse({ description: 'Snack machine already exists' })
-  async create(
-    @Body({ schema: createSnackMachineSchema }) requestDto: CreateSnackMachineDto,
-  ): Promise<SnackMachineDto> {
-    await this.commandBus.execute(new CreateSnackMachineCommand(requestDto.id));
-    return this.queryBus.execute(new GetSnackMachineQuery(requestDto.id));
   }
 
   @Get(':id/money-in-machine')

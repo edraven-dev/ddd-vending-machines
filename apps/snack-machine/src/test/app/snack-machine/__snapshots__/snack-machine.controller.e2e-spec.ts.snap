@@ -66,12 +66,6 @@ exports[`SnackMachineController - e2e > PATCH /:id/load-snacks > should return 4
 ]
 `;
 
-exports[`SnackMachineController - e2e > POST / > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
-[
-  "id: Invalid UUID",
-]
-`;
-
 exports[`SnackMachineController - e2e > POST /:id/buy-snack > should return 400 BAD REQUEST when id is not a valid uuid 1`] = `
 [
   "Invalid UUID",
