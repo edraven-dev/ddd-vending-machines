@@ -12,7 +12,7 @@ describe('CreateAtmHandler', () => {
   const atm = new Atm(Id.generate());
   const factory = { create: vi.fn<AtmFactory['create']>(() => atm) };
   const atmRepository = {
-    findOne: vi.fn<AtmRepository['findOne']>(async () => null),
+    exists: vi.fn<AtmRepository['exists']>(async () => false),
     save: vi.fn<AtmRepository['save']>(),
   };
   let inTransaction = false;
@@ -77,7 +77,7 @@ describe('CreateAtmHandler', () => {
     });
 
     it('should throw ConflictException and save nothing if the ATM already exists', async () => {
-      atmRepository.findOne.mockResolvedValueOnce(new Atm(atm.id));
+      atmRepository.exists.mockResolvedValueOnce(true);
       const commit = vi.spyOn(Atm.prototype, 'commit');
 
       await expect(handler.execute(new CreateAtmCommand(atm.id))).rejects.toThrow(
@@ -89,11 +89,11 @@ describe('CreateAtmHandler', () => {
       expect(commit).not.toHaveBeenCalled();
     });
 
-    it('should look for the ATM and save it in one transaction', async () => {
+    it('should check whether the ATM exists and save it in one transaction', async () => {
       const inTransactionAt: boolean[] = [];
-      atmRepository.findOne.mockImplementationOnce(async () => {
+      atmRepository.exists.mockImplementationOnce(async () => {
         inTransactionAt.push(inTransaction);
-        return null;
+        return false;
       });
       atmRepository.save.mockImplementationOnce(async () => {
         inTransactionAt.push(inTransaction);

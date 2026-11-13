@@ -18,7 +18,7 @@ export class CreateAtmHandler implements ICommandHandler<CreateAtmCommand, void>
   @CreateRequestContext()
   @Transactional()
   async execute({ id }: CreateAtmCommand) {
-    if (await this.atmRepository.findOne(id)) {
+    if (await this.atmRepository.exists(id)) {
       throw new ConflictException(`Atm with id ${id.value} already exists`);
     }
 

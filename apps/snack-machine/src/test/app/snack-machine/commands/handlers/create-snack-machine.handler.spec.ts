@@ -12,7 +12,7 @@ describe('CreateSnackMachineHandler', () => {
   const snackMachine = new SnackMachine(Id.generate());
   const factoryMock = { create: vi.fn<SnackMachineFactory['create']>(() => snackMachine) };
   const repositoryMock = {
-    findOne: vi.fn<SnackMachineRepository['findOne']>(async () => null),
+    exists: vi.fn<SnackMachineRepository['exists']>(async () => false),
     save: vi.fn<SnackMachineRepository['save']>(),
   };
   let inTransaction = false;
@@ -92,7 +92,7 @@ describe('CreateSnackMachineHandler', () => {
     });
 
     it('should throw ConflictException and save nothing if the Snack Machine already exists', async () => {
-      repositoryMock.findOne.mockResolvedValueOnce(new SnackMachine(snackMachine.id));
+      repositoryMock.exists.mockResolvedValueOnce(true);
       const commit = vi.spyOn(SnackMachine.prototype, 'commit');
 
       await expect(handler.execute(new CreateSnackMachineCommand(snackMachine.id))).rejects.toThrow(
@@ -104,11 +104,11 @@ describe('CreateSnackMachineHandler', () => {
       expect(commit).not.toHaveBeenCalled();
     });
 
-    it('should look for the Snack Machine and save it in one transaction', async () => {
+    it('should check whether the Snack Machine exists and save it in one transaction', async () => {
       const inTransactionAt: boolean[] = [];
-      repositoryMock.findOne.mockImplementationOnce(async () => {
+      repositoryMock.exists.mockImplementationOnce(async () => {
         inTransactionAt.push(inTransaction);
-        return null;
+        return false;
       });
       repositoryMock.save.mockImplementationOnce(async () => {
         inTransactionAt.push(inTransaction);

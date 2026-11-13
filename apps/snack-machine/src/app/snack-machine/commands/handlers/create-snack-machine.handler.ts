@@ -21,7 +21,7 @@ export class CreateSnackMachineHandler implements ICommandHandler<CreateSnackMac
   @CreateRequestContext()
   @Transactional()
   async execute({ id }: CreateSnackMachineCommand) {
-    if (await this.snackMachineRepository.findOne(id)) {
+    if (await this.snackMachineRepository.exists(id)) {
       throw new ConflictException(`Snack machine with id ${id.value} already exists`);
     }
 
