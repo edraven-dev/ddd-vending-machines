@@ -3,6 +3,7 @@ import { EventBus, IEvent, IEventPublisher } from '@nestjs/cqrs';
 import { EJSON } from 'bson';
 import { AmqpService } from './amqp/amqp.service';
 import { EXCHANGE_NAME } from './constants';
+import { DomainEvent } from './domain-event';
 
 @Injectable()
 export class EventPublisher<TEvent extends IEvent> implements IEventPublisher<TEvent> {
@@ -16,6 +17,7 @@ export class EventPublisher<TEvent extends IEvent> implements IEventPublisher<TE
   async publish<TEvent extends IEvent>(event: TEvent) {
     await this.amqpService.publish(EXCHANGE_NAME, `event.${event.constructor.name}`, EJSON.stringify(event), {
       persistent: true,
+      ...(event instanceof DomainEvent && { messageId: event.eventId }),
     });
   }
 
