@@ -1,4 +1,4 @@
-import { AggregateType, AtmDeletedEvent, MoneyLoadedEvent } from '@vending-machines/events';
+import { AggregateType, AtmDeletedEvent, EventType, MoneyLoadedEvent } from '@vending-machines/events';
 import { Id, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Atm } from '../../../app/atm/atm';
@@ -106,7 +106,7 @@ describe('Atm', () => {
       expect(atm.getUncommittedEvents()).toEqual([
         {
           eventId: expect.any(String),
-          eventType: 'BalanceChangedEvent',
+          eventType: EventType.BalanceChanged,
           timestamp: expect.any(Date),
           aggregateId: atm.id.value,
           aggregateType: AggregateType.Atm,

@@ -6,6 +6,7 @@ import { randomUUIDv7 } from 'node:crypto';
 import { BalanceChangedEvent, MoneyLoadedEvent } from '../event-declarations';
 import { AggregateType } from '../lib/aggregate-type';
 import { AmqpService } from '../lib/amqp/amqp.service';
+import { EXCHANGE_NAME } from '../lib/constants';
 import { EventPublisher } from '../lib/event-publisher';
 import { EventSubscriber } from '../lib/event-subscriber';
 import { ExplorerService } from '../lib/services/explorer.service';
@@ -18,6 +19,9 @@ class BalanceChangedTestHandler implements IEventHandler<BalanceChangedEvent> {
     this.received.push(event);
   }
 }
+
+@EventsHandler(BalanceChangedEvent)
+class AnotherBalanceChangedTestHandler extends BalanceChangedTestHandler {}
 
 describe('Event round trip', () => {
   const amqpService = {
@@ -45,7 +49,7 @@ describe('Event round trip', () => {
         ExplorerService,
         BalanceChangedTestHandler,
         { provide: AmqpService, useValue: amqpService },
-        { provide: APP_NAME_TOKEN, useValue: 'Test' },
+        { provide: APP_NAME_TOKEN, useValue: 'test' },
       ],
     }).compile();
 
@@ -64,6 +68,44 @@ describe('Event round trip', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('should subscribe to its event type on a queue named after the app and the event type', () => {
+    expect(amqpService.addSubscriber.mock.lastCall?.slice(0, 3)).toStrictEqual([
+      EXCHANGE_NAME,
+      'event.atm.balance-changed',
+      'q.test.atm.balance-changed',
+    ]);
+  });
+
+  it('should publish with the event type as routing key', async () => {
+    await publisher.publish(
+      new BalanceChangedEvent({
+        aggregateId: Id.generate(),
+        aggregateType: AggregateType.Atm,
+        payload: { delta: '0.01' },
+      }),
+    );
+
+    expect(amqpService.publish.mock.lastCall?.[1]).toBe('event.atm.balance-changed');
+  });
+
+  it('should refuse two handlers for the same event type in one app', async () => {
+    const module = await Test.createTestingModule({
+      imports: [CqrsModule],
+      providers: [
+        EventSubscriber,
+        ExplorerService,
+        BalanceChangedTestHandler,
+        AnotherBalanceChangedTestHandler,
+        { provide: AmqpService, useValue: amqpService },
+        { provide: APP_NAME_TOKEN, useValue: 'test' },
+      ],
+    }).compile();
+
+    expect(() => module.get(EventSubscriber).onApplicationBootstrap()).toThrow(
+      'test has more than one handler for atm.balance-changed',
+    );
   });
 
   it('should hand a published event to its handler as an instance of the event class', async () => {
@@ -97,7 +139,7 @@ describe('Event round trip', () => {
   it('should accept the numeric date format written by the previous ejson serializer', async () => {
     const legacyMessage = JSON.stringify({
       eventId: randomUUIDv7(),
-      eventType: 'BalanceChangedEvent',
+      eventType: 'atm.balance-changed',
       timestamp: { $date: 1794574962551 },
       aggregateId: randomUUIDv7(),
       aggregateType: 'Atm',

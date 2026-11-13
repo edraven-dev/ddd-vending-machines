@@ -15,9 +15,12 @@ export class EventPublisher<TEvent extends IEvent> implements IEventPublisher<TE
   }
 
   async publish<TEvent extends IEvent>(event: TEvent) {
-    await this.amqpService.publish(EXCHANGE_NAME, `event.${event.constructor.name}`, EJSON.stringify(event), {
+    if (!(event instanceof DomainEvent)) {
+      throw new Error(`${event.constructor.name} is not a domain event`);
+    }
+    await this.amqpService.publish(EXCHANGE_NAME, `event.${event.eventType}`, EJSON.stringify(event), {
       persistent: true,
-      ...(event instanceof DomainEvent && { messageId: event.eventId }),
+      messageId: event.eventId,
     });
   }
 

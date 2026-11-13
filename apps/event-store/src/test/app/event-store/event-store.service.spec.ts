@@ -2,7 +2,7 @@ import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Test } from '@nestjs/testing';
-import { AggregateType } from '@vending-machines/events';
+import { AggregateType, EventType } from '@vending-machines/events';
 import { AmqpService, EXCHANGE_NAME } from '@vending-machines/events/amqp';
 import { EJSON } from 'bson';
 import { randomUUIDv7 } from 'node:crypto';
@@ -24,7 +24,7 @@ describe('EventStoreService', () => {
 
   const anEvent = () => ({
     eventId: randomUUIDv7(),
-    eventType: 'AtmCreatedEvent',
+    eventType: EventType.AtmCreated,
     timestamp: new Date(),
     aggregateId: randomUUIDv7(),
     aggregateType: AggregateType.Atm,
@@ -60,7 +60,7 @@ describe('EventStoreService', () => {
   });
 
   it('should subscribe to every event', () => {
-    expect(subscription).toEqual([EXCHANGE_NAME, 'event.#', 'q.EventStore', expect.any(Function)]);
+    expect(subscription).toEqual([EXCHANGE_NAME, 'event.#', 'q.event-store', expect.any(Function)]);
   });
 
   it('should store the decoded event', async () => {

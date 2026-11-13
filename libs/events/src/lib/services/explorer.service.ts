@@ -11,29 +11,25 @@ const EVENTS_HANDLER_METADATA = '__eventsHandler__';
 export class ExplorerService<EventBase extends IEvent = IEvent> {
   constructor(private readonly modulesContainer: ModulesContainer) {}
 
-  exploreEvents(): [string, Type<EventBase>, Type<IEventHandler>][] {
+  exploreEvents(): [Type<EventBase>, Type<IEventHandler>][] {
     const modules = [...this.modulesContainer.values()];
-    const events = this.flatMap<IEventHandler<EventBase>>(modules, (moduleName, instance) =>
-      this.filterProvider(moduleName, instance, EVENTS_HANDLER_METADATA),
+    const events = this.flatMap<IEventHandler<EventBase>>(modules, (instance) =>
+      this.filterProvider(instance, EVENTS_HANDLER_METADATA),
     );
     return events;
   }
 
   private flatMap<T>(
     modules: Module[],
-    callback: (moduleName: string, instance: InstanceWrapper) => [string, Type<unknown>, Type<unknown>] | undefined,
-  ): [string, Type<EventBase>, Type<T>][] {
+    callback: (instance: InstanceWrapper) => [Type<unknown>, Type<unknown>] | undefined,
+  ): [Type<EventBase>, Type<T>][] {
     const items = modules
-      .map((module) => [...module.providers.values()].map((provider) => callback(module.name, provider)))
+      .map((module) => [...module.providers.values()].map((provider) => callback(provider)))
       .reduce((a, b) => a.concat(b), []);
-    return items.filter((element) => !!element && element[1] !== undefined) as [string, Type<EventBase>, Type<T>][];
+    return items.filter((element) => !!element && element[0] !== undefined) as [Type<EventBase>, Type<T>][];
   }
 
-  private filterProvider(
-    moduleName: string,
-    wrapper: InstanceWrapper,
-    metadataKey: string,
-  ): [string, Type<unknown>, Type<unknown>] | undefined {
+  private filterProvider(wrapper: InstanceWrapper, metadataKey: string): [Type<unknown>, Type<unknown>] | undefined {
     const { instance } = wrapper;
     if (!instance) {
       return undefined;
@@ -42,8 +38,7 @@ export class ExplorerService<EventBase extends IEvent = IEvent> {
     if (!eventTypes || !eventTypes[0] || !eventTypes[1]) {
       return undefined;
     }
-    const [eventType, eventHandler] = eventTypes;
-    return [moduleName, eventType, eventHandler];
+    return eventTypes;
   }
 
   private extractMetadata(

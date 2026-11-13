@@ -10,7 +10,7 @@ import {
 import { DatabaseModule } from './database/database.module';
 import { SnackMachineModule } from './snack-machine/snack-machine.module';
 
-const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'SnackMachine' };
+const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'snack-machine' };
 
 @Global()
 @Module({

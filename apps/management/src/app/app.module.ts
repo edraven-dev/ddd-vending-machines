@@ -11,7 +11,7 @@ import { BullConfig } from './config/bull.config';
 import { DatabaseModule } from './database/database.module';
 import { ManagementModule } from './management/management.module';
 
-const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'Management' };
+const AppNameProvider: Provider = { provide: APP_NAME_TOKEN, useValue: 'management' };
 
 @Global()
 @Module({

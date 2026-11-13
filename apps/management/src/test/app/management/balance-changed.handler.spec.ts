@@ -47,7 +47,7 @@ describe('BalanceChangedHandler', () => {
   });
 
   describe('#execute', () => {
-    it('should record the event under the handler name, then load and save the head office, all in one transaction', async () => {
+    it('should record the event under its event type, then load and save the head office, all in one transaction', async () => {
       const calls: { call: string; inTransaction: boolean }[] = [];
       inbox.tryRecord.mockImplementationOnce(async () => {
         calls.push({ call: 'tryRecord', inTransaction });
@@ -69,7 +69,7 @@ describe('BalanceChangedHandler', () => {
       await handler.handle(event);
 
       expect(transactional).toHaveBeenCalledOnce();
-      expect(inbox.tryRecord).toHaveBeenCalledWith('BalanceChangedHandler', event.eventId);
+      expect(inbox.tryRecord).toHaveBeenCalledWith('atm.balance-changed', event.eventId);
       expect(calls).toEqual([
         { call: 'tryRecord', inTransaction: true },
         { call: 'findByAtmId', inTransaction: true },
