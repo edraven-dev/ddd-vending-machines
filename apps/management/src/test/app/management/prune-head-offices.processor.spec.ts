@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
-import { Logger } from '@nestjs/common';
+import { Logger, ServiceUnavailableException } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Id } from '@vending-machines/shared';
@@ -10,9 +10,12 @@ import { HeadOfficeRepository } from '../../../app/management/head-office.reposi
 import { PruneHeadOfficesProcessor } from '../../../app/management/prune-head-offices.processor';
 
 describe('PruneHeadOfficesProcessor', () => {
-  const headOffices = [new HeadOffice(Id.generate()), new HeadOffice(Id.generate())];
+  const expiredHeadOffices = [
+    new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date()),
+    new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date()),
+  ];
   const commandBus = { execute: vi.fn<CommandBus['execute']>() };
-  const repository = { findAll: vi.fn<HeadOfficeRepository['findAll']>(() => headOffices) };
+  const repository = { findExpired: vi.fn<HeadOfficeRepository['findExpired']>(() => expiredHeadOffices) };
   let processor: PruneHeadOfficesProcessor;
 
   beforeAll(async () => {
@@ -32,20 +35,44 @@ describe('PruneHeadOfficesProcessor', () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('#process', () => {
-    it('should find all head officess', async () => {
+    it('should find the head offices expired by now', async () => {
+      const now = new Date('2026-11-13T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+
       await processor.process();
 
-      expect(repository.findAll).toHaveBeenCalled();
+      expect(repository.findExpired).toHaveBeenCalledWith(now);
     });
 
-    it('should call DeleteHeadOfficeCommand for each head office', async () => {
+    it('should dispatch one DeleteHeadOfficeCommand per expired head office', async () => {
       await processor.process();
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(headOffices.length);
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(DeleteHeadOfficeCommand));
+      expect(commandBus.execute.mock.calls).toStrictEqual(
+        expiredHeadOffices.map((headOffice) => [new DeleteHeadOfficeCommand(headOffice.id)]),
+      );
+    });
+
+    it('should warn about a head office that was not pruned and still prune the others', async () => {
+      const warn = vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
+      const [failing, pruned] = expiredHeadOffices;
+      commandBus.execute.mockRejectedValueOnce(new ServiceUnavailableException());
+
+      await expect(processor.process()).resolves.toBeUndefined();
+
+      expect(commandBus.execute.mock.calls).toStrictEqual([
+        [new DeleteHeadOfficeCommand(failing.id)],
+        [new DeleteHeadOfficeCommand(pruned.id)],
+      ]);
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).toHaveBeenCalledWith(
+        `Head office ${failing.id.value} not pruned, retrying on the next run: ServiceUnavailableException: Service Unavailable`,
+        'PruneHeadOfficesProcessor',
+      );
     });
   });
 

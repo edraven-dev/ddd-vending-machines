@@ -15,4 +15,8 @@ export class SnackMachineProtoServiceClient {
   unloadMoney(id: string): Promise<UnloadMoneyDto> {
     return lastValueFrom(this.service.unloadMoney({ id }).pipe(mapGrpcErrors));
   }
+
+  deleteSnackMachine(id: string): Promise<void> {
+    return lastValueFrom(this.service.deleteSnackMachine({ id }).pipe(mapGrpcErrors));
+  }
 }

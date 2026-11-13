@@ -8,7 +8,7 @@ import { HeadOfficeRepository } from '../../../../../app/management/head-office.
 import { SnackMachineProtoServiceClient } from '../../../../../app/management/proto-clients/snack-machine-proto-service.client';
 
 describe('UnloadCashFromSnackMachineHandler', () => {
-  const headOffice = new HeadOffice(Id.generate());
+  const headOffice = new HeadOffice(Id.generate(), Id.generate(), Id.generate(), new Date());
   const repository = {
     findOne: vi.fn<HeadOfficeRepository['findOne']>(async () => headOffice),
     save: vi.fn<HeadOfficeRepository['save']>(),
@@ -51,12 +51,12 @@ describe('UnloadCashFromSnackMachineHandler', () => {
       await expect(handler.execute(new UnloadCashFromSnackMachineCommand(id))).rejects.toThrow(NotFoundException);
     });
 
-    it('should call protoClient.unloadMoney with correct data', async () => {
+    it('should call protoClient.unloadMoney with the snack machine id', async () => {
       const id = headOffice.id;
 
       await handler.execute(new UnloadCashFromSnackMachineCommand(id));
 
-      expect(protoClient.unloadMoney).toHaveBeenCalledWith(id.value);
+      expect(protoClient.unloadMoney).toHaveBeenCalledWith(headOffice.snackMachineId.value);
     });
 
     it('should call headOffice.loadCash with correct data', async () => {

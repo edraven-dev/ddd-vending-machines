@@ -1,5 +1,5 @@
 import { status } from '@grpc/grpc-js';
-import { NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { AtmProtoService, LoadMoneyRequest } from '@vending-machines/proto';
 import { CoinsAndNotes, InvalidOperationException } from '@vending-machines/shared';
@@ -11,7 +11,7 @@ describe('AtmProtoServiceClient', () => {
   const service = {
     loadMoney: vi.fn<AtmProtoService['loadMoney']>(() => of(void 0)),
     createAtm: vi.fn<AtmProtoService['createAtm']>(),
-    deleteAtm: vi.fn<AtmProtoService['deleteAtm']>(),
+    deleteAtm: vi.fn<AtmProtoService['deleteAtm']>(() => of(void 0)),
   };
   let protoClient: AtmProtoServiceClient;
 
@@ -65,6 +65,35 @@ describe('AtmProtoServiceClient', () => {
       service.loadMoney.mockReturnValueOnce(throwError(() => error));
 
       await expect(protoClient.loadMoney({ id: randomUUID(), money: [1, 1, 1, 1, 1, 1] })).rejects.toBe(error);
+    });
+  });
+
+  describe('#deleteAtm', () => {
+    it('should call grpc client with correct data', async () => {
+      const id = randomUUID();
+
+      await protoClient.deleteAtm(id);
+
+      expect(service.deleteAtm).toHaveBeenCalledWith({ id });
+    });
+
+    it('should resolve once the atm is deleted', async () => {
+      await expect(protoClient.deleteAtm(randomUUID())).resolves.toBeUndefined();
+    });
+
+    it('should rethrow UNAVAILABLE as ServiceUnavailableException', async () => {
+      vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
+      const error = { code: status.UNAVAILABLE, details: 'No connection established' };
+      service.deleteAtm.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.deleteAtm(randomUUID())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.deleteAtm.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.deleteAtm(randomUUID())).rejects.toBe(error);
     });
   });
 });

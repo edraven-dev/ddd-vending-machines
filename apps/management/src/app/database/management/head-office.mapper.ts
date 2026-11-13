@@ -9,7 +9,12 @@ export class HeadOfficeMapper {
   private constructor() {}
 
   static toDomain(entity: HeadOfficeEntity): HeadOffice {
-    const headOffice = new HeadOffice(Id.from(entity.id));
+    const headOffice = new HeadOffice(
+      Id.from(entity.id),
+      Id.from(entity.atmId),
+      Id.from(entity.snackMachineId),
+      entity.expiresAt,
+    );
     headOffice.balance = new Currency(entity.balance);
     headOffice.cash = new Money(
       entity.cash.oneCentCount,
@@ -25,6 +30,9 @@ export class HeadOfficeMapper {
   static toPersistence(headOffice: HeadOffice): RequiredEntityData<HeadOfficeEntity> {
     return {
       id: headOffice.id.value,
+      atmId: headOffice.atmId.value,
+      snackMachineId: headOffice.snackMachineId.value,
+      expiresAt: headOffice.expiresAt,
       balance: headOffice.balance.value,
       cash: {
         oneCentCount: headOffice.cash.oneCentCount,

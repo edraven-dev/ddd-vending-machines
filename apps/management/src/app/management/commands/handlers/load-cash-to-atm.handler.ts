@@ -20,7 +20,7 @@ export class LoadCashToAtmHandler implements ICommandHandler<LoadCashToAtmComman
 
     const cash = headOffice.unloadCash();
     await this.atmProtoServiceClient.loadMoney({
-      id: id.value,
+      id: headOffice.atmId.value,
       money: [
         cash.oneCentCount,
         cash.tenCentCount,

@@ -1,5 +1,5 @@
 import { status } from '@grpc/grpc-js';
-import { NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { SnackMachineProtoService } from '@vending-machines/proto';
 import { InvalidOperationException, UnloadMoneyDto } from '@vending-machines/shared';
@@ -12,7 +12,7 @@ describe('SnackMachineProtoServiceClient', () => {
   const service = {
     unloadMoney: vi.fn<SnackMachineProtoService['unloadMoney']>(() => of(dto)),
     createSnackMachine: vi.fn<SnackMachineProtoService['createSnackMachine']>(),
-    deleteSnackMachine: vi.fn<SnackMachineProtoService['deleteSnackMachine']>(),
+    deleteSnackMachine: vi.fn<SnackMachineProtoService['deleteSnackMachine']>(() => of(void 0)),
   };
   let protoClient: SnackMachineProtoServiceClient;
 
@@ -72,6 +72,35 @@ describe('SnackMachineProtoServiceClient', () => {
       service.unloadMoney.mockReturnValueOnce(throwError(() => error));
 
       await expect(protoClient.unloadMoney(randomUUID())).rejects.toBe(error);
+    });
+  });
+
+  describe('#deleteSnackMachine', () => {
+    it('should call grpc client with correct data', async () => {
+      const id = randomUUID();
+
+      await protoClient.deleteSnackMachine(id);
+
+      expect(service.deleteSnackMachine).toHaveBeenCalledWith({ id });
+    });
+
+    it('should resolve once the snack machine is deleted', async () => {
+      await expect(protoClient.deleteSnackMachine(randomUUID())).resolves.toBeUndefined();
+    });
+
+    it('should rethrow UNAVAILABLE as ServiceUnavailableException', async () => {
+      vi.spyOn(Logger, 'warn').mockImplementation(() => undefined);
+      const error = { code: status.UNAVAILABLE, details: 'No connection established' };
+      service.deleteSnackMachine.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.deleteSnackMachine(randomUUID())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    });
+
+    it('should rethrow other errors unchanged', async () => {
+      const error = { code: status.INTERNAL, details: 'Internal server error' };
+      service.deleteSnackMachine.mockReturnValueOnce(throwError(() => error));
+
+      await expect(protoClient.deleteSnackMachine(randomUUID())).rejects.toBe(error);
     });
   });
 });

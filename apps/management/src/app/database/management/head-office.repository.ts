@@ -15,12 +15,6 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async findAll(): Promise<HeadOffice[]> {
-    const headOfficeEntities = await this.headOfficeRepository.findAll();
-
-    return headOfficeEntities.map((headOfficeEntity) => HeadOfficeMapper.toDomain(headOfficeEntity));
-  }
-
   async findOne(id: Id): Promise<HeadOffice | null> {
     const headOfficeEntity = await this.headOfficeRepository.findOne({ id: id.value });
 
@@ -29,6 +23,22 @@ export class MikroOrmHeadOfficeRepository implements HeadOfficeRepository {
     }
 
     return HeadOfficeMapper.toDomain(headOfficeEntity);
+  }
+
+  async findByAtmId(atmId: Id): Promise<HeadOffice | null> {
+    const headOfficeEntity = await this.headOfficeRepository.findOne({ atmId: atmId.value });
+
+    if (!headOfficeEntity) {
+      return null;
+    }
+
+    return HeadOfficeMapper.toDomain(headOfficeEntity);
+  }
+
+  async findExpired(now: Date): Promise<HeadOffice[]> {
+    const headOfficeEntities = await this.headOfficeRepository.find({ expiresAt: { $lte: now } });
+
+    return headOfficeEntities.map((headOfficeEntity) => HeadOfficeMapper.toDomain(headOfficeEntity));
   }
 
   async save(headOffice: HeadOffice): Promise<void> {
