@@ -30,7 +30,7 @@ describe('AtmController - e2e', () => {
   const atmServiceMock = { loadMoney: vi.fn<AtmService['loadMoney']>() };
   const testEndpoint = (id: string) => `/atm/${id}`;
   const protoDir = dirname(createRequire(import.meta.url).resolve('@vending-machines/proto/package.json'));
-  const grpcOptions = { package: 'atm', protoPath: join(protoDir, 'src/lib/atm/atm.proto'), url: 'localhost:50151' };
+  const grpcOptions = { package: 'atm', protoPath: join(protoDir, 'src/lib/atm/atm.proto'), url: 'localhost:40151' };
 
   let app: INestApplication;
   let grpcClient: ClientGrpcProxy;

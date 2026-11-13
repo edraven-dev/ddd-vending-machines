@@ -28,7 +28,7 @@ describe('SnackMachineController - e2e', () => {
   const grpcOptions = {
     package: 'snack_machine',
     protoPath: join(protoDir, 'src/lib/snack-machine/snack-machine.proto'),
-    url: 'localhost:50152',
+    url: 'localhost:40152',
   };
 
   let app: INestApplication;
