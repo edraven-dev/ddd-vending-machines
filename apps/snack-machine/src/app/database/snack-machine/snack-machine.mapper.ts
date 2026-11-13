@@ -8,9 +8,6 @@ import { SnackMapper } from '../snack/snack.mapper';
 import type { SnackPileEmbeddable } from './slot.entity';
 import SnackMachineEntity from './snack-machine.entity';
 
-const toSnackPile = ({ snack, quantity, price }: SnackPileEmbeddable): SnackPile =>
-  snack === null ? SnackPile.Empty : new SnackPile(SnackMapper.toDomain(snack), quantity, new Currency(price));
-
 export class SnackMachineMapper {
   // oxlint-disable-next-line no-empty-function
   private constructor() {}
@@ -21,7 +18,7 @@ export class SnackMachineMapper {
       entity.slots.map((slot) => ({
         id: Id.from(slot.id),
         position: slot.position,
-        snackPile: toSnackPile(slot.snackPile),
+        snackPile: SnackMachineMapper.toSnackPile(slot.snackPile),
       })),
       new Money(
         entity.money.oneCentCount,
@@ -54,5 +51,9 @@ export class SnackMachineMapper {
         }))
         .sort((a, b) => a.position - b.position),
     } satisfies RequiredEntityData<SnackMachineEntity>;
+  }
+
+  private static toSnackPile({ snack, quantity, price }: SnackPileEmbeddable): SnackPile {
+    return snack === null ? SnackPile.Empty : new SnackPile(SnackMapper.toDomain(snack), quantity, new Currency(price));
   }
 }
