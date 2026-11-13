@@ -4,6 +4,7 @@ import { AggregateRoot } from '@vending-machines/shared';
 import { randomUUID } from 'node:crypto';
 import { BalanceChangedEvent } from '../event-declarations';
 import { AmqpService } from '../lib/amqp/amqp.service';
+import { EXCHANGE_NAME } from '../lib/constants';
 import { EventPublisher } from '../lib/event-publisher';
 
 class TestAggregate extends AggregateRoot {}
@@ -28,6 +29,25 @@ describe('EventPublisher', () => {
 
   afterEach(() => {
     amqpService.publish.mockReset();
+  });
+
+  describe('#publish', () => {
+    it("should use a domain event's id as the AMQP message id", async () => {
+      const event = anEvent();
+
+      await publisher.publish(event);
+
+      expect(amqpService.publish).toHaveBeenCalledWith(EXCHANGE_NAME, 'event.BalanceChangedEvent', expect.any(String), {
+        persistent: true,
+        messageId: event.eventId,
+      });
+    });
+
+    it('should leave the message id to the AMQP service for other events', async () => {
+      await publisher.publish({ type: 'PlainEvent' });
+
+      expect(amqpService.publish.mock.calls[0]?.[3]).toEqual({ persistent: true });
+    });
   });
 
   describe('#publishAll', () => {

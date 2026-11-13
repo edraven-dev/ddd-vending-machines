@@ -2,6 +2,8 @@ import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Global, Module, OnModuleInit } from '@nestjs/common';
 import ormConfig from '../../database/mikro-orm-app.config';
+import InboxEntity from './inbox/inbox.entity';
+import { InboxProvider } from './inbox/inbox.repository';
 import HeadOfficeEntity from './management/head-office.entity';
 import { HeadOfficeRepositoryProvider } from './management/head-office.repository';
 
@@ -9,10 +11,10 @@ import { HeadOfficeRepositoryProvider } from './management/head-office.repositor
 @Module({
   imports: [
     MikroOrmModule.forRoot({ ...ormConfig, autoLoadEntities: true }),
-    MikroOrmModule.forFeature([HeadOfficeEntity]),
+    MikroOrmModule.forFeature([HeadOfficeEntity, InboxEntity]),
   ],
-  providers: [HeadOfficeRepositoryProvider],
-  exports: [HeadOfficeRepositoryProvider],
+  providers: [HeadOfficeRepositoryProvider, InboxProvider],
+  exports: [HeadOfficeRepositoryProvider, InboxProvider],
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) {}
