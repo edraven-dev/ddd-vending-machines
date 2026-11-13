@@ -1,11 +1,15 @@
 import { AtmDeletedEvent, BalanceChangedEvent, MoneyLoadedEvent } from '@vending-machines/events';
-import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
+import { AggregateRoot, DEFAULT_ID, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 
-export class Atm extends AggregateRoot {
+export class Atm extends AggregateRoot<string> {
   moneyInside = Money.None;
   moneyCharged = new Currency(0);
   private readonly commissionRate = new Currency(0.01);
+
+  constructor(id: string = DEFAULT_ID) {
+    super(id);
+  }
 
   loadMoney(money: Money): void {
     this.moneyInside = Money.add(this.moneyInside, money);

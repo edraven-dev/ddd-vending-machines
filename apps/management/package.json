@@ -57,6 +57,7 @@
     "ioredis": "6.0.0",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
+    "tiny-types": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

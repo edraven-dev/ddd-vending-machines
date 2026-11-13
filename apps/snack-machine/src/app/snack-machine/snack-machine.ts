@@ -7,15 +7,19 @@ import {
   SnackMachineDeletedEvent,
   SnacksLoadedEvent,
 } from '@vending-machines/events';
-import { AggregateRoot, InvalidOperationException, Money } from '@vending-machines/shared';
+import { AggregateRoot, DEFAULT_ID, InvalidOperationException, Money } from '@vending-machines/shared';
 import Currency from 'currency.js';
 import { Slot } from './slot';
 import { SnackPile } from './snack-pile';
 
-export class SnackMachine extends AggregateRoot {
+export class SnackMachine extends AggregateRoot<string> {
   moneyInside: Money = Money.None;
   moneyInTransaction: Currency = new Currency(0);
   readonly slots: Slot[] = [new Slot(this, 1), new Slot(this, 2), new Slot(this, 3)];
+
+  constructor(id: string = DEFAULT_ID) {
+    super(id);
+  }
 
   insertMoney(money: Money): void {
     const coinAndNotes = [Money.Cent, Money.TenCent, Money.Quarter, Money.Dollar, Money.FiveDollar, Money.TwentyDollar];

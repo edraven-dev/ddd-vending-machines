@@ -269,6 +269,9 @@ catalogs:
     svelte:
       specifier: 5.57.3
       version: 5.57.3
+    tiny-types:
+      specifier: 2.0.5
+      version: 2.0.5
     tsdown:
       specifier: 0.23.7
       version: 0.23.7
@@ -394,6 +397,9 @@ importers:
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
+      tiny-types:
+        specifier: 'catalog:'
+        version: 2.0.5
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -675,6 +681,9 @@ importers:
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
+      tiny-types:
+        specifier: 'catalog:'
+        version: 2.0.5
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -799,6 +808,9 @@ importers:
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
+      tiny-types:
+        specifier: 'catalog:'
+        version: 2.0.5
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -958,6 +970,9 @@ importers:
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
+      tiny-types:
+        specifier: 'catalog:'
+        version: 2.0.5
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -3894,6 +3909,10 @@ packages:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
 
+  tiny-types@2.0.5:
+    resolution: {integrity: sha512-M27ARlamxqDer7jDZzWUyDOqrvbcrux1nwtjCgbFhIRfJ8XowVsApm04I1prMKwkhHxwmGhL/CBlbexI63pRMA==}
+    engines: {node: ^20 || ^22 || ^24}
+
   tinybench@6.2.3:
     resolution: {integrity: sha512-Al01C2JIBnO2CXCAPbpAl6sUiOZHeThGtHYNTa51JRw9PyWOCdr+9Ong05R4qg/Sk3+H645E8ov1h2c58ityNw==}
     engines: {node: '>=20.0.0'}
@@ -6747,6 +6766,8 @@ snapshots:
   tailwindcss@4.3.5: {}
 
   tapable@2.3.3: {}
+
+  tiny-types@2.0.5: {}
 
   tinybench@6.2.3: {}
 
