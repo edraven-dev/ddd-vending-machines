@@ -22,7 +22,7 @@ async function bootstrap() {
       options: {
         package: 'atm',
         protoPath: join(import.meta.dirname, 'assets/atm/atm.proto'),
-        url: process.env.GRPC_URL || 'localhost:50051',
+        url: process.env.GRPC_URL || 'localhost:40051',
       },
     },
     { inheritAppConfig: true },
