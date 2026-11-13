@@ -29,7 +29,7 @@ export default class SlotEntity {
   @Property({ type: 'int' })
   position!: number;
 
-  @ManyToOne(() => SnackMachineEntity, { updateRule: 'cascade' })
+  @ManyToOne(() => SnackMachineEntity, { updateRule: 'cascade', deleteRule: 'cascade' })
   snackMachine!: Rel<SnackMachineEntity>;
 
   @Embedded(() => SnackPileEmbeddable)
