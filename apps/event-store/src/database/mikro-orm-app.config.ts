@@ -18,5 +18,4 @@ export default defineConfig({
   loadStrategy: LoadStrategy.JOINED,
   highlighter: new SqlHighlighter(),
   migrations: { migrationsList, snapshot: false },
-  allowGlobalContext: true,
 });

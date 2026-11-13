@@ -1,57 +1,87 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
+import type { RequiredEntityData } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { Test } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import EventStoreEntity from '../../../app/database/event-store/event-store.entity';
 import { MikroOrmEventStoreRepository } from '../../../app/database/event-store/event-store.repository';
 
 describe('MikroOrmEventStoreRepository', () => {
-  const flush = vi.fn<() => Promise<void>>();
-  const entityManagerMock = { persist: vi.fn<() => { flush: typeof flush }>(() => ({ flush })) };
+  const queryBuilder = {
+    insert: vi.fn<(data: RequiredEntityData<EventStoreEntity>) => unknown>().mockReturnThis(),
+    onConflict: vi.fn<(fields: keyof EventStoreEntity) => unknown>().mockReturnThis(),
+    ignore: vi.fn<() => unknown>().mockReturnThis(),
+    execute: vi.fn<() => Promise<unknown>>(),
+  };
+  const entityManagerMock = {
+    createQueryBuilder: vi.fn<(entityName: typeof EventStoreEntity) => typeof queryBuilder>(() => queryBuilder),
+  };
   let repository: MikroOrmEventStoreRepository;
+
+  const anEvent = () => ({
+    eventId: randomUUID(),
+    eventType: 'AtmCreatedEvent',
+    timestamp: new Date(),
+    aggregateId: randomUUID(),
+    aggregateType: 'Atm',
+    payload: {},
+  });
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [
-        MikroOrmEventStoreRepository,
-        {
-          provide: getRepositoryToken(EventStoreEntity),
-          useClass: EntityRepository<EventStoreEntity>,
-        },
-        { provide: EntityManager, useValue: entityManagerMock },
-      ],
+      providers: [MikroOrmEventStoreRepository, { provide: EntityManager, useValue: entityManagerMock }],
     }).compile();
 
-    repository = module.get<MikroOrmEventStoreRepository>(MikroOrmEventStoreRepository);
+    repository = module.get(MikroOrmEventStoreRepository);
   });
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.restoreAllMocks();
   });
 
   describe('#save', () => {
-    it('should call em.persist with any eventStoreEntity and flush it', async () => {
-      const event = {
-        eventId: randomUUID(),
-        eventType: randomUUID(),
-        timestamp: new Date(),
-        aggregateId: randomUUID(),
-        aggregateType: randomUUID(),
-        payload: {},
-      };
-      const eventEntity = new EventStoreEntity();
-      eventEntity.event_id = event.eventId;
-      eventEntity.event_type = event.eventType;
-      eventEntity.timestamp = event.timestamp;
-      eventEntity.aggregate_id = event.aggregateId;
-      eventEntity.aggregate_type = event.aggregateType;
-      eventEntity.payload = event.payload;
+    it('should insert the event and ignore a duplicate event id', async () => {
+      const event = anEvent();
 
       await repository.save(event);
 
-      expect(entityManagerMock.persist).toHaveBeenCalledWith(eventEntity);
-      expect(flush).toHaveBeenCalledOnce();
+      expect(entityManagerMock.createQueryBuilder).toHaveBeenCalledWith(EventStoreEntity);
+      expect(queryBuilder.insert).toHaveBeenCalledWith({
+        event_id: event.eventId,
+        event_type: event.eventType,
+        timestamp: event.timestamp,
+        aggregate_id: event.aggregateId,
+        aggregate_type: event.aggregateType,
+        payload: event.payload,
+      });
+      expect(queryBuilder.onConflict).toHaveBeenCalledWith('event_id');
+      expect(queryBuilder.ignore).toHaveBeenCalledOnce();
+      expect(queryBuilder.execute).toHaveBeenCalledOnce();
+    });
+
+    it('should build an insert that does nothing when the event id already exists', () => {
+      const orm = new MikroORM({
+        dbName: 'unused',
+        metadataProvider: ReflectMetadataProvider,
+        entities: [EventStoreEntity],
+      });
+      const event = anEvent();
+
+      const query = orm.em
+        .createQueryBuilder(EventStoreEntity)
+        .insert({
+          event_id: event.eventId,
+          event_type: event.eventType,
+          timestamp: event.timestamp,
+          aggregate_id: event.aggregateId,
+          aggregate_type: event.aggregateType,
+          payload: event.payload,
+        })
+        .onConflict('event_id')
+        .ignore()
+        .getQuery();
+
+      expect(query).toMatch(/^insert into "event_store" .* on conflict \("event_id"\) do nothing/);
     });
   });
 });
