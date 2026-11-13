@@ -227,9 +227,6 @@ catalogs:
     '@oxc-node/core':
       specifier: 1.0.1
       version: 1.0.1
-    '@types/ejson':
-      specifier: 2.2.2
-      version: 2.2.2
     '@types/express':
       specifier: 5.0.6
       version: 5.0.6
@@ -248,12 +245,12 @@ catalogs:
     amqplib:
       specifier: 2.3.1
       version: 2.3.1
+    bson:
+      specifier: 7.3.4
+      version: 7.3.4
     currency.js:
       specifier: 2.0.4
       version: 2.0.4
-    ejson:
-      specifier: 2.2.3
-      version: 2.2.3
     oxlint:
       specifier: 1.93.0
       version: 1.93.0
@@ -385,12 +382,12 @@ importers:
       amqplib:
         specifier: 'catalog:'
         version: 2.3.1
+      bson:
+        specifier: 'catalog:'
+        version: 7.3.4
       currency.js:
         specifier: 'catalog:'
         version: 2.0.4
-      ejson:
-        specifier: 'catalog:'
-        version: 2.2.3
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -488,9 +485,9 @@ importers:
       amqplib:
         specifier: 'catalog:'
         version: 2.3.1
-      ejson:
+      bson:
         specifier: 'catalog:'
-        version: 2.2.3
+        version: 7.3.4
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -513,9 +510,6 @@ importers:
       '@oxc-node/core':
         specifier: 'catalog:'
         version: 1.0.1
-      '@types/ejson':
-        specifier: 'catalog:'
-        version: 2.2.2
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -663,15 +657,15 @@ importers:
       amqplib:
         specifier: 'catalog:'
         version: 2.3.1
+      bson:
+        specifier: 'catalog:'
+        version: 7.3.4
       bullmq:
         specifier: 6.7.4
         version: 6.7.4(ioredis@6.0.0)(pg@8.23.1)
       currency.js:
         specifier: 'catalog:'
         version: 2.0.4
-      ejson:
-        specifier: 'catalog:'
-        version: 2.2.3
       ioredis:
         specifier: 6.0.0
         version: 6.0.0
@@ -793,12 +787,12 @@ importers:
       amqplib:
         specifier: 'catalog:'
         version: 2.3.1
+      bson:
+        specifier: 'catalog:'
+        version: 7.3.4
       currency.js:
         specifier: 'catalog:'
         version: 2.0.4
-      ejson:
-        specifier: 'catalog:'
-        version: 2.2.3
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -875,9 +869,9 @@ importers:
       amqplib:
         specifier: 'catalog:'
         version: 2.3.1
-      ejson:
+      bson:
         specifier: 'catalog:'
-        version: 2.2.3
+        version: 7.3.4
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -885,9 +879,9 @@ importers:
         specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
-      '@types/ejson':
+      '@nestjs/testing':
         specifier: 'catalog:'
-        version: 2.2.2
+        version: 12.4.2(@nestjs/common@12.4.2(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.4.2)(@nestjs/microservices@12.4.2)(@nestjs/platform-express@12.4.2)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -2443,9 +2437,6 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
-  '@types/ejson@2.2.2':
-    resolution: {integrity: sha512-4DEXy6yKJVr1DQx4xy+y7NV9mK6p1vgikvtbOITWgp2Prs6yhffqZ8XOjEtojX2pzC7B1KF9kcQe9Bv52E9K2A==}
-
   '@types/estree@1.0.10':
     resolution: {integrity: sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==}
 
@@ -2663,6 +2654,10 @@ packages:
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
+
+  bson@7.3.4:
+    resolution: {integrity: sha512-eb33j2Ha6xgygjJ8bhI3sYaI9cLAbSaopZLRJQ5/rxk32XyBSoVVcbeHIzVGJx1SyQpyyoElkoEZgQrg+RVVoA==}
+    engines: {node: '>=20.19.0'}
 
   bullmq@6.7.4:
     resolution: {integrity: sha512-wSNRD2kUE+sqNV42MQLiwtOPgwJmhiZlZ0X5zYBYXRkmok6YKJMf9IXfYLCu7DI4/txNTBlT2g2NHfRW/PxCvw==}
@@ -2905,9 +2900,6 @@ packages:
     resolution: {integrity: sha512-LcDSEP6Oclb9sTiSyG0MpG0RuKvLDRxCOOt+2sIk+kdk1rMkFU8SRnT0qaNt5zvU0LOV1YXXOvIoZL/sKwabvw==}
     engines: {node: '>=0.12.18'}
     hasBin: true
-
-  ejson@2.2.3:
-    resolution: {integrity: sha512-hsFvJp6OpGxFRQfBR3PSxFpaPALdHDY+SB3TRbMpLWNhvu8GzLiZutof5+/DFd2QekZo3KyXau75ngdJqQUSrw==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -5335,8 +5327,6 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
-  '@types/ejson@2.2.2': {}
-
   '@types/estree@1.0.10': {}
 
   '@types/express-serve-static-core@5.1.3':
@@ -5547,6 +5537,8 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
+  bson@7.3.4: {}
+
   bullmq@6.7.4(ioredis@6.0.0)(pg@8.23.1):
     dependencies:
       cron-parser: 5.10.4
@@ -5731,8 +5723,6 @@ snapshots:
   ee-first@1.1.1: {}
 
   ejs@7.0.2: {}
-
-  ejson@2.2.3: {}
 
   emoji-regex@10.6.0: {}
 

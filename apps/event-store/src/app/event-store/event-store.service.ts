@@ -1,5 +1,5 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import EJSON from 'ejson';
+import { EJSON } from 'bson';
 import { AmqpService } from '../amqp/amqp.service';
 import { EXCHANGE_NAME } from '../constants';
 import { EventStoreRepository } from './event-store.repository.interface';
