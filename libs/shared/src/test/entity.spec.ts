@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { CqrsModule, EventPublisher } from '@nestjs/cqrs';
+import { CqrsModule, EventPublisher, type IEvent } from '@nestjs/cqrs';
 import { AggregateRoot } from '../lib/aggregate-root';
 import { Entity } from '../lib/entity';
 
@@ -75,5 +75,38 @@ describe('AggregateRoot', () => {
     expect(new TestAggregate(id).equals(merged)).toBe(true);
 
     await app.close();
+  });
+
+  describe('#commit', () => {
+    it('should return a promise even without an event publisher', async () => {
+      const committing = new TestAggregate(id).commit();
+
+      expect(committing).toBeInstanceOf(Promise);
+      await committing;
+    });
+
+    it('should wait for the event publisher', async () => {
+      const aggregate = new TestAggregate(id);
+      const event = { name: 'TestEvent' };
+      const published: IEvent[] = [];
+      aggregate.publishAll = async (events) => {
+        const batch = [...events];
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        published.push(...batch);
+      };
+      aggregate.apply(event);
+
+      await aggregate.commit();
+
+      expect(published).toEqual([event]);
+    });
+
+    it('should reject when publishing fails', async () => {
+      const aggregate = new TestAggregate(id);
+      aggregate.publishAll = () => Promise.reject(new Error('Broker unavailable'));
+      aggregate.apply({ name: 'TestEvent' });
+
+      await expect(aggregate.commit()).rejects.toThrow('Broker unavailable');
+    });
   });
 });

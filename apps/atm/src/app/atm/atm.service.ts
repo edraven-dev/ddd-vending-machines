@@ -23,6 +23,6 @@ export class AtmService {
     const atm = this.eventPublisher.mergeObjectContext(existingAtm);
     atm.loadMoney(money);
     await this.atmRepository.save(atm);
-    atm.commit();
+    await atm.commit();
   }
 }

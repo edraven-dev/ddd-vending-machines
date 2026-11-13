@@ -99,7 +99,7 @@ describe('Atm', () => {
     it('should apply BalanceChangedEvent', async () => {
       const atm = new Atm();
       atm.loadMoney(Money.Dollar);
-      atm.commit();
+      await atm.commit();
 
       atm.takeMoney(new Currency('1.00'));
 

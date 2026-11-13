@@ -20,6 +20,6 @@ export class LoadSnacksHandler implements ICommandHandler<LoadSnacksCommand, voi
     const snackPile = snackMachine.getSnackPile(position);
     snackMachine.loadSnacks(position, snackPile.addQuantity(quantity));
     await this.snackMachineRepository.save(snackMachine);
-    snackMachine.commit();
+    await snackMachine.commit();
   }
 }

@@ -24,6 +24,6 @@ export class HeadOfficeDeletedHandler implements IEventHandler<HeadOfficeDeleted
     const atm = this.eventPublisher.mergeObjectContext(existingAtm);
     atm.markAsDeleted();
     await this.atmRepository.delete(atm.id);
-    atm.commit();
+    await atm.commit();
   }
 }

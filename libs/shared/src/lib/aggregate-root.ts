@@ -5,4 +5,8 @@ export abstract class AggregateRoot<TEvent extends IEvent = IEvent> extends With
   constructor(id?: string) {
     super(id);
   }
+
+  override async commit(dispatcherContext?: unknown): Promise<void> {
+    await super.commit(dispatcherContext);
+  }
 }
