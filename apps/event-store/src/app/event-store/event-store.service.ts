@@ -1,9 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import { CreateRequestContext } from '@mikro-orm/decorators/legacy';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { AmqpService, EXCHANGE_NAME } from '@vending-machines/events/amqp';
 import { EJSON } from 'bson';
-import { AmqpService } from '../amqp/amqp.service';
-import { EXCHANGE_NAME } from '../constants';
 import { EventStoreRepository } from './event-store.repository.interface';
 
 @Injectable()
