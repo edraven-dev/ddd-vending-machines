@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { connect } from 'amqp-connection-manager';
 import type { AmqpConnectionManager, Channel, ChannelWrapper, Options } from 'amqp-connection-manager';
+import { connect } from 'amqp-connection-manager';
+import type { ConsumeMessage } from 'amqplib';
 import { randomUUID } from 'crypto';
 import { CONFIG_OPTIONS_TOKEN } from '../constants';
 import type { AmqpConfig } from './amqp.module';
@@ -81,11 +82,16 @@ export class AmqpService implements OnModuleInit, OnApplicationShutdown {
             channelWrapper.ack(msg);
           } catch (error) {
             Logger.error(error, `${this.constructor.name}|${exchangeName}|${queueName}`);
-            setTimeout(() => channelWrapper.nack(msg), this.nackDelay);
+            setTimeout(() => channelWrapper.nack(msg, false, this.attemptOf(msg) < this.deliveryLimit), this.nackDelay);
           }
         }),
       ]);
     });
+  }
+
+  private attemptOf(msg: ConsumeMessage): number {
+    const previousAttempts: unknown = msg.properties.headers?.['x-acquired-count'];
+    return (typeof previousAttempts === 'number' ? previousAttempts : 0) + 1;
   }
 
   async publish(exchangeName: string, routingKey: string, content: string, options?: Options.Publish): Promise<void> {

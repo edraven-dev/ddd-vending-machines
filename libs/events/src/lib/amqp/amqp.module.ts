@@ -10,6 +10,7 @@ export class AmqpModule {
   static forRoot(config: AmqpConfig): DynamicModule {
     return {
       module: AmqpModule,
+      global: true,
       providers: [{ provide: CONFIG_OPTIONS_TOKEN, useValue: config }, AmqpService],
       exports: [AmqpService],
     };
