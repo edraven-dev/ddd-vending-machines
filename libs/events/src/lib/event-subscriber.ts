@@ -11,8 +11,20 @@ import { ExplorerService } from './services/explorer.service';
 
 type DomainEventClass = Type<DomainEvent<Record<string, unknown>>> & { readonly eventType: EventType };
 
+type EventHandlerClass = Type<IEventHandler> & { readonly subscriptionName?: unknown };
+
 const isDomainEventClass = (eventClass: Type<IEvent>): eventClass is DomainEventClass =>
   eventClass.prototype instanceof DomainEvent;
+
+const subscriptionNameOf = (handlerClass: EventHandlerClass): string => {
+  const { subscriptionName } = handlerClass;
+  if (typeof subscriptionName !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(subscriptionName)) {
+    throw new Error(
+      `${handlerClass.name} must declare a static kebab-case subscriptionName, got ${JSON.stringify(subscriptionName)}`,
+    );
+  }
+  return subscriptionName;
+};
 
 @Injectable()
 export class EventSubscriber implements OnApplicationBootstrap {
@@ -24,32 +36,33 @@ export class EventSubscriber implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap() {
-    const subscribed = new Set<EventType>();
+    const handlerByQueue = new Map<string, EventHandlerClass>();
     for (const [eventClass, handlerClass] of this.explorerService.exploreEvents()) {
       if (!isDomainEventClass(eventClass)) {
         throw new Error(`${eventClass.name} is not a domain event`);
       }
-      if (subscribed.has(eventClass.eventType)) {
-        throw new Error(`${this.appName} has more than one handler for ${eventClass.eventType}`);
+      const { eventType } = eventClass;
+      const subscriptionName = subscriptionNameOf(handlerClass);
+      const queue = `q.${this.appName}.${eventType}.${subscriptionName}`;
+      const otherHandlerClass = handlerByQueue.get(queue);
+      if (otherHandlerClass) {
+        throw new Error(
+          `${this.appName} has more than one handler for ${eventType} with subscriptionName "${subscriptionName}" (${otherHandlerClass.name}, ${handlerClass.name})`,
+        );
       }
-      subscribed.add(eventClass.eventType);
-      this.subscribe(eventClass, handlerClass);
+      handlerByQueue.set(queue, handlerClass);
+      this.subscribe(eventClass, handlerClass, queue);
     }
   }
 
-  private subscribe(eventClass: DomainEventClass, handlerClass: Type<IEventHandler>): void {
+  private subscribe(eventClass: DomainEventClass, handlerClass: Type<IEventHandler>, queue: string): void {
     const { eventType } = eventClass;
-    void this.amqpService.addSubscriber(
-      EXCHANGE_NAME,
-      `event.${eventType}`,
-      `q.${this.appName}.${eventType}`,
-      async (msg) => {
-        const decodedMessage = EJSON.parse(msg.toString('utf-8'));
-        if (decodedMessage.eventType === eventType) {
-          const event = Object.create(eventClass.prototype, Object.getOwnPropertyDescriptors(decodedMessage));
-          await this.moduleRef.get(handlerClass, { strict: false }).handle(event);
-        }
-      },
-    );
+    void this.amqpService.addSubscriber(EXCHANGE_NAME, `event.${eventType}`, queue, async (msg) => {
+      const decodedMessage = EJSON.parse(msg.toString('utf-8'));
+      if (decodedMessage.eventType === eventType) {
+        const event = Object.create(eventClass.prototype, Object.getOwnPropertyDescriptors(decodedMessage));
+        await this.moduleRef.get(handlerClass, { strict: false }).handle(event);
+      }
+    });
   }
 }

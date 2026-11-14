@@ -1,3 +1,4 @@
+import { Type } from '@nestjs/common';
 import { CqrsModule, EventsHandler, IEvent, IEventHandler } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { APP_NAME_TOKEN, Id } from '@vending-machines/shared';
@@ -11,17 +12,39 @@ import { EventPublisher } from '../lib/event-publisher';
 import { EventSubscriber } from '../lib/event-subscriber';
 import { ExplorerService } from '../lib/services/explorer.service';
 
-@EventsHandler(BalanceChangedEvent)
-class BalanceChangedTestHandler implements IEventHandler<BalanceChangedEvent> {
-  readonly received: BalanceChangedEvent[] = [];
+class RecordingTestHandler<TEvent extends IEvent> implements IEventHandler<TEvent> {
+  readonly received: TEvent[] = [];
 
-  handle(event: BalanceChangedEvent): void {
+  handle(event: TEvent): void {
     this.received.push(event);
   }
 }
 
 @EventsHandler(BalanceChangedEvent)
+class BalanceChangedTestHandler extends RecordingTestHandler<BalanceChangedEvent> {
+  static readonly subscriptionName = 'projection';
+}
+
+@EventsHandler(BalanceChangedEvent)
 class AnotherBalanceChangedTestHandler extends BalanceChangedTestHandler {}
+
+@EventsHandler(BalanceChangedEvent)
+class AuditBalanceChangedTestHandler extends RecordingTestHandler<BalanceChangedEvent> {
+  static readonly subscriptionName = 'audit';
+}
+
+@EventsHandler(BalanceChangedEvent)
+class UnnamedBalanceChangedTestHandler extends RecordingTestHandler<BalanceChangedEvent> {}
+
+@EventsHandler(BalanceChangedEvent)
+class BadlyNamedBalanceChangedTestHandler extends RecordingTestHandler<BalanceChangedEvent> {
+  static readonly subscriptionName = 'Audit.Log';
+}
+
+@EventsHandler(BalanceChangedEvent, MoneyLoadedEvent)
+class MultiEventTestHandler extends RecordingTestHandler<BalanceChangedEvent | MoneyLoadedEvent> {
+  static readonly subscriptionName = 'multi';
+}
 
 describe('Event round trip', () => {
   const amqpService = {
@@ -38,6 +61,32 @@ describe('Event round trip', () => {
       throw new Error('Nothing was published');
     }
     return content;
+  };
+
+  const bootstrapWith = async (...handlers: Type[]) => {
+    const module = await Test.createTestingModule({
+      imports: [CqrsModule],
+      providers: [
+        EventSubscriber,
+        ExplorerService,
+        ...handlers,
+        { provide: AmqpService, useValue: amqpService },
+        { provide: APP_NAME_TOKEN, useValue: 'test' },
+      ],
+    }).compile();
+    amqpService.addSubscriber.mockClear();
+    module.get(EventSubscriber).onApplicationBootstrap();
+    return module;
+  };
+
+  const subscriptions = () => amqpService.addSubscriber.mock.calls.map((call) => call.slice(0, 3));
+
+  const deliverTo = async (queue: string, event: IEvent) => {
+    const consumer = amqpService.addSubscriber.mock.calls.find((call) => call[2] === queue)?.[3];
+    if (!consumer) {
+      throw new Error(`Nothing subscribed to ${queue}`);
+    }
+    await consumer(Buffer.from(EJSON.stringify(event)));
   };
 
   beforeEach(async () => {
@@ -70,11 +119,11 @@ describe('Event round trip', () => {
     vi.clearAllMocks();
   });
 
-  it('should subscribe to its event type on a queue named after the app and the event type', () => {
+  it('should subscribe to its event type on a queue named after the app, the event type and the subscription name', () => {
     expect(amqpService.addSubscriber.mock.lastCall?.slice(0, 3)).toStrictEqual([
       EXCHANGE_NAME,
       'event.atm.balance-changed',
-      'q.test.atm.balance-changed',
+      'q.test.atm.balance-changed.projection',
     ]);
   });
 
@@ -90,22 +139,58 @@ describe('Event round trip', () => {
     expect(amqpService.publish.mock.lastCall?.[1]).toBe('event.atm.balance-changed');
   });
 
-  it('should refuse two handlers for the same event type in one app', async () => {
-    const module = await Test.createTestingModule({
-      imports: [CqrsModule],
-      providers: [
-        EventSubscriber,
-        ExplorerService,
-        BalanceChangedTestHandler,
-        AnotherBalanceChangedTestHandler,
-        { provide: AmqpService, useValue: amqpService },
-        { provide: APP_NAME_TOKEN, useValue: 'test' },
-      ],
-    }).compile();
+  it('should give each handler of one event type its own queue', async () => {
+    const module = await bootstrapWith(BalanceChangedTestHandler, AuditBalanceChangedTestHandler);
+    const event = new BalanceChangedEvent({
+      aggregateId: Id.generate(),
+      aggregateType: AggregateType.Atm,
+      payload: { delta: '0.01' },
+    });
 
-    expect(() => module.get(EventSubscriber).onApplicationBootstrap()).toThrow(
-      'test has more than one handler for atm.balance-changed',
+    await deliverTo('q.test.atm.balance-changed.audit', event);
+
+    expect(subscriptions()).toStrictEqual([
+      [EXCHANGE_NAME, 'event.atm.balance-changed', 'q.test.atm.balance-changed.projection'],
+      [EXCHANGE_NAME, 'event.atm.balance-changed', 'q.test.atm.balance-changed.audit'],
+    ]);
+    expect(module.get(AuditBalanceChangedTestHandler).received).toStrictEqual([event]);
+    expect(module.get(BalanceChangedTestHandler).received).toHaveLength(0);
+  });
+
+  it('should refuse two handlers of one event type with the same subscription name', async () => {
+    await expect(bootstrapWith(BalanceChangedTestHandler, AnotherBalanceChangedTestHandler)).rejects.toThrow(
+      'test has more than one handler for atm.balance-changed with subscriptionName "projection" ' +
+        '(BalanceChangedTestHandler, AnotherBalanceChangedTestHandler)',
     );
+  });
+
+  it('should refuse a handler without a subscription name', async () => {
+    await expect(bootstrapWith(UnnamedBalanceChangedTestHandler)).rejects.toThrow(
+      'UnnamedBalanceChangedTestHandler must declare a static kebab-case subscriptionName, got undefined',
+    );
+  });
+
+  it('should refuse a subscription name that is not kebab-case', async () => {
+    await expect(bootstrapWith(BadlyNamedBalanceChangedTestHandler)).rejects.toThrow(
+      'BadlyNamedBalanceChangedTestHandler must declare a static kebab-case subscriptionName, got "Audit.Log"',
+    );
+  });
+
+  it('should subscribe a handler of several event types to each of them', async () => {
+    const module = await bootstrapWith(MultiEventTestHandler);
+    const event = new MoneyLoadedEvent({
+      aggregateId: Id.generate(),
+      aggregateType: AggregateType.Atm,
+      payload: { loadedMoney: [1, 0, 0, 0, 0, 0] },
+    });
+
+    await deliverTo('q.test.money.loaded.multi', event);
+
+    expect(subscriptions()).toStrictEqual([
+      [EXCHANGE_NAME, 'event.atm.balance-changed', 'q.test.atm.balance-changed.multi'],
+      [EXCHANGE_NAME, 'event.money.loaded', 'q.test.money.loaded.multi'],
+    ]);
+    expect(module.get(MultiEventTestHandler).received).toStrictEqual([event]);
   });
 
   it('should hand a published event to its handler as an instance of the event class', async () => {
