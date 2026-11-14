@@ -1,4 +1,5 @@
 import { toast } from '@zerodevx/svelte-toast';
+import { errorMessage } from '../lib/error-message';
 
 export const success = (message: string) =>
   toast.push(message, {
@@ -26,3 +27,5 @@ export const failure = (message: string) =>
       '--toastBarBackground': '#5d0f02',
     },
   });
+
+export const failureFrom = (error: unknown) => failure(errorMessage(error));

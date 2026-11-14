@@ -1,7 +1,7 @@
 <script lang="ts">
   import axios, { type Method } from 'axios';
   import currency from 'currency.js';
-  import { failure, success } from '../utils/actions';
+  import { failureFrom, success } from '../utils/actions';
 
   export let atm: any; // oxlint-disable-line typescript/no-explicit-any
 
@@ -23,10 +23,8 @@
     try {
       await callApi('POST', 'take-money', { amount });
       success(`Money withdrawn!`);
-    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
-      failure(
-        Array.isArray(err.response.data.message) ? err.response.data.message.join('\r\n') : err.response.data.message,
-      );
+    } catch (error) {
+      failureFrom(error);
     }
   };
 </script>

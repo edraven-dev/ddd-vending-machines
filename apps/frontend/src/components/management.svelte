@@ -1,5 +1,6 @@
 <script lang="ts">
   import axios from 'axios';
+  import { failureFrom } from '../utils/actions';
   axios.defaults.baseURL = `/api`;
 
   export let headOffice: any; // oxlint-disable-line typescript/no-explicit-any
@@ -70,7 +71,7 @@
               <button
                 tabindex="0"
                 class="w-full text-left focus:outline-none focus:bg-gray-600 p-2 rounded-md"
-                on:click={async () => await getAtm()}>ATM 1</button
+                on:click={() => getAtm().catch(failureFrom)}>ATM 1</button
               >
             </li>
             <li class="cursor-not-allowed">
@@ -90,7 +91,7 @@
               <button
                 tabindex="0"
                 class="w-full text-left focus:outline-none focus:bg-gray-600 p-2 rounded-md"
-                on:click={async () => await getSnackMachine()}>Snack Machine 1</button
+                on:click={() => getSnackMachine().catch(failureFrom)}>Snack Machine 1</button
               >
             </li>
             <li class="cursor-not-allowed">
@@ -127,7 +128,7 @@
             <hr class="my-4 bg-gray-600 border-gray-600" />
             <div class="flex space-x-2 mt-2">
               <a href="/atm" class="primary-btn w-1/2">Go to ATM</a>
-              <button class="primary-btn w-1/2" on:click={async () => await loadCashToAtm()}>Load cash</button>
+              <button class="primary-btn w-1/2" on:click={() => loadCashToAtm().catch(failureFrom)}>Load cash</button>
             </div>
           {:else if snackMachine}
             <table class="w-full text-left">
@@ -153,16 +154,16 @@
             <hr class="my-4 bg-gray-600 border-gray-600" />
             <div class="flex space-x-2 mt-2">
               <a href="/snack-machine" class="primary-btn w-1/5">Go to Snack Machine</a>
-              <button class="primary-btn w-1/5" on:click={async () => await unloadCashFromSnackMachine()}
+              <button class="primary-btn w-1/5" on:click={() => unloadCashFromSnackMachine().catch(failureFrom)}
                 >Unload cash</button
               >
-              <button class="primary-btn w-1/5" on:click={async () => await loadSnacks(1)}
+              <button class="primary-btn w-1/5" on:click={() => loadSnacks(1).catch(failureFrom)}
                 >Load snacks into slot #1</button
               >
-              <button class="primary-btn w-1/5" on:click={async () => await loadSnacks(2)}
+              <button class="primary-btn w-1/5" on:click={() => loadSnacks(2).catch(failureFrom)}
                 >Load snacks into slot #2</button
               >
-              <button class="primary-btn w-1/5" on:click={async () => await loadSnacks(3)}
+              <button class="primary-btn w-1/5" on:click={() => loadSnacks(3).catch(failureFrom)}
                 >Load snacks into slot #3</button
               >
             </div>

@@ -7,6 +7,7 @@ import type { AtmProtoService } from '@vending-machines/proto';
 import {
   HttpExceptionFilterProvider,
   Id,
+  InvalidOperationException,
   InvalidOperationExceptionFilterProvider,
   Money,
   ValidationProvider,
@@ -136,6 +137,17 @@ describe('AtmController - e2e', () => {
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toMatchSnapshot();
+    });
+
+    it('should return 400 BAD REQUEST with the reason when the domain rejects the operation', async () => {
+      commandBusMock.execute.mockRejectedValueOnce(new InvalidOperationException('Not enough money'));
+
+      const response = await request(app.getHttpServer())
+        .post(`${testEndpoint(Id.generate().value)}/take-money`)
+        .send({ amount: '20' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body).toStrictEqual({ statusCode: 400, message: 'Not enough money', error: 'Bad Request' });
     });
   });
 

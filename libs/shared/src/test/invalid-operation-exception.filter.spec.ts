@@ -1,32 +1,49 @@
 import { status } from '@grpc/grpc-js';
-import { ArgumentsHost, HttpStatus } from '@nestjs/common';
-import type { Response } from 'express';
+import { ArgumentsHost, HttpServer, HttpStatus } from '@nestjs/common';
 import { lastValueFrom, Observable } from 'rxjs';
 import { InvalidOperationExceptionFilter } from '../lib/invalid-operation-exception.filter';
 import { InvalidOperationException } from '../lib/invalid-operation.exception';
 
 describe('InvalidOperationExceptionFilter', () => {
-  const filter = new InvalidOperationExceptionFilter();
   const exception = new InvalidOperationException('Cannot unload money during transaction');
 
-  it('should respond with 400 BAD REQUEST over HTTP', () => {
-    const response = { status: vi.fn<Response['status']>().mockReturnThis(), json: vi.fn<Response['json']>() };
-    const host = { getType: () => 'http', switchToHttp: () => ({ getResponse: () => response }) };
+  it('should respond with the default 400 BAD REQUEST body over HTTP', () => {
+    const reply = vi.fn<HttpServer['reply']>();
+    const response = {};
+    const applicationRef = { reply, isHeadersSent: () => false };
+    const host = { getType: () => 'http', getArgByIndex: () => response };
 
-    filter.catch(exception, host as unknown as ArgumentsHost);
+    new InvalidOperationExceptionFilter(applicationRef as unknown as HttpServer).catch(
+      exception,
+      host as unknown as ArgumentsHost,
+    );
 
-    expect(response.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(response.json).toHaveBeenCalledWith({ statusCode: HttpStatus.BAD_REQUEST, message: exception.message });
+    expect(reply).toHaveBeenCalledWith(
+      response,
+      { statusCode: HttpStatus.BAD_REQUEST, message: exception.message, error: 'Bad Request' },
+      HttpStatus.BAD_REQUEST,
+    );
   });
 
   it('should fail with FAILED_PRECONDITION over gRPC', async () => {
     const host = { getType: () => 'rpc' };
 
-    const result = filter.catch(exception, host as unknown as ArgumentsHost) as Observable<never>;
+    const result = new InvalidOperationExceptionFilter().catch(exception, host as unknown as ArgumentsHost);
 
-    await expect(lastValueFrom(result)).rejects.toEqual({
+    await expect(lastValueFrom(result as Observable<never>)).rejects.toEqual({
       code: status.FAILED_PRECONDITION,
       message: exception.message,
     });
+  });
+});
+
+describe('InvalidOperationException', () => {
+  it('should be an Error named after its class', () => {
+    const error = new InvalidOperationException('Not enough change');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(InvalidOperationException);
+    expect(error.name).toBe('InvalidOperationException');
+    expect(error.message).toBe('Not enough change');
   });
 });
