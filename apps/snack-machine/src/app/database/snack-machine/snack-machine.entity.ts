@@ -1,27 +1,7 @@
 import { BaseEntity, Cascade, Collection } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Embedded, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { MoneyEmbeddable } from '@vending-machines/shared';
 import SlotEntity from './slot.entity';
-
-@Embeddable()
-export class MoneyEmbeddable {
-  @Property({ type: 'int' })
-  oneCentCount!: number;
-
-  @Property({ type: 'int' })
-  tenCentCount!: number;
-
-  @Property({ type: 'int' })
-  quarterCount!: number;
-
-  @Property({ type: 'int' })
-  oneDollarCount!: number;
-
-  @Property({ type: 'int' })
-  fiveDollarCount!: number;
-
-  @Property({ type: 'int' })
-  twentyDollarCount!: number;
-}
 
 @Entity({ tableName: 'snack_machine' })
 export default class SnackMachineEntity extends BaseEntity {

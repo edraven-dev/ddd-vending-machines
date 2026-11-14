@@ -6,7 +6,7 @@ import { EventSubscriber } from './event-subscriber';
 import { ExplorerService } from './services/explorer.service';
 
 @Module({
-  imports: [AmqpModule.forRoot({ url: process.env['RABBITMQ_URL'] || 'amqp://localhost' }), CqrsModule],
+  imports: [AmqpModule.forRoot(), CqrsModule],
   providers: [EventPublisher, EventSubscriber, ExplorerService],
 })
 export class EventsModule {}

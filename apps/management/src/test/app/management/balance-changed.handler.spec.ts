@@ -69,7 +69,7 @@ describe('BalanceChangedHandler', () => {
       await handler.handle(event);
 
       expect(transactional).toHaveBeenCalledOnce();
-      expect(inbox.tryRecord).toHaveBeenCalledWith('atm.balance-changed', event.eventId);
+      expect(inbox.tryRecord).toHaveBeenCalledWith('head-office-balance', event.eventId);
       expect(calls).toEqual([
         { call: 'tryRecord', inTransaction: true },
         { call: 'findByAtmId', inTransaction: true },

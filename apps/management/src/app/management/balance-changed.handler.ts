@@ -10,6 +10,8 @@ import { Inbox } from './inbox.interface';
 
 @EventsHandler(BalanceChangedEvent)
 export class BalanceChangedHandler implements IEventHandler<BalanceChangedEvent> {
+  static readonly subscriptionName = 'head-office-balance';
+
   constructor(
     private readonly orm: MikroORM, // MikroORM needed for @CreateRequestContext() and @Transactional()
     private readonly headOfficeRepository: HeadOfficeRepository,
@@ -19,7 +21,7 @@ export class BalanceChangedHandler implements IEventHandler<BalanceChangedEvent>
   @CreateRequestContext()
   @Transactional()
   async handle(event: BalanceChangedEvent) {
-    if (!(await this.inbox.tryRecord(BalanceChangedEvent.eventType, event.eventId))) {
+    if (!(await this.inbox.tryRecord(BalanceChangedHandler.subscriptionName, event.eventId))) {
       return;
     }
 
