@@ -68,9 +68,8 @@ export const nestApp = ({ protos = [] }: NestAppOptions = {}) =>
         ...options,
         transform: { ...options.transform, decorator: { legacy: true, emitDecoratorMetadata: true } },
       }),
-      // One file. Keep class names: scope hoisting would rename colliding classes, and class names are MikroORM
-      // entity names.
-      outputOptions: { codeSplitting: false, keepNames: true },
+      // One file.
+      outputOptions: { codeSplitting: false },
       plugins: [
         {
           name: 'vending-machines:declared-dependencies',
