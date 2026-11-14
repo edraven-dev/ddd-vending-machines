@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '@iconify/svelte';
   import axios, { type Method } from 'axios';
-  import { failure, success } from '../utils/actions';
+  import { failureFrom, success } from '../utils/actions';
 
   type SnackMachine = {
     id: string;
@@ -26,17 +26,19 @@
   };
 
   const insertMoney = async (money: [number, number, number, number, number, number]) => {
-    await callApi('PUT', 'insert-money', { money });
+    try {
+      await callApi('PUT', 'insert-money', { money });
+    } catch (error) {
+      failureFrom(error);
+    }
   };
 
   const buySnack = async (position: number) => {
     try {
       await callApi('POST', 'buy-snack', { position });
       success(`Snack bought!`);
-    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
-      failure(
-        Array.isArray(err.response.data.message) ? err.response.data.message.join('\r\n') : err.response.data.message,
-      );
+    } catch (error) {
+      failureFrom(error);
     }
   };
 
@@ -44,8 +46,8 @@
     try {
       await callApi('POST', 'return-money');
       success(`Money returned!`);
-    } catch (err: any) /* oxlint-disable-line typescript/no-explicit-any */ {
-      failure(err.response.data.message);
+    } catch (error) {
+      failureFrom(error);
     }
   };
 </script>
